@@ -1,0 +1,31 @@
+<macros>
+    <token name="@VERSION@">1.0.9.0</token>
+
+    <token name="@PROFILE@">21.05</token>
+
+    <xml name="python_requirements">
+        <requirements>
+            <yield />
+            <requirement type="package" version="3.7">python</requirement>
+            <requirement type="package" version="ludwig">0.4</requirement>
+            <requirement type="package">petastorm</requirement>
+        </requirements>
+    </xml>
+
+    <xml name="macro_stdio">
+        <stdio>
+            <exit_code range="1:" level="fatal" description="Error occurred. Please check Tool Standard Error" />
+        </stdio>
+    </xml>
+
+    <xml name="encoder_parameters">
+        <param argument="name" type="text" value="" label="Name of the column containing the input feature" />
+        <param argument="norm" type="select" label="Select the norm mode">
+            <option value="none" selected="true">Null</option>
+            <option value="batch">batch</option>
+            <option value="layer">layer</option>
+        </param>
+        <param argument="tied_weights" type="text" value="" optional="true" label="Name of the input feature to tie the weights of the encoder with" help="It needs to be the name of a feature of the same type and with the same encoder parameters. Optional" />
+        <yield />
+    </xml>
+</macros>

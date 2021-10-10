@@ -1,0 +1,119 @@
+<tool id="ludwig_train" name="Ludwig Train" version="@VERSION@" profile="@PROFILE@">
+    <description>a deep learning model</description>
+    <macros>
+        <import>ludwig_macros.xml</import>
+    </macros>
+    <expand macro="python_requirements">
+        <container type="docker">ludwig:v0.4</container>
+    </expand>
+    <expand macro="macro_stdio" />
+    <version_command>echo "@VERSION@"</version_command>
+    <command>
+        <![CDATA[
+            #if $config_file
+            ln -sf '$config_file' "`pwd`/config.yml";
+            #end if
+            #if $dataset
+            ln -sf '$dataset' "`pwd`/${dataset.element_identifier}";
+            #end if
+            ludwig train
+            #if $config_file
+            --config_file "`pwd`/config.yml"
+            #end if
+            #if $model_load_path
+            --model_load_path '$model_load_path'
+            #end if
+            #if $dataset
+            --dataset "`pwd`/${dataset.element_identifier}"
+            #end if
+            #if $training_set
+            --training_set '$training_set'
+            #end if
+            #if $validation_set
+            --validation_set '$validation_set'
+            #end if
+            #if $test_set
+            --test_set '$test_set'
+            #end if
+            #if $training_set_metadata
+            --training_set_metadata '$training_set_metadata'
+            #end if
+            #if $random_seed
+            --random_seed '$random_seed'
+            #end if
+            #if $disable_parallel_threads
+            --disable_parallel_threads
+            #end if
+            #if $experiment_name
+            --experiment_name '$experiment_name'
+            #end if
+            #if $model_name
+            --model_name '$model_name'
+            #end if
+            --output_directory "`pwd`"
+            --data_format '$data_format'
+            --backend local
+            --skip_save_processed_input
+            --skip_save_model
+            --skip_save_progress
+            --skip_save_log
+
+        ]]>
+    </command>
+    <configfiles>
+        <inputs name="inputs" />
+    </configfiles>
+    <inputs>
+        <param name="config_file" type="data" format="json,txt" label="Select the dataset containing model configuration" />
+        <param name="model_load_path" type="data" format="h5" optional="true" label="Load a pretrained model" help="Optional. Used to resume training." />
+        <param name="dataset" type="data" format="tabular,csv,h5,json,txt" optional="true" label="Input dataset" />
+        <param name="training_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input traning dataset" />
+        <param name="validation_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input validation dataset" />
+        <param name="test_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input test dataset" />
+        <param name="training_set_metadata" type="data" format="json" optional="true" label="Training set metadata" />
+        <param name="data_format" type="select" label="Data format">
+            <option value="auto" selected="true">auto</option>
+            <option value="tsv">tsv</option>
+            <option value="csv">csv</option>
+            <option value="h5">h5</option>
+            <option value="json">json</option>
+        </param>
+        <param name="random_seed" type="integer" value="" optional="true" label="Randonness seed" />
+        <param name="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
+        <param name="experiment_name" type="text" value="" optional="true" label="Experiment name" />
+        <param name="model_name" type="text" value="" optional="true" label="Model name" />
+    </inputs>       
+    <outputs>
+        <data format="json" name="output_description" from_work_dir="experiment_run/description.json" label="Training description on ${on_string}" />
+        <data format="json" name="output_training_statistics" from_work_dir="experiment_run/training_statistics.json" label="Training statistics on ${on_string}" />
+    </outputs>
+    <tests>
+        <test>
+            <param name="dataset" value="temperature_la.csv" ftype="csv" />
+            <param name="config_file" value="temperature_config.yml" ftype="txt" />
+            <param name="data_format" value="csv" />
+            <output name="output_description" file="temperature_description.json" compare="sim_size" delta="10" />
+            <output name="output_training_statistics" file="temperature_training_statistics.json" compare="sim_size" delta="10" />
+        </test>
+    </tests>
+    <help>
+        <![CDATA[
+**What it does**
+
+
+
+**Input**
+
+
+
+**Output**
+
+
+
+        ]]>
+    </help>
+    <citations>
+        <citation type="bibtex">
+        </citation>
+    </citations>
+</tool>
