@@ -1,2 +1,2 @@
 # Galaxy-Ludwig
-A series of Ludwig-based Galaxy tools for deep leaning
+A library of Galaxy deep learning tools based on Ludwig.
