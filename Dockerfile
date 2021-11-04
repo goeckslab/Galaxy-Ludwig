@@ -1,8 +1,5 @@
-FROM ubuntu:20.04
+FROM tensorflow/tensorflow:2.6.1
 
-ENV VERSION=0.4
-RUN apt-get update && \
-    apt-get install -y git python3.8 python3-pip unzip wget && \
-    ln -s /usr/bin/python3 /usr/bin/python
+RUN apt-get -y update && apt-get install -y git cmake
 
-RUN pip install 'ludwig[full]'==$VERSION petastorm
+RUN pip install 'ludwig[full]==0.4' 'tensorflow==2.6.1' --use-feature=2020-resolver
