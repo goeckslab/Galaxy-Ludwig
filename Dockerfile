@@ -7,4 +7,4 @@ RUN git clone https://github.com/ludwig-ai/ludwig.git && cd ludwig && \
     pip install -e '.[full]' &&\
     pip cache purge
 
-RUN apt-get purge build-essential cmake && apt-get autoremove && apt-get clean
+RUN apt-get purge -y build-essential cmake && apt-get -y autoremove && apt-get clean
