@@ -1,5 +1,10 @@
-FROM tensorflow/tensorflow:2.6.1
+FROM python:3.8-slim
 
-RUN apt-get -y update && apt-get install -y git cmake zip unzip
+RUN apt-get -y update && apt-get install -y --no-install-recommends build-essential cmake git unzip
 
-RUN pip install 'ludwig[full]==0.4' 'tensorflow==2.6.1' --use-feature=2020-resolver
+RUN git clone https://github.com/ludwig-ai/ludwig.git && cd ludwig && \
+    pip install -U pip &&\
+    pip install -e '.[full]' &&\
+    pip cache purge
+
+RUN apt-get purge build-essential cmake && apt-get autoremove && apt-get clean
