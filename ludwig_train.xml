@@ -4,7 +4,7 @@
         <import>ludwig_macros.xml</import>
     </macros>
     <expand macro="python_requirements">
-        <container type="docker">quay.io/qiagu/galaxy-ludwig:v0.4</container>
+        <container type="docker">quay.io/qiagu/galaxy-ludwig:latest</container>
     </expand>
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
