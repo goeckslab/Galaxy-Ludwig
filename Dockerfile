@@ -5,6 +5,7 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends build-essent
 RUN git clone https://github.com/ludwig-ai/ludwig.git && cd ludwig && \
     pip install -U pip &&\
     pip install -e '.[full]' &&\
+    pip install 'model-unpickler' &&\
     pip cache purge
 
 RUN apt-get purge -y build-essential cmake && apt-get -y autoremove && apt-get clean
