@@ -33,7 +33,7 @@
             --config_file "`pwd`/config.yml"
             #end if
             #if $model_load_path
-            --model_load_path '$model_load_path'
+            --model_load_path '$model_load_path.extra_files_path'
             #end if
             #if $dataset
             --dataset "`pwd`/${dataset.element_identifier}"
@@ -65,10 +65,9 @@
             --output_directory "`pwd`"
             --data_format '$data_format'
             --backend local
-            --skip_save_processed_input
-            --skip_save_model
-            --skip_save_progress
-            --skip_save_log
+            --skip_save_processed_input &&
+            mkdir -p '$output_model.extra_files_path' &&
+            cp experiment_run/model/*.json experiment_run/model/model_weights '$output_model.extra_files_path'
 
         ]]>
     </command>
@@ -76,8 +75,8 @@
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <param name="config_file" type="data" format="json,txt" label="Select the dataset containing model configuration" />
-        <param name="model_load_path" type="data" format="h5" optional="true" label="Load a pretrained model" help="Optional. Used to resume training." />
+        <param name="config_file" type="data" format="yaml,txt" label="Select the dataset containing model configuration" />
+        <param name="model_load_path" type="data" format="ludwig_model" optional="true" label="Load a pretrained model" help="Optional. Used to resume training." />
         <param name="dataset" type="data" format="tabular,csv,h5,json,txt" optional="true" label="Input dataset" />
         <param name="training_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input traning dataset" />
         <param name="validation_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input validation dataset" />
@@ -97,13 +96,14 @@
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
+        <data format="ludwig_model" name="output_model" label="Trained model on ${on_string}" />
         <data format="json" name="output_description" from_work_dir="experiment_run/description.json" label="Training description on ${on_string}" />
         <data format="json" name="output_training_statistics" from_work_dir="experiment_run/training_statistics.json" label="Training statistics on ${on_string}" />
     </outputs>
     <tests>
         <test>
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
-            <param name="config_file" value="temperature_config.yml" ftype="txt" />
+            <param name="config_file" value="temperature_config.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
             <output name="output_description" file="temperature_description.json" compare="sim_size" delta="10" />
             <output name="output_training_statistics" file="temperature_training_statistics.json" compare="sim_size" delta="10" />
