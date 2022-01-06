@@ -28,49 +28,44 @@
             #if $raw_data
             unzip -o -q '$raw_data' -d ./;
             #end if
-            ludwig experiment
-            #if $config_file
-            --config_file "`pwd`/config.yml"
-            #end if
-            #if $model_load_path
-            --model_load_path '$model_load_path.extra_files_path'
-            #end if
-            #if $dataset
-            --dataset "`pwd`/${dataset.element_identifier}"
-            #end if
-            #if $training_set
-            --training_set "`pwd`/${training_set.element_identifier}"
-            #end if
-            #if $validation_set
-            --validation_set "`pwd`/${validation_set.element_identifier}"
-            #end if
-            #if $test_set
-            --test_set "`pwd`/${test_set.element_identifier}"
-            #end if
-            #if $training_set_metadata
-            --training_set_metadata '$training_set_metadata'
-            #end if
-            #if $random_seed
-            --random_seed '$random_seed'
-            #end if
-            #if $disable_parallel_threads
-            --disable_parallel_threads
-            #end if
-            #if $experiment_name
-            --experiment_name '$experiment_name'
-            #end if
-            #if $model_name
-            --model_name '$model_name'
-            #end if
-            #if $k_fold
-            --k_fold '$k_fold'
-            #end if
-            --output_directory "`pwd`"
-            --data_format '$data_format'
-            --backend local
-            --skip_save_processed_input
-            --skip_save_unprocessed_output
-            --skip_save_k_fold_split_indices &&
+            python '$__tool_directory__/ludwig_experiment.py'
+                #if $config_file
+                --config_file "`pwd`/config.yml"
+                #end if
+                #if $model_load_path
+                --model_load_path '$model_load_path.extra_files_path'
+                #end if
+                #if $dataset
+                --dataset "`pwd`/${dataset.element_identifier}"
+                #end if
+                #if $training_set
+                --training_set "`pwd`/${training_set.element_identifier}"
+                #end if
+                #if $validation_set
+                --validation_set "`pwd`/${validation_set.element_identifier}"
+                #end if
+                #if $test_set
+                --test_set "`pwd`/${test_set.element_identifier}"
+                #end if
+                #if $training_set_metadata
+                --training_set_metadata '$training_set_metadata'
+                #end if
+                #if $random_seed
+                --random_seed '$random_seed'
+                #end if
+                #if $disable_parallel_threads
+                --disable_parallel_threads
+                #end if
+                #if $k_fold
+                --k_fold '$k_fold'
+                #end if
+                --output_directory "`pwd`"
+                --data_format '$data_format'
+                --backend local
+                --eval_split '$eval_split'
+                --skip_save_processed_input
+                --skip_save_unprocessed_output
+                --skip_save_k_fold_split_indices &&
             mkdir -p '$output_model.extra_files_path' &&
             cp experiment_run/model/*.json experiment_run/model/model_weights '$output_model.extra_files_path'
 
@@ -103,8 +98,6 @@
         <param name="k_fold" type="integer" value="" optional="true" label="number of folds for a k-fold cross validation run" />
         <param name="random_seed" type="integer" value="" optional="true" label="Randonness seed" />
         <param name="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
-        <param name="experiment_name" type="text" value="" optional="true" label="Experiment name" />
-        <param name="model_name" type="text" value="" optional="true" label="Model name" />
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
