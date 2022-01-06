@@ -8,6 +8,7 @@
             <yield />
             <requirement type="package" version="3.7">python</requirement>
             <requirement type="package" version="0.4">ludwig</requirement>
+            <requirement type="package" version="0.1">model-unpickler</requirement>
             <requirement type="package">petastorm</requirement>
         </requirements>
     </xml>
