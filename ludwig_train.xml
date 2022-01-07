@@ -61,8 +61,10 @@
                 --backend local
                 --skip_save_processed_input &&
             mkdir -p '$output_model.extra_files_path' &&
-            cp experiment_run/model/*.json experiment_run/model/model_weights '$output_model.extra_files_path'
-
+            cp experiment_run/model/*.json experiment_run/model/model_weights '$output_model.extra_files_path' &&
+            cp '$__tool_directory__/ludwig_train_result.html' '$output_other' &&
+            mkdir -p '$output_other.extra_files_path' &&
+            cp experiment_run/*.json '$output_other.extra_files_path'
         ]]>
     </command>
     <configfiles>
@@ -89,16 +91,14 @@
     </inputs>       
     <outputs>
         <data format="ludwig_model" name="output_model" label="Trained model on ${on_string}" />
-        <data format="json" name="output_description" from_work_dir="experiment_run/description.json" label="Training description on ${on_string}" />
-        <data format="json" name="output_training_statistics" from_work_dir="experiment_run/training_statistics.json" label="Training statistics on ${on_string}" />
+        <data format="html" name="output_other" label="Traning description and statistics on ${on_string}" />
     </outputs>
     <tests>
         <test>
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="config_file" value="temperature_config.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
-            <output name="output_description" file="temperature_description.json" compare="sim_size" delta="10" />
-            <output name="output_training_statistics" file="temperature_training_statistics.json" compare="sim_size" delta="10" />
+            <output name="output_other" file="temperature_output.html" compare="sim_size" delta="10" />
         </test>
     </tests>
     <help>
