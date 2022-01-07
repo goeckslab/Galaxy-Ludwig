@@ -50,9 +50,6 @@
                 #if $training_set_metadata
                 --training_set_metadata '$training_set_metadata'
                 #end if
-                #if $random_seed
-                --random_seed '$random_seed'
-                #end if
                 #if $disable_parallel_threads
                 --disable_parallel_threads
                 #end if
@@ -63,6 +60,7 @@
                 --data_format '$data_format'
                 --backend local
                 --eval_split '$eval_split'
+                --random_seed $random_seed
                 --skip_save_processed_input
                 --skip_save_unprocessed_output
                 --skip_save_k_fold_split_indices &&

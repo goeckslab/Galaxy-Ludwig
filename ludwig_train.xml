@@ -50,14 +50,12 @@
                 #if $training_set_metadata
                 --training_set_metadata '$training_set_metadata'
                 #end if
-                #if $random_seed
-                --random_seed '$random_seed'
-                #end if
                 #if $disable_parallel_threads
                 --disable_parallel_threads
                 #end if
                 --output_directory "`pwd`"
                 --data_format '$data_format'
+                --random_seed $random_seed
                 --backend local
                 --skip_save_processed_input &&
             mkdir -p '$output_model.extra_files_path' &&
