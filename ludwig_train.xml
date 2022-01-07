@@ -61,7 +61,7 @@
                 --backend local
                 --skip_save_processed_input &&
             mkdir -p '$output_model.extra_files_path' &&
-            cp experiment_run/model/*.json experiment_run/model/model_weights '$output_model.extra_files_path' &&
+            cp -r experiment_run/model/* '$output_model.extra_files_path' &&
             cp '$__tool_directory__/ludwig_train_result.html' '$output_other' &&
             mkdir -p '$output_other.extra_files_path' &&
             cp experiment_run/*.* '$output_other.extra_files_path'
