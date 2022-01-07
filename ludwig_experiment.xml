@@ -101,7 +101,7 @@
             <option value="full">full</option>
         </param>
         <param name="k_fold" type="integer" value="" optional="true" label="number of folds for a k-fold cross validation run" />
-        <param name="random_seed" type="integer" value="" optional="true" label="Randonness seed" />
+        <param name="random_seed" type="integer" value="42" label="Randonness seed" />
         <param name="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
