@@ -64,7 +64,7 @@
             cp experiment_run/model/*.json experiment_run/model/model_weights '$output_model.extra_files_path' &&
             cp '$__tool_directory__/ludwig_train_result.html' '$output_other' &&
             mkdir -p '$output_other.extra_files_path' &&
-            cp experiment_run/*.json '$output_other.extra_files_path'
+            cp experiment_run/*.* '$output_other.extra_files_path'
         ]]>
     </command>
     <configfiles>
@@ -90,8 +90,8 @@
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
-        <data format="ludwig_model" name="output_model" label="Trained model on ${on_string}" />
-        <data format="html" name="output_other" label="Traning description and statistics on ${on_string}" />
+        <data format="ludwig_model" name="output_model" label="${tool.name} model on ${on_string}" />
+        <data format="html" name="output_other" label="${tool.name} description and statistics on ${on_string}" />
     </outputs>
     <tests>
         <test>
