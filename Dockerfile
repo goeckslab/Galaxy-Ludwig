@@ -2,7 +2,8 @@ FROM python:3.8-slim
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends build-essential cmake git unzip
 
-RUN git clone https://github.com/ludwig-ai/ludwig.git && cd ludwig && \
+RUN export HOROVOD_WITH_PYTORCH=1 && \
+    git clone https://github.com/ludwig-ai/ludwig.git && cd ludwig && \
     pip install -U pip &&\
     pip install -e '.[full]' &&\
     pip install 'model-unpickler' &&\
