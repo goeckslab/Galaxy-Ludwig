@@ -58,7 +58,7 @@
                 --random_seed $random_seed
                 --backend local
                 --skip_save_progress
-                --skip_save_processed_input &&
+                --skip_save_processed_input
 
         ]]>
     </command>
