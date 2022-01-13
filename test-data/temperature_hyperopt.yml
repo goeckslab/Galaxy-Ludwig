@@ -11,6 +11,9 @@ output_features:
         name: temperature
         type: numerical
 
+training:
+    epochs: 1
+
 hyperopt:
     sampler:
         type: random

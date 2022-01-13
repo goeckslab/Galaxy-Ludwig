@@ -10,3 +10,6 @@ output_features:
     -
         name: temperature
         type: numerical
+
+training:
+    epochs: 5

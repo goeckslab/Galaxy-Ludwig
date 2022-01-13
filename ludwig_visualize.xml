@@ -1,0 +1,153 @@
+<tool id="ludwig_visualize" name="Ludwig Visualize" version="@VERSION@" profile="@PROFILE@">
+    <description>trains and evaluates a model</description>
+    <macros>
+        <import>ludwig_macros.xml</import>
+    </macros>
+    <expand macro="python_requirements">
+        <container type="docker">quay.io/qiagu/galaxy-ludwig:latest</container>
+    </expand>
+    <expand macro="macro_stdio" />
+    <version_command>echo "@VERSION@"</version_command>
+    <command>
+        <![CDATA[
+            #set $visualization = $visualization_selector.visualization.value
+            echo '$visualization' &&
+            mkdir -p "`pwd`/results" &&
+            python '$__tool_directory__/ludwig_visualize.py'
+                --visualization '$visualization'
+                --output_directory "`pwd`/results"
+                #if $visualization in ('hyperopt_report', 'hyperopt_hiplot')
+                --hyperopt_stats_path '${visualization_selector.hyperopt_stats_path}'
+                #end if
+                #if $visualization in ('hyperopt_report')
+                --file_format '${visualization_selector.file_format}'
+                #end if
+
+        ]]>
+    </command>
+    <configfiles>
+        <inputs name="inputs" />
+    </configfiles>
+    <inputs>
+        <conditional name="visualization_selector">
+            <param name="visualization" type="select" label="Type of visualization">
+                <option value="compare_performance">compare_performance</option>
+                <option value="compare_classifiers_performance_from_prob">compare_classifiers_performance_from_prob</option>
+                <option value="compare_classifiers_performance_from_pred">compare_classifiers_performance_from_pred</option>
+                <option value="compare_classifiers_performance_subset">compare_classifiers_performance_subset</option>
+                <option value="compare_classifiers_performance_changing_k">compare_classifiers_performance_changing_k</option>
+                <option value="compare_classifiers_multiclass_multimetric">compare_classifiers_multiclass_multimetric</option>
+                <option value="compare_classifiers_predictions">compare_classifiers_predictions</option>
+                <option value="compare_classifiers_predictions_distribution">compare_classifiers_predictions_distribution</option>
+                <option value="confidence_thresholding">confidence_thresholding</option>
+                <option value="confidence_thresholding_data_vs_acc">confidence_thresholding_data_vs_acc</option>
+                <option value="confidence_thresholding_data_vs_acc_subset">confidence_thresholding_data_vs_acc_subset</option>
+                <option value="confidence_thresholding_data_vs_acc_subset_per_class">confidence_thresholding_data_vs_acc_subset_per_class</option>
+                <option value="confidence_thresholding_2thresholds_2d">confidence_thresholding_2thresholds_2d</option>
+                <option value="confidence_thresholding_2thresholds_3d">confidence_thresholding_2thresholds_3d</option>
+                <option value="binary_threshold_vs_metric">binary_threshold_vs_metric</option>
+                <option value="roc_curves">roc_curves</option>
+                <option value="roc_curves_from_test_statistics">roc_curves_from_test_statistics</option>
+                <option value="calibration_1_vs_all">calibration_1_vs_all</option>
+                <option value="calibration_multiclass">calibration_multiclass</option>
+                <option value="confusion_matrix">confusion_matrix</option>
+                <option value="frequency_vs_f1">frequency_vs_f1</option>
+                <option value="learning_curves">learning_curves</option>
+                <option value="hyperopt_report" selected="true">hyperopt_report</option>
+                <option value="hyperopt_hiplot">hyperopt_hiplot</option>
+            </param>
+            <when value="compare_performance">
+            </when>
+            <when value="compare_classifiers_performance_from_prob">
+            </when>
+            <when value="compare_classifiers_performance_from_pred">
+            </when>
+            <when value="compare_classifiers_performance_subset">
+            </when>
+            <when value="compare_classifiers_performance_changing_k">
+            </when>
+            <when value="compare_classifiers_multiclass_multimetric">
+            </when>
+            <when value="compare_classifiers_predictions">
+            </when>
+            <when value="compare_classifiers_predictions_distribution">
+            </when>
+            <when value="confidence_thresholding">
+            </when>
+            <when value="confidence_thresholding_data_vs_acc">
+            </when>
+            <when value="confidence_thresholding_data_vs_acc_subset">
+            </when>
+            <when value="confidence_thresholding_data_vs_acc_subset_per_class">
+            </when>
+            <when value="confidence_thresholding_2thresholds_2d">
+            </when>
+            <when value="confidence_thresholding_2thresholds_3d">
+            </when>
+            <when value="binary_threshold_vs_metric">
+            </when>
+            <when value="roc_curves">
+            </when>
+            <when value="roc_curves_from_test_statistics">
+            </when>
+            <when value="calibration_1_vs_all">
+            </when>
+            <when value="calibration_multiclass">
+            </when>
+            <when value="confusion_matrix">
+            </when>
+            <when value="frequency_vs_f1">
+            </when>
+            <when value="learning_curves">
+            </when>
+            <when value="hyperopt_report">
+                <param type="data" name="hyperopt_stats_path" format="json" label="Select the hyperopt result (JSON)" />
+                <param type="select" name="file_format" label="Choose the output format">
+                    <option value="pdf" selected="true">pdf</option>
+                    <option value="png">png</option>
+                </param>
+            </when>
+            <when value="hyperopt_hiplot">
+                <param type="data" name="hyperopt_stats_path" format="json" label="Select the hyperopt result (JSON)" />
+            </when>
+        </conditional>
+    </inputs>       
+    <outputs>
+        <collection type="list" name="output" label="${tool.name} ${visualization_selector.visualization} on ${on_string}">
+            <discover_datasets pattern="__name_and_ext__" format="auto" directory="results" />
+        </collection>
+    </outputs>
+    <tests>
+        <test>
+            <conditional name="visualization_selector">
+                <param name="visualization" value="hyperopt_report" />
+                <param name="hyperopt_stats_path" value="temperature_hyperopt_statistics.json" ftype="json" />
+                <param name="file_type" value="pdf" />
+            </conditional>
+            <output_collection name="output" type="list">
+                <element name="hyperopt_pair_plot" file="temp_hyperopt_pair_plot.pdf" ftype="pdf" />
+                <element name="hyperopt_training.learning_rate" file="temp_hyperopt_training.learning_rate.pdf" ftype="pdf" />
+            </output_collection>
+        </test>
+    </tests>
+    <help>
+        <![CDATA[
+**What it does**
+
+
+
+**Input**
+
+
+
+**Output**
+
+
+
+        ]]>
+    </help>
+    <citations>
+        <citation type="bibtex">
+        </citation>
+    </citations>
+</tool>
