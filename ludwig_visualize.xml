@@ -16,24 +16,31 @@
             python '$__tool_directory__/ludwig_visualize.py'
                 --visualization '$visualization'
                 --output_directory "`pwd`/results"
-                #if $visualization in ('hyperopt_report', 'hyperopt_hiplot')
+                #if 'hyperopt_stats_path' in $visualization_selector
                     --hyperopt_stats_path '${visualization_selector.hyperopt_stats_path}'
                 #end if
-                #if $visualization in ('learning_curves')
-                    #set $ts = [x.extra_files_path + '/training_statistics.json' for x in $visualization_selector.training_statistics]
+                #if 'training_statistics' in $visualization_selector
+                    #set $ts = []
+                    #for $x in $visualization_selector.training_statistics
+                        #if $x.ext != 'json'
+                        $ts.append($x.extra_files_path + '/training_statistics.json')
+                        #else
+                        $ts.append($x.file_name)
+                        #end if
+                    #end for
                     #set $training_statistics = "'" + "' '".join($ts) + "'"
                     --training_statistics $training_statistics
                 #end if
-                #if $visualization in ('learning_curves')
+                #if 'output_feature_name' in $visualization_selector and $visualization_selector.output_feature_name
                     --output_feature_name '${visualization_selector.output_feature_name}'
                 #end if
-                #if $visualization in ('learning_curves')
+                #if 'model_names' in $visualization_selector and $visualization_selector.model_names
                     #set $mns = $visualization_selector.model_names.split(',')
                     #set $mns = [x.strip() for x in $mns]
                     #set $model_names = "'" + "' '".join($mns) + "'"
                     --model_names $model_names
                 #end if
-                #if $visualization in ('hyperopt_report', 'learning_curves')
+                #if 'file_format' in $visualization_selector
                     --file_format ${visualization_selector.file_format}
                 #end if
 
@@ -113,7 +120,7 @@
             <when value="frequency_vs_f1">
             </when>
             <when value="learning_curves">
-                <param name="training_statistics" type="data" format="html" multiple="true" label="Training statistics" />
+                <param name="training_statistics" type="data" format="html,json" multiple="true" label="Training statistics" />
                 <param name="output_feature_name" type="text" value="" optional="true" label="Name of the output feature" help="If `None`, use all output features." />
                 <param name="model_names" type="text" value="" optional="true" label="Model name(s) to use as labels" help="Comma delimited for multiple." />
                 <expand macro="visualize_file_format" />
