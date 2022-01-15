@@ -11,16 +11,21 @@
     <command>
         <![CDATA[
             #set $visualization = $visualization_selector.visualization.value
-            echo '$visualization' &&
+
             mkdir -p "`pwd`/results" &&
             python '$__tool_directory__/ludwig_visualize.py'
                 --visualization '$visualization'
                 --output_directory "`pwd`/results"
                 #if $visualization in ('hyperopt_report', 'hyperopt_hiplot')
-                --hyperopt_stats_path '${visualization_selector.hyperopt_stats_path}'
+                    --hyperopt_stats_path '${visualization_selector.hyperopt_stats_path}'
                 #end if
-                #if $visualization in ('hyperopt_report')
-                --file_format '${visualization_selector.file_format}'
+                #if $visualization in ('learning_curves')
+                    #set $ts = [x.extra_files_path + '/training_statistics.json' for x in $visualization_selector.training_statistics]
+                    #set $training_statistics = "'" + "' '".join($ts) + "'"
+                    --training_statistics $training_statistics
+                #end if
+                #if $visualization in ('hyperopt_report', 'learning_curves')
+                    --file_format '${visualization_selector.file_format}'
                 #end if
 
         ]]>
@@ -99,13 +104,14 @@
             <when value="frequency_vs_f1">
             </when>
             <when value="learning_curves">
+                <param name="training_statistics" type="data" format="html" multiple="true" label="Training statistics" />
+                <param name="output_feature_name" type="text" value="" optional="true" label="Name(s) of the output feature(s)" help="Comma delimited for multiple. If `None`, use all output features." />
+                <param name="model_names" type="text" value="" optional="true" label="Model name(s) to use as labels" help="Comma delimited for multiple." />
+                <expand macro="visualize_file_format" />
             </when>
             <when value="hyperopt_report">
                 <param type="data" name="hyperopt_stats_path" format="json" label="Select the hyperopt result (JSON)" />
-                <param type="select" name="file_format" label="Choose the output format">
-                    <option value="pdf" selected="true">pdf</option>
-                    <option value="png">png</option>
-                </param>
+                <expand macro="visualize_file_format" />
             </when>
             <when value="hyperopt_hiplot">
                 <param type="data" name="hyperopt_stats_path" format="json" label="Select the hyperopt result (JSON)" />

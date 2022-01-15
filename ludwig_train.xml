@@ -33,7 +33,7 @@
                 --config_file "`pwd`/config.yml"
                 #end if
                 #if $model_load_path
-                --model_load_path '$model_load_path.extra_files_path'
+                --model_load_path '${model_load_path.extra_files_path}'
                 #end if
                 #if $dataset
                 --dataset "`pwd`/${dataset.element_identifier}"
