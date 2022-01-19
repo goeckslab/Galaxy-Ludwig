@@ -1,0 +1,24 @@
+{
+    "checksum": "0NMamkkwN_P29UlaL3THrQ==",
+    "dataset_src": "/Users/guq/projects/galaxy_dev2/database/jobs_directory/000/286/working/temperature_la.csv",
+    "temperature": {
+        "preprocessing": {
+            "computed_fill_value": 0,
+            "fill_value": 0,
+            "missing_value_strategy": "fill_with_const",
+            "normalization": null
+        }
+    },
+    "temperature_feature": {
+        "max_timeseries_length": 20,
+        "preprocessing": {
+            "computed_fill_value": "",
+            "fill_value": "",
+            "missing_value_strategy": "fill_with_const",
+            "padding": "right",
+            "padding_value": 0,
+            "timeseries_length_limit": 256,
+            "tokenizer": "space"
+        }
+    }
+}

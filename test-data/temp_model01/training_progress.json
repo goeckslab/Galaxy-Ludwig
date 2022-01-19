@@ -1,0 +1,121 @@
+{
+    "batch_size": 128,
+    "best_eval_metric": 0.06024723872542381,
+    "best_increase_batch_size_eval_metric": Infinity,
+    "best_reduce_learning_rate_eval_metric": Infinity,
+    "epoch": 2,
+    "last_improvement": 0,
+    "last_improvement_epoch": 2,
+    "last_increase_batch_size": 0,
+    "last_increase_batch_size_epoch": 0,
+    "last_increase_batch_size_eval_metric_improvement": 0,
+    "last_learning_rate_reduction": 0,
+    "last_learning_rate_reduction_epoch": 0,
+    "last_reduce_learning_rate_eval_metric_improvement": 0,
+    "learning_rate": 0.001,
+    "num_increases_batch_size": 0,
+    "num_reductions_learning_rate": 0,
+    "steps": 426,
+    "test_metrics": {
+        "combined": {
+            "loss": [
+                0.04737801477313042,
+                0.02973765693604946
+            ]
+        },
+        "temperature": {
+            "loss": [
+                0.04718422889709473,
+                0.029608961194753647
+            ],
+            "mean_absolute_error": [
+                0.16208447515964508,
+                0.12515762448310852
+            ],
+            "mean_squared_error": [
+                0.047184210270643234,
+                0.029608961194753647
+            ],
+            "r2": [
+                0.9430477619171143,
+                0.9642614126205444
+            ],
+            "root_mean_squared_error": [
+                0.2172192633152008,
+                0.17207254469394684
+            ],
+            "root_mean_squared_percentage_error": [
+                5.314786911010742,
+                4.657707214355469
+            ]
+        }
+    },
+    "train_metrics": {
+        "combined": {
+            "loss": [
+                0.06687594950199127,
+                0.04674693942070007
+            ]
+        },
+        "temperature": {
+            "loss": [
+                0.06564496457576752,
+                0.04592902958393097
+            ],
+            "mean_absolute_error": [
+                0.18449857831001282,
+                0.153029203414917
+            ],
+            "mean_squared_error": [
+                0.06564494967460632,
+                0.045929037034511566
+            ],
+            "r2": [
+                0.9368517994880676,
+                0.9558178186416626
+            ],
+            "root_mean_squared_error": [
+                0.2562127113342285,
+                0.21431060135364532
+            ],
+            "root_mean_squared_percentage_error": [
+                4.648069381713867,
+                4.7330756187438965
+            ]
+        }
+    },
+    "vali_metrics": {
+        "combined": {
+            "loss": [
+                0.08985237777233124,
+                0.06024723872542381
+            ]
+        },
+        "temperature": {
+            "loss": [
+                0.09007075428962708,
+                0.0603923499584198
+            ],
+            "mean_absolute_error": [
+                0.22422875463962555,
+                0.1762790083885193
+            ],
+            "mean_squared_error": [
+                0.09007076174020767,
+                0.06039237231016159
+            ],
+            "r2": [
+                0.9123948812484741,
+                0.941260814666748
+            ],
+            "root_mean_squared_error": [
+                0.3001179099082947,
+                0.2457485944032669
+            ],
+            "root_mean_squared_percentage_error": [
+                5.140217304229736,
+                4.747503757476807
+            ]
+        }
+    }
+}

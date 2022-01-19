@@ -12,4 +12,4 @@ output_features:
         type: numerical
 
 training:
-    epochs: 5
+    epochs: 2

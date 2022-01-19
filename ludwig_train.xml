@@ -58,11 +58,11 @@
                 --random_seed $random_seed
                 --backend local
                 --skip_save_processed_input &&
-            mkdir -p '$output_model.extra_files_path' &&
-            cp -r experiment_run/model/* '$output_model.extra_files_path' &&
+            mkdir -p '${output_model.extra_files_path}' &&
+            cp -r experiment_run/model/* '${output_model.extra_files_path}' &&
             cp '$__tool_directory__/ludwig_train_result.html' '$output_other' &&
-            mkdir -p '$output_other.extra_files_path' &&
-            cp experiment_run/*.* '$output_other.extra_files_path'
+            mkdir -p '${output_other.extra_files_path}' &&
+            cp experiment_run/*.* '${output_other.extra_files_path}'
         ]]>
     </command>
     <configfiles>
@@ -97,6 +97,12 @@
             <param name="config_file" value="temperature_config.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
             <output name="output_other" file="temperature_output.html" compare="sim_size" delta="10" />
+            <output name="output_model" >
+                <extra_files type="file" name="model_hyperparameters.json" value="temp_model01/model_hyperparameters.json" compare="diff" />
+                <extra_files type="file" name="model_weights" value="temp_model01/model_weights" compare="sim_size" delta="50" />
+                <extra_files type="file" name="training_set_metadata.json" value="temp_model01/training_set_metadata.json" compare="sim_size" delta="50"/>
+                <extra_files type="file" name="training_progress.json" value="temp_model01/training_progress.json" compare="sim_size" delta="10" />
+            </output>
         </test>
     </tests>
     <help>
