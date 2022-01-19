@@ -10,7 +10,7 @@
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
-            mkdir -p result &&
+            mkdir -p outputs &&
             #if $dataset
             ln -sf '$dataset' "`pwd`/${dataset.element_identifier}";
             #end if
@@ -27,14 +27,14 @@
                 #if $disable_parallel_threads
                 --disable_parallel_threads
                 #end if
-                --output_directory "`pwd`/result"
+                --output_directory "`pwd`/outputs"
                 --data_format '$data_format'
                 --split '$split'
                 --backend local
                 --skip_save_unprocessed_output &&
-            cd result &&
-            cp *_predictions.csv predictions.csv &&
-            cp *_probabilities.csv probabilities.csv
+            mkdir -p '${output.extra_files_path}' &&
+            cp outputs/predictions.shapes.json '${output.extra_files_path}' &&
+            cp outputs/predictions.parquet '$output'
 
         ]]>
     </command>
@@ -62,17 +62,36 @@
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
-        <data format="parquet" name="output" form_work_dir="result/predictions.parquet" label="${tool.name} on ${on_string}" />
-        <data format="csv" name="output_pred" from_work_dir="result/predictions.csv" label="${tool.name} predictions on ${on_string}" />
-        <data format="csv" name="output_prob" from_work_dir="result/probabilities.csv" label="${tool.name} probabilities on ${on_string}" />
+        <data format="parquet" name="output" label="${tool.name} parquet on ${on_string}" />
+        <collection type="list" name="output_csv" label="${tool.name} CSV on ${on_string}" >
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.csv" format="csv" directory="outputs" />
+        </collection>
         <!-- <data format="csv" name="output_top_k" label="${tool.name} top K predictions on ${on_string}" /> -->
     </outputs>
     <tests>
         <test>
-            <!-- <param name="dataset" value="temperature_la.csv" ftype="csv" />
-            <param name="config_file" value="temperature_config.yml" ftype="yaml" />
-            <param name="data_format" value="csv" />
-            <output name="output_pred" file="temperature_predictions.parquet" compare="sim_size" delta="10" /> -->
+            <param name="model_path" value="" ftype="ludwig_model">
+                <composite_data value="temp_model01/model_hyperparameters.json" />
+                <composite_data value="temp_model01/model_weights" />
+                <composite_data value="temp_model01/training_set_metadata.json" />
+                <composite_data value="temp_model01/training_progress.json" />
+            </param>
+            <param name="dataset" value="temperature_la.csv" ftype="csv" />
+            <param name="split" value="test" />
+            <output name="output">
+                <assert_contents>
+                    <has_size value="72567" delta="50" />
+                </assert_contents>
+            </output>
+            <output_collection name="output_csv">
+                <element name="temperature_predictions">
+                    <assert_contents>
+                        <has_n_lines n="9052" />
+                        <has_n_columns n="1" />
+                        <has_size value="186816" delta="50" />
+                    </assert_contents>
+                </element>
+            </output_collection>
         </test>
     </tests>
     <help>
