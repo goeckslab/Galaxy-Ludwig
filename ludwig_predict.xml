@@ -33,8 +33,10 @@
                 --backend local
                 --skip_save_unprocessed_output &&
             mkdir -p '${output.extra_files_path}' &&
-            cp outputs/predictions.shapes.json '${output.extra_files_path}' &&
-            cp outputs/predictions.parquet '$output'
+            cd outputs &&
+            cp '$__tool_directory__/ludwig_predict_result.html' '$output' &&
+            cp predictions.parquet predictions.shapes.json '${output.extra_files_path}' &&
+            echo "Done!"
 
         ]]>
     </command>
@@ -62,7 +64,7 @@
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
-        <data format="parquet" name="output" label="${tool.name} parquet on ${on_string}" />
+        <data format="html" name="output" label="${tool.name} parquet on ${on_string}" />
         <collection type="list" name="output_csv" label="${tool.name} CSV on ${on_string}" >
             <discover_datasets pattern="(?P&lt;designation&gt;.+)\.csv" format="csv" directory="outputs" />
         </collection>
@@ -78,10 +80,9 @@
             </param>
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="split" value="test" />
-            <output name="output">
-                <assert_contents>
-                    <has_size value="72567" delta="50" />
-                </assert_contents>
+            <output name="output" ftype="html">
+                <extra_files type="file" name="predictions.parquet" value="temp_predictions.parquet" />
+                <extra_files type="file" name="predictions.shapes.json" value="temp_predictions.shapes.json" />
             </output>
             <output_collection name="output_csv">
                 <element name="temperature_predictions">
