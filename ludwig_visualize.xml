@@ -1,5 +1,5 @@
 <tool id="ludwig_visualize" name="Ludwig Visualize" version="@VERSION@" profile="@PROFILE@">
-    <description>trains and evaluates a model</description>
+    <description>analyzes results and shows in plots</description>
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>

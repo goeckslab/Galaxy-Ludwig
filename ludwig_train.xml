@@ -1,5 +1,5 @@
 <tool id="ludwig_train" name="Ludwig Train" version="@VERSION@" profile="@PROFILE@">
-    <description>a deep learning model</description>
+    <description>trains a deep learning model</description>
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
