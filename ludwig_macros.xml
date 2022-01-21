@@ -36,4 +36,85 @@
             <option value="png">png</option>
         </param>
     </xml>
+
+    <xml name="visualize_output_feature_name">
+        <param argument="output_feature_name" type="text" value="" optional="true" label="Name of the output feature" help="If `None`, use all output features." />
+    </xml>
+
+    <xml name="visualize_training_statistics">
+        <param argument="training_statistics" type="data" format="html,json" multiple="true" label="Training statistics" />
+    </xml>
+
+    <xml name="visualize_test_statistics">
+        <param argument="test_statistics" type="data" format="html,json" multiple="true" label="Choose experiment test statistics file(s)" />
+    </xml>
+
+    <xml name="visualize_hyperopt_stats_path">
+        <param argument="hyperopt_stats_path" type="data" format="json" label="Select the hyperopt result (JSON)" />
+    </xml>
+
+    <xml name="visualize_model_names">
+        <param argument="model_names" type="text" value="" optional="true" label="Model name(s) to use as labels" help="Comma delimited for multiple." />
+    </xml>
+
+    <xml name="visualize_probabilities">
+        <param argument="probabilities" type="data" format="html" multiple="true" label="Choose the prediction results to extract probabilities from" />
+    </xml>
+
+    <xml name="visualize_ground_truth_metadata">
+        <param argument="ground_truth_metadata" type="data" format="ludwig_model,json" label="Choose the file containing feature metadata json file created during training" />
+    </xml>
+
+    <xml name="visualize_split_file">
+        <param argument="split_file" type="data" format="csv" optional="true" label="Choose the file containing split values" />
+    </xml>
+
+    <xml name="visualize_ground_truth_split">
+        <param argument="ground_truth_split" type="select" label="Select the ground truth split" >
+            <option value="0">0 -- training</option>
+            <option value="1">1 -- validation</option>
+            <option value="2">2 -- test</option>
+        </param>
+    </xml>
+
+    <xml name="visualize_ground_truth">
+        <param argument="ground_truth" type="text" value="" label="Choose the ground truth file" />
+    </xml>
+
+    <xml name="visualize_predictions">
+        <param argument="predictions" type="data" format="html" multiple="true" label="Choose the prediction result files" />
+    </xml>
+
+    <xml name="visualize_top_n_classes">
+        <param argument="top_n_classes" type="text" value="" label="Type in the list containing numbers of classes to plot" />
+    </xml>
+
+    <xml name="visualize_threshold_output_feature_names">
+        <param argument="threshold_output_feature_names" type="text" value="" label="Type in the list containing two output feature names for visualization" />
+    </xml>
+
+    <xml name="visualize_labels_limit">
+        <param argument="labels_limit" type="integer" value="" optional="true" label="Set the upper limit on the numeric encoded label value" help="Encoded numeric label values in dataset that are higher than `label_limit` are considered to be 'rare' labels." />
+    </xml>
+
+    <xml name="visualize_metrics">
+        <param argument="metrics" type="select" multiple="true" label="Select the metrics to display" >
+            <option value="f1" selected="true">f1</option>
+            <option value="precision">precision</option>
+            <option value="recall">recall</option>
+            <option value="accuracy">accuracy</option>
+        </param>
+    </xml>
+
+    <xml name="visualize_positive_label">
+        <param argument="positive_label" type="integer" value="1" label="Numeric encoded value for the positive class" />
+    </xml>
+
+    <xml name="visualize_ground_truth_apply_idx">
+        <param argument="ground_truth_apply_idx" type="boolean" checked="true" label="Whether to use metadata['str2idx'] in np.vectorize?" />
+    </xml>
+
+    <xml name="visualize_normalize">
+        <param argument="normalize" type="boolean" checked="false" label="Whether to normalize rows in confusion matrix?" />
+    </xml>
 </macros>
