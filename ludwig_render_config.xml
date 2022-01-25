@@ -1,23 +1,25 @@
-<tool id="ludwig_config" name="Ludwig Model Configuration" version="@VERSION@" profile="@PROFILE@">
-    <description>defines all the information needed to build and train a deep learning model</description>
+<tool id="ludwig_render_config" name="Ludwig Render Config" version="@VERSION@" profile="@PROFILE@">
+    <description>renders thefull config based on user input</description>
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="python_requirements">
+        <container type="docker">quay.io/qiagu/galaxy-ludwig:latest</container>
+    </expand>
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
-            python -c "import json; import yaml; fp=open('$output', 'w'); yaml.dump(json.load(open('$inputs')), fp, allow_unicode=True, default_flow_style=False); fp.close()"
+            python '$__tool_directory__/ludwig_render_config.py' '$inputs'
         ]]>
     </command>
     <configfiles>
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <section name="input_features" title="Input Features" expanded="true">
-            <repeat name="input_features" min="1" max="30" title="Input Feature Constructor">
-                <conditional name="input_features" label="Construct a sinle input feature">
+        <!-- <section name="input_features" title="Input Features" expanded="true"> -->
+            <repeat name="input_features" min="1" max="30" title="Input Features">
+                <conditional name="input_features" >
                     <param name="feature_type" type="select" label="Select the feature type">
                         <option value="numerical" selected="true">numerical</option>
                         <option value="binary">binary</option>
@@ -34,8 +36,8 @@
                         <option value="vector">vector</option>
                     </param>
                     <when value="numerical">
-                        <conditional name="encoder_builder" label="Encoder Builder">
-                            <param name="selected_encoder" label="Select an encoder">
+                        <conditional name="encoder_builder">
+                            <param name="selected_encoder" type="select" label="Select an encoder">
                                 <option value="passthrough" selected="true">passthrough</option>
                                 <option value="dense">dense</option>
                             </param>
@@ -121,10 +123,19 @@
                     </when>
                 </conditional>
             </repeat>
-        </section>
+        <!-- </section> -->
         <section name="output_features" title="Output Features" expanded="true">
         </section>
         <section name="combiner" title="Combiner" expanded="false">
+            <param name="combiner" type="select" label="Select the combiner">
+                <option value="concat" selected="true">concat</option>
+                <option value="sequence_concat">sequence_concat</option>
+                <option value="sequence">sequence</option>
+                <option value="tabnet">tabnet</option>
+                <option value="transformer">transformer</option>
+                <option value="tabtransformer">tabtransformer</option>
+                <option value="comparator">comparator</option>
+            </param>
         </section>
         <section name="training" title="Training" expanded="false">
         </section>
@@ -132,8 +143,7 @@
         </section>
     </inputs>
     <outputs>
-        <data format="txt" name="output" label="${tool.name}" />
-        
+        <data format="yaml" name="output" label="${tool.name}" />
     </outputs>
     <tests>
         <test>
