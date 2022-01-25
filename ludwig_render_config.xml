@@ -10,17 +10,17 @@
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
-            python '$__tool_directory__/ludwig_render_config.py' '$inputs'
+            python '$__tool_directory__/ludwig_render_config.py' '$inputs' '$output'
         ]]>
     </command>
     <configfiles>
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <!-- <section name="input_features" title="Input Features" expanded="true"> -->
-            <repeat name="input_features" min="1" max="30" title="Input Features">
-                <conditional name="input_features" >
-                    <param name="feature_type" type="select" label="Select the feature type">
+        <section name="input_features" title="Input Features" expanded="true">
+            <repeat name="input_feature" min="1" max="30" title="Input Feature">
+                <conditional name="input_feature_selector" >
+                    <param name="type" type="select" label="Select an input feature type">
                         <option value="numerical" selected="true">numerical</option>
                         <option value="binary">binary</option>
                         <option value="category">category</option>
@@ -36,66 +36,11 @@
                         <option value="vector">vector</option>
                     </param>
                     <when value="numerical">
-                        <conditional name="encoder_builder">
-                            <param name="selected_encoder" type="select" label="Select an encoder">
-                                <option value="passthrough" selected="true">passthrough</option>
-                                <option value="dense">dense</option>
-                            </param>
-                            <when value="passthrough">
-                                <expand macro="encoder_parameters" />
-                            </when>
-                            <when value="dense">
-                                <expand macro="encoder_parameters">
-                                    <param argument="num_layers" type="integer" value="1" optional="true" label="Number of stacked fully connected layers that the input feature passes through" />
-                                    <param argument="fc_size" type="integer" value="256" optional="true" label="Size of the output of a fully connected layer" />
-                                    <param argument="use_bias" type="boolean" checked="true" label="Whether the layer uses a bias vector" />
-                                    <param argument="weights_initializer" type="select" label="Initializer for the weights matrix">
-                                        <option value="constant">constant</option>
-                                        <option value="identity">identity</option>
-                                        <option value="zeros">zeros</option>
-                                        <option value="ones">ones</option>
-                                        <option value="orthogonal">orthogonal</option>
-                                        <option value="normal">normal</option>
-                                        <option value="uniform">uniform</option>
-                                        <option value="truncated_normal">truncated_normal</option>
-                                        <option value="variance_scaling">variance_scaling</option>
-                                        <option value="glorot_normal">glorot_normal</option>
-                                        <option value="glorot_uniform" selected="true">glorot_uniform</option>
-                                        <option value="xavier_normal">xavier_normal</option>
-                                        <option value="xavier_uniform">xavier_uniform</option>
-                                        <option value="he_normal">he_normal</option>
-                                        <option value="he_uniform">he_uniform</option>
-                                        <option value="lecun_normal">lecun_normal</option>
-                                        <option value="lecun_uniform">lecun_uniform</option>
-                                    </param>
-                                    <param argument="bias_initializer" type="select" label="Initializer for the bias vector">
-                                        <option value="constant">constant</option>
-                                        <option value="identity">identity</option>
-                                        <option value="zeros" selected="true">zeros</option>
-                                        <option value="ones">ones</option>
-                                        <option value="orthogonal">orthogonal</option>
-                                        <option value="normal">normal</option>
-                                        <option value="uniform">uniform</option>
-                                        <option value="truncated_normal">truncated_normal</option>
-                                        <option value="variance_scaling">variance_scaling</option>
-                                        <option value="glorot_normal">glorot_normal</option>
-                                        <option value="glorot_uniform">glorot_uniform</option>
-                                        <option value="xavier_normal">xavier_normal</option>
-                                        <option value="xavier_uniform">xavier_uniform</option>
-                                        <option value="he_normal">he_normal</option>
-                                        <option value="he_uniform">he_uniform</option>
-                                        <option value="lecun_normal">lecun_normal</option>
-                                        <option value="lecun_uniform">lecun_uniform</option>
-                                    </param>
-                                    <param argument="weights_regularizer" type="select" label="Regularizer function applied to the weights matrix">
-                                        <option value="none" selected="true">null</option>
-                                        <option value="l1">l1</option>
-                                        <option value="l2">l2</option>
-                                        <option value="l1_l2">l1_l2</option>
-                                    </param>
-                                </expand>
-                            </when>
-                        </conditional>
+                        <param argument="name" type="text" value="" label="Name"/>
+                        <param argument="encoder" type="select" label="Select an encoder">
+                            <option value="passthrough" selected="true">passthrough</option>
+                            <option value="dense">dense</option>
+                        </param>
                     </when>
                     <when value="binary">
                     </when>
@@ -114,6 +59,11 @@
                     <when value="audio">
                     </when>
                     <when value="image">
+                        <param argument="name" type="text" value="" label="name"/>
+                        <param argument="encoder" type="select" label="Select an encoder">
+                            <option value="stacked_cnn" selected="true">stacked_cnn</option>
+                            <option value="resnet">resnet</option>
+                        </param>
                     </when>
                     <when value="date">
                     </when>
@@ -123,11 +73,72 @@
                     </when>
                 </conditional>
             </repeat>
-        <!-- </section> -->
+        </section>
         <section name="output_features" title="Output Features" expanded="true">
+            <repeat name="output_feature" min="1" max="30" title="Output Feature">
+                <conditional name="output_feature_selector">
+                    <param argument="type" type="select" label="Select an ouput feature type">
+                        <option value="category" selected="true">category</option>
+                        <option value="binary" >binary</option>
+                        <option value="numerical" >numerical</option>
+                        <option value="sequence" >sequence</option>
+                        <option value="set" >set</option>
+                        <option value="text" >text</option>
+                        <option value="vector" >vector</option>
+                    </param>
+                    <when value="category">
+                        <param argument="name" type="text" value="" />
+                        <param argument="reduce_input" type="select" label="How to reduce an input that is not a vector, but a matrix or a higher order tensor, on the first dimension?">
+                            <option value="sum" selected="true">sum</option>
+                            <option value="mean" >mean</option>
+                            <option value="avg" >avg</option>
+                            <option value="max" >max</option>
+                            <option value="concat" >concat</option>
+                            <option value="last" >last</option>
+                        </param>
+                        <param argument="reduce_dependencies" type="select" label="How to reduce the output of a dependent feature that is not a vector, but a matrix or a higher order tensor, on the first dimension?">
+                            <option value="sum" selected="true">sum</option>
+                            <option value="mean" >mean</option>
+                            <option value="avg" >avg</option>
+                            <option value="max" >max</option>
+                            <option value="concat" >concat</option>
+                            <option value="last" >last</option>
+                        </param>
+                        <section name="loss" title="Loss Options" expanded="false">
+                            <param argument="type" type="select" label="Select a loss type">
+                                <option value="softmax_cross_entropy" selected="true">softmax_cross_entropy</option>
+                                <option value="sampled_softmax_cross_entropy" >sampled_softmax_cross_entropy</option>
+                            </param>
+                        </section>
+                        <param argument="top_k" type="integer" value="3" label="The number of categories to consider when computing the first k measure" help="This computes accuracy but considering as a match if the true category appears in the first k predicted categories ranked by decoder's confidence." />
+                        <param argument="fc_size" type="integer" value="256" label="The size of the output of a fully connected layer" />
+                        <param argument="activation" type="select" label="Select an activation function">
+                            <option value="relu" selected="true">relu</option>
+                        </param>
+                    </when>
+                    <when value="binary">
+                        <param argument="name" type="text" value="" />
+                    </when>
+                    <when value="numerical">
+                        <param argument="name" type="text" value="" />
+                    </when>
+                    <when value="sequence">
+                        <param argument="name" type="text" value="" />
+                    </when>
+                    <when value="set">
+                        <param argument="name" type="text" value="" />
+                    </when>
+                    <when value="text">
+                        <param argument="name" type="text" value="" />
+                    </when>
+                    <when value="vector">
+                        <param argument="name" type="text" value="" />
+                    </when>
+                </conditional>
+            </repeat>
         </section>
         <section name="combiner" title="Combiner" expanded="false">
-            <param name="combiner" type="select" label="Select the combiner">
+            <param name="type" type="select" label="Select a combiner type">
                 <option value="concat" selected="true">concat</option>
                 <option value="sequence_concat">sequence_concat</option>
                 <option value="sequence">sequence</option>
@@ -138,9 +149,44 @@
             </param>
         </section>
         <section name="training" title="Training" expanded="false">
+            <param argument="batch_size" type="integer" value="128" label="Batch size" />
+            <param argument="epochs" type="integer" value="100" label="Number of epochs" />
+            <conditional name="optimizer">
+                <param name="type" type="select" label="Select an optimizer">
+                    <option value="adam" selected="true">adam</option>
+                    <option value="sgd">sgd</option>
+                    <option value="adadelta">adadelta</option>
+                    <option value="adagrad">adagrad</option>
+                    <option value="adamax">adamax</option>
+                    <option value="ftrl">ftrl</option>
+                    <option value="nadam">nadam</option>
+                    <option value="rmsprop">rmsprop</option>
+                </param>
+                <when value="adam" />
+                <when value="sgd" />
+                <when value="adadelta" />
+                <when value="adagrad" />
+                <when value="adamax" />
+                <when value="ftrl" />
+                <when value="nadam" />
+                <when value="rmsprop" />
+            </conditional>
+            <param argument="learning_rate" type="float" value="0.001" label="Learning rate" />
+            <param argument="early_stop" type="integer" value="5" label="Number of epochs of patience without an improvement on the validation measure before the training is stopped" />
+            <!-- <param argument="decay" type="boolean" checked="false" label="Whether to use exponential decay of the learning rate?" />
+            <param argument="decay_rate" type="float" value="0.96" label="Rate of the exponential learning rate decay" />
+            <param argument="decay_steps" type="integer" value="1000" label="Number of steps of the exponential learning rate decay" /> -->
         </section>
-        <section name="preprocessing" title="Preprocessing" expanded="false">
-        </section>
+        <!-- <section name="preprocessing" title="Preprocessing" expanded="false">
+        </section> -->
+        <conditional name="hyperopt">
+            <param name="do_hyperopt" type="boolean" checked="false" label="Whether to do hyperparameter optimization?" />
+            <when value="true">
+                <section name="hyperopt" title="Hyperparameter Optimization configuration" expanded="false">
+                </section>
+            </when>
+            <when value="false" />
+        </conditional>
     </inputs>
     <outputs>
         <data format="yaml" name="output" label="${tool.name}" />
