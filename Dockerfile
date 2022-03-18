@@ -6,7 +6,7 @@ RUN export HOROVOD_WITH_PYTORCH=1 && \
     git clone https://github.com/ludwig-ai/ludwig.git && \
     cd ludwig && \
     pip install -U pip && \
-    pip install 'torch' 'model-unpickler' && \
+    pip install 'torch' 'git+https://github.com/goeckslab/model-unpickler.git' && \
     pip install 'horovod[pytorch]' && \
     pip install -e '.[full]' && \
     pip cache purge
