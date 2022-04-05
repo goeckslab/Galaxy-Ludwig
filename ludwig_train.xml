@@ -56,8 +56,7 @@
                 --output_directory "`pwd`"
                 --data_format '$data_format'
                 --random_seed $random_seed
-                --backend local
-                --skip_save_processed_input &&
+                --backend local &&
             mkdir -p '${output_model.extra_files_path}' &&
             cp -r experiment_run/model/* '${output_model.extra_files_path}' &&
             cp '$__tool_directory__/ludwig_train_result.html' '$output_other' &&

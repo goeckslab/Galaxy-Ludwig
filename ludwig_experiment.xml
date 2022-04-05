@@ -61,7 +61,6 @@
                 --backend local
                 --eval_split '$eval_split'
                 --random_seed $random_seed
-                --skip_save_processed_input
                 --skip_save_unprocessed_output
                 #if $skip_save_predictions
                 --skip_save_predictions
