@@ -5,9 +5,9 @@
 
     <xml name="python_requirements">
         <requirements>
-            <yield />
-            <requirement type="package" version="3.7">python</requirement>
-            <requirement type="package" version="0.4">ludwig</requirement>
+            <container type="docker">quay.io/goeckslab/galaxy-ludwig:0.5.5</container>
+            <requirement type="package" version="3.8">python</requirement>
+            <requirement type="package" version="0.5.5">ludwig</requirement>
             <requirement type="package" version="0.1">model-unpickler</requirement>
             <requirement type="package">petastorm</requirement>
         </requirements>
