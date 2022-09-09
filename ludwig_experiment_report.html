@@ -6,7 +6,6 @@
     <title>Ludwig Training Description and Statistics Report</title>
   </head>
   <body>
-    <p> App </p>
     <div id="root"></div>
 
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -18,17 +17,37 @@
 
     <script type="text/babel">
 
-      const App = () => {
-        const files = ["description.json", "training_statistics.json", "test_statistics.json"];
-        return (
-          <>
-            <FileList files={files}/>
-          </>
-        );
-      }
+        const title = "Ludwig Training Report";
+        const data = [
+          {
+            "file": "description.json",
+            "label": "Description",
+            "type": "json",
+          },
+          {
+            "file": "training_statistics.json",
+            "label": "Training Statistics",
+            "type": "json",
+          },
+          {
+            "file": "test_statistics.json",
+            "label": "Test Statistics (Optional)",
+            "type": "json",
+          },
+          {
+            "file": "learning_curves_label_hits_at_k.png",
+            "label": "Learning Curve Hit at K",
+            "type": "image",
+          },
+          {
+            "file": "learning_curves_label_accuracy.png",
+            "label": "Learning Curve Label Accuracy",
+            "type": "image",
+          },
+      ];
 
       const root = ReactDOM.createRoot(document.querySelector('#root'))
-      root.render(<App/>);
+      root.render(<App title={title} data={data}/>);
 
     </script>
     </body>

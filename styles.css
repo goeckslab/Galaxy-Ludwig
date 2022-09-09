@@ -1,0 +1,39 @@
+body{
+    flex:1; padding: 20px
+}
+#app {
+    font-weight: Normal;
+}
+h2 {
+    text-align: center;
+}
+.sidebar {
+    max-width: 40vw;
+    margin: 0;
+    padding: 0px 10px 0 0;
+    list-style-type: none;
+    border-right: 1px solid #ccc;
+    background-color: #F5F5F5;
+}
+.sidebar li {
+    padding: 3px 0 2px 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: #F5F5F5;
+}   
+.sidebar li:hover {
+background: #eee;
+}
+.sidebar li.selected {
+    background: lightblue;
+}
+.selected-container {
+    padding-left: 10px;
+    margin: auto;
+}
+.selected-item > :first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
