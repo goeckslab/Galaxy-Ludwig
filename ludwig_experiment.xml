@@ -70,13 +70,14 @@
             mkdir -p '$output_model.extra_files_path' &&
             cp -r model/* '$output_model.extra_files_path' &&
             #if not $skip_save_predictions
-            cp '$__tool_directory__/ludwig_predict_result.html' '$output_pred' &&
+            cp '$__tool_directory__/ludwig_predict_report.html' '$output_pred' &&
+            cp '$__tool_directory__/ludwig_report.js' '$output_pred' &&
             mkdir -p '$output_pred.extra_files_path' &&
             mv predictions.parquet predictions.shapes.json '$output_pred.extra_files_path' &&
             #end if
-            cp '$__tool_directory__/ludwig_experiment_result.html' '$output_stat' &&
-            mkdir -p '$output_stat.extra_files_path' &&
-            cp *.json '$output_stat.extra_files_path' &&
+            cp '$__tool_directory__/ludwig_experiment_report.html' '$output_report' &&
+            mkdir -p '$output_report.extra_files_path' &&
+            cp *.json '$output_report.extra_files_path' &&
             echo "Done!"
 
         ]]>
@@ -110,10 +111,10 @@
         <param argument="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
         <param argument="skip_save_predictions" type="boolean" checked="false" label="Whether to skip saving predictions?" />
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
-    </inputs>       
+    </inputs>
     <outputs>
         <data format="ludwig_model" name="output_model" label="${tool.name} trained model on ${on_string}" />
-        <data format="html" name="output_stat" label="${tool.name} description and statistics on ${on_string}" />
+        <data format="html" name="output_report" label="${tool.name} description and statistics report on ${on_string}" />
         <data format="html" name="output_pred" label="${tool.name} predictions parquet on ${on_string}" >
             <filter>not skip_save_predictions</filter>
         </data>
@@ -127,7 +128,7 @@
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="config" value="temperature_config.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
-            <output name="output_stat" file="temperature_experiment.html" compare="sim_size" delta="10" />
+            <output name="output_report" file="temperature_experiment.html" compare="sim_size" delta="10" />
         </test>
     </tests>
     <help>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./styles.css" />
+    <title>Ludwig Training Description and Statistics Report</title>
+  </head>
+  <body>
+    <p> App </p>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script> -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="./ludwig_report.js" type="text/babel"></script>
+
+    <script type="text/babel">
+
+      const App = () => {
+        const files = ["description.json", "training_statistics.json", "test_statistics.json"];
+        return (
+          <>
+            <FileList files={files}/>
+          </>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'))
+      root.render(<App/>);
+
+    </script>
+    </body>
+</html>
