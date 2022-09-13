@@ -17,37 +17,35 @@
 
     <script type="text/babel">
 
-        const title = "Ludwig Training Report";
-        const data = [
-          {
-            "file": "description.json",
-            "label": "Description",
-            "type": "json",
-          },
-          {
-            "file": "training_statistics.json",
-            "label": "Training Statistics",
-            "type": "json",
-          },
-          {
-            "file": "test_statistics.json",
-            "label": "Test Statistics (Optional)",
-            "type": "json",
-          },
-          {
-            "file": "learning_curves_label_hits_at_k.png",
-            "label": "Learning Curve Hit at K",
-            "type": "image",
-          },
-          {
-            "file": "learning_curves_label_accuracy.png",
-            "label": "Learning Curve Label Accuracy",
-            "type": "image",
-          },
+      const title = "Ludwig Training Report";
+      const raws = [
+        {
+          "file": "description.json",
+          "label": "Description",
+        },
+        {
+          "file": "training_statistics.json",
+          "label": "Training Statistics",
+        },
+        {
+          "file": "test_statistics.json",
+          "label": "Test Statistics (Optional)",
+        },
+      ];
+
+      const images = [
+        {
+          "file": "learning_curves_label_hits_at_k.png",
+          "label": "Learning Curve Hit at K",
+        },
+        {
+          "file": "learning_curves_label_accuracy.png",
+          "label": "Learning Curve Label Accuracy",
+        },
       ];
 
       const root = ReactDOM.createRoot(document.querySelector('#root'))
-      root.render(<App title={title} data={data}/>);
+      root.render(<App title={title} raws={raws} images={images} />);
 
     </script>
     </body>

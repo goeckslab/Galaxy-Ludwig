@@ -1,5 +1,6 @@
 body{
-    flex:1; padding: 20px
+    flex:1;
+    padding: 20px
 }
 #app {
     font-weight: Normal;
@@ -7,6 +8,29 @@ body{
 h2 {
     text-align: center;
 }
+.no-data {
+    padding: 1rem;
+    color: rgb(85, 5, 5);
+}
+.tabs {
+    padding: 20px 40px;
+  }
+.tab-button {
+    padding: 16px 20px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background: #f0f0f0;
+    margin-bottom: -1px;
+    margin-right: -1px;
+  }
+  .tab-button:hover {
+    background: #e0e0e0;
+  }
+  .tab-button.active {
+    background: #e0e0e0;
+  }
 .sidebar {
     max-width: 40vw;
     margin: 0;
@@ -31,9 +55,16 @@ background: #eee;
 }
 .selected-container {
     padding-left: 10px;
-    margin: auto;
+}
+.selected-container pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+
 }
 .selected-item > :first-child {
     margin-top: 0;
     padding-top: 0;
+}
+.images-container {
+    display: flexbox;
 }

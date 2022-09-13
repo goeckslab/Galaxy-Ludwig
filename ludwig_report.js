@@ -1,14 +1,13 @@
 
 
-const FileList = (props) => {
+const RawData = (props) => {
 
   const {data} = props;
   if (!data) {
     return (
-      <>
-        <hr />
-        <p>No data is found!</p>
-        </>
+      <div className="no-data">
+        <p><strong>Oops! No data to display.</strong></p>
+      </div>
     )
   }
 
@@ -39,10 +38,9 @@ const FileList = (props) => {
   };
 
   React.useEffect( () => {
-      if (data[selectedIndex]["type"] === "json") {
-        loadJson();
-      }
-    }, [selectedIndex]
+      loadJson();
+    },
+    [selectedIndex]
   );
 
   return (
@@ -62,22 +60,47 @@ const FileList = (props) => {
         </ul>
       </div>
       <div className="selected-container">
-        {data[selectedIndex]["type"] === 'image' ? (
-          <img src={data[selectedIndex]["file"]} />
-        ) : (
-          <pre>{JSON.stringify(content, null, 2)}</pre>
-        )}
+        <pre>{JSON.stringify(content, null, 2)}</pre>
       </div>
     </>
   );
 }
 
+const Visualization = (props) => {
+  const {images} = props;
+  return (
+    <div className="images-container">
+      {images.map((im, ix) => (
+          <img loading="lazy" key={ix} src={im.file} />
+      ))}
+    </div>
+  );
+}
+
 const App = (props) => {
-  const {title, data} = props;
+  const {title, raws, images} = props;
+  const tabs = ["Visualization", "Raw Data"];
+
+  const [currentTab, setCurrentTab] = React.useState(0);
+
   return (
     <>
       <h2>{title}</h2>
-      <FileList data={data}/>
+      <div className="tabs">
+      {tabs.map( (tab, ix) => (
+        <button
+          key={ix}
+          className={currentTab===ix ? "tab-button,active": "tab-button"}
+          onClick={() => setCurrentTab(ix)}
+        >
+          {tab}
+        </button>
+      ))}
+      </div>
+      {currentTab === 0
+        ? <Visualization images={images} />
+        : <RawData data={raws}/>
+      }
     </>
   );
 }
