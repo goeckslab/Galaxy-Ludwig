@@ -24,13 +24,23 @@ h2 {
     background: #f0f0f0;
     margin-bottom: -1px;
     margin-right: -1px;
+    font-size: 0.9rem;
+    font-weight: bold;
   }
   .tab-button:hover {
     background: #e0e0e0;
   }
   .tab-button.active {
-    background: #e0e0e0;
+    background: black;
+    /* border: 1px solid black; */
+    color: white
   }
+.raws-container {
+    display: flex;
+}
+.sidebar ul {
+    padding-inline-start: 30px;
+}
 .sidebar {
     max-width: 40vw;
     margin: 0;
@@ -53,10 +63,10 @@ background: #eee;
 .sidebar li.selected {
     background: lightblue;
 }
-.selected-container {
-    padding-left: 10px;
+.selected-raw {
+    padding-left: 50px;
 }
-.selected-container pre {
+.selected-raw pre {
     white-space: pre-wrap;
     word-wrap: break-word;
 

@@ -44,7 +44,7 @@ const RawData = (props) => {
   );
 
   return (
-    <>
+    <div className="raws-container">
       <div className="sidebar">
         <ul>
           {data.map( (item, index) => (
@@ -59,10 +59,10 @@ const RawData = (props) => {
 
         </ul>
       </div>
-      <div className="selected-container">
+      <div className="selected-raw">
         <pre>{JSON.stringify(content, null, 2)}</pre>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -90,7 +90,7 @@ const App = (props) => {
       {tabs.map( (tab, ix) => (
         <button
           key={ix}
-          className={currentTab===ix ? "tab-button,active": "tab-button"}
+          className={"tab-button" + (currentTab===ix ? " active" : "")}
           onClick={() => setCurrentTab(ix)}
         >
           {tab}
