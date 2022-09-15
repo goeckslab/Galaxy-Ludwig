@@ -70,14 +70,20 @@
             mkdir -p '$output_model.extra_files_path' &&
             cp -r model/* '$output_model.extra_files_path' &&
             #if not $skip_save_predictions
-            cp '$__tool_directory__/ludwig_predict_report.html' '$output_pred' &&
-            cp '$__tool_directory__/ludwig_report.js' '$output_pred' &&
+            cp '$__tool_directory__/ludwig_predict_result.html' '$output_pred' &&
             mkdir -p '$output_pred.extra_files_path' &&
             mv predictions.parquet predictions.shapes.json '$output_pred.extra_files_path' &&
             #end if
             cp '$__tool_directory__/ludwig_experiment_report.html' '$output_report' &&
             mkdir -p '$output_report.extra_files_path' &&
+            cp '$__tool_directory__/ludwig_report.js' '$__tool_directory__/styles.css' '$output_report.extra_files_path' &&
             cp *.json '$output_report.extra_files_path' &&
+            ludwig visualize
+                --visualization learning_curves
+                --file_format png
+                --training_statistics "`pwd`/training_statistics.json"
+                --output_directory "`pwd`" &&
+            cp *.png '$output_report.extra_files_path' &&
             echo "Done!"
 
         ]]>

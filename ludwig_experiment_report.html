@@ -8,16 +8,16 @@
   <body>
     <div id="root"></div>
 
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <!-- <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script> -->
+    <!-- <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script> -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="./ludwig_report.js" type="text/babel"></script>
 
     <script type="text/babel">
 
-      const title = "Ludwig Training Report";
+      const title = "Ludwig Experiment Report";
       const raws = [
         {
           "file": "description.json",
@@ -35,12 +35,20 @@
 
       const images = [
         {
-          "file": "learning_curves_label_hits_at_k.png",
-          "label": "Learning Curve Hit at K",
+          "file": "learning_curves_label_accuracy.png",
+          "label": "Learning Curves Label Accuracy",
         },
         {
-          "file": "learning_curves_label_accuracy.png",
-          "label": "Learning Curve Label Accuracy",
+          "file": "learning_curves_label_hits_at_k.png",
+          "label": "Learning Curves Hit at K",
+        },
+        {
+          "file": "learning_curves_combined_loss.png",
+          "label": "Learning Curves Label Combined Loss",
+        },
+        {
+          "file": "learning_curves_label_loss.png",
+          "label": "Learning Curves Label Loss",
         },
       ];
 
