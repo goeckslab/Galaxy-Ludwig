@@ -1,5 +1,5 @@
 <macros>
-    <token name="@VERSION@">0.2</token>
+    <token name="@VERSION@">0.2beta</token>
 
     <token name="@PROFILE@">21.05</token>
 
