@@ -62,22 +62,15 @@
                 --eval_split '$eval_split'
                 --random_seed $random_seed
                 --skip_save_unprocessed_output
-                #if $skip_save_predictions
-                --skip_save_predictions
-                #end if
                 --skip_save_k_fold_split_indices &&
             cd experiment_run &&
             mkdir -p '$output_model.extra_files_path' &&
             cp -r model/* '$output_model.extra_files_path' &&
-            #if not $skip_save_predictions
-            cp '$__tool_directory__/ludwig_predict_result.html' '$output_pred' &&
-            mkdir -p '$output_pred.extra_files_path' &&
-            mv predictions.parquet predictions.shapes.json '$output_pred.extra_files_path' &&
-            #end if
             cp '$__tool_directory__/ludwig_experiment_report.html' '$output_report' &&
             mkdir -p '$output_report.extra_files_path' &&
             cp '$__tool_directory__/ludwig_report.js' '$__tool_directory__/styles.css' '$output_report.extra_files_path' &&
             cp *.json '$output_report.extra_files_path' &&
+            mv predictions.parquet predictions.shapes.json '$output_report.extra_files_path' &&
             ludwig visualize
                 --visualization learning_curves
                 --file_format png
@@ -115,18 +108,13 @@
         <param argument="k_fold" type="integer" value="" optional="true" label="number of folds for a k-fold cross validation run" />
         <param argument="random_seed" type="integer" value="42" label="Randonness seed" />
         <param argument="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
-        <param argument="skip_save_predictions" type="boolean" checked="false" label="Whether to skip saving predictions?" />
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>
     <outputs>
         <data format="ludwig_model" name="output_model" label="${tool.name} trained model on ${on_string}" />
         <data format="html" name="output_report" label="${tool.name} description and statistics report on ${on_string}" />
-        <data format="html" name="output_pred" label="${tool.name} predictions parquet on ${on_string}" >
-            <filter>not skip_save_predictions</filter>
-        </data>
         <collection type="list" name="output_pred_csv" label="${tool.name} predictions CSV on ${on_string}" >
             <discover_datasets pattern="(?P&lt;designation&gt;.+)\.csv" format="csv" directory="experiment_run" />
-            <filter>not skip_save_predictions</filter>
         </collection>
     </outputs>
     <tests>
