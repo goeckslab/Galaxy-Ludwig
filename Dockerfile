@@ -1,6 +1,6 @@
 FROM python:3.8-slim
 
-ARG VERSION=0.5.5
+ARG VERSION=0.6.1
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends build-essential cmake git unzip
 
