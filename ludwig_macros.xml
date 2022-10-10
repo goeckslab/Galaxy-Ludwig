@@ -1,13 +1,17 @@
 <macros>
-    <token name="@VERSION@">0.1</token>
+    <token name="@LUDWIG_VERSION@">0.6.1</token>
+
+    <token name="@SUFFIX@">0</token>
+
+    <token name="@VERSION@">@LUDWIG_VERSION@_@SUFFIX@</token>
 
     <token name="@PROFILE@">21.05</token>
 
     <xml name="python_requirements">
         <requirements>
-            <container type="docker">quay.io/goeckslab/galaxy-ludwig:0.5.5</container>
+            <container type="docker">quay.io/goeckslab/galaxy-ludwig:@LUDWIG_VERSION@</container>
             <requirement type="package" version="3.8">python</requirement>
-            <requirement type="package" version="0.5.5">ludwig</requirement>
+            <requirement type="package" version="@LUDWIG_VERSION@">ludwig</requirement>
             <requirement type="package" version="0.1">model-unpickler</requirement>
             <requirement type="package">petastorm</requirement>
         </requirements>

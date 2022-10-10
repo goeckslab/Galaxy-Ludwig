@@ -23,7 +23,8 @@ for ftr in params['output_features']['output_feature']:
 config['combiner'] = params['combiner']
 
 # training
-config['training'] = params['training']
+config["trainer"] = params["trainer"]["trainer"]
+config['model_type'] = config['trainer'].pop("model_type")
 
 # hyperopt
 if params['hyperopt']['do_hyperopt']:
