@@ -96,7 +96,7 @@
             <output name="output_other" file="temperature_output.html" compare="sim_size" delta="10" />
             <output name="output_model" >
                 <extra_files type="file" name="model_hyperparameters.json" value="temp_model01/model_hyperparameters.json" compare="diff" />
-                <extra_files type="file" name="model_weights" value="temp_model01/model_weights" compare="sim_size" delta="50" />
+                <extra_files type="file" name="model_weights" value="temp_model01/model_weights" compare="sim_size" delta="1000" />
                 <extra_files type="file" name="training_set_metadata.json" value="temp_model01/training_set_metadata.json" compare="sim_size" delta="50"/>
                 <extra_files type="file" name="training_progress.json" value="temp_model01/training_progress.json" compare="sim_size" delta="10" />
             </output>
@@ -105,15 +105,12 @@
     <help>
         <![CDATA[
 **What it does**
-
-
-
-**Input**
-
+Train a model.
 
 
 **Output**
-
+One trained ludwig_model type composite dataset.
+One html containing the training report.
 
 
         ]]>
