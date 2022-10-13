@@ -4,7 +4,6 @@ input_features:
     type: passthrough
   type: number
   column: ''
-  proc_column: _mZFLky
   tied: null
   preprocessing:
     missing_value_strategy: fill_with_const
@@ -40,7 +39,6 @@ output_features:
   top_k: 3
   type: category
   column: ''
-  proc_column: _mZFLky
   dependencies: []
   reduce_input: sum
   reduce_dependencies: sum
