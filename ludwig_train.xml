@@ -66,7 +66,7 @@
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <param name="config" type="data" format="yaml,txt" label="Select the dataset containing model configuration" />
+        <param name="config" type="data" format="yaml" label="Select the dataset containing model configuration" />
         <param name="model_load_path" type="data" format="ludwig_model" optional="true" label="Load a pretrained model as initialization" help="Optional." />
         <param name="dataset" type="data" format="tabular,csv,h5,json,txt" optional="true" label="Input dataset" />
         <param name="training_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input traning dataset" />

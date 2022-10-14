@@ -78,15 +78,15 @@
             cp '$__tool_directory__/ludwig_experiment_result.html' '$output_stat' &&
             mkdir -p '$output_stat.extra_files_path' &&
             cp *.json '$output_stat.extra_files_path' &&
-            echo "Done!"
 
+            echo "Experiment is Done!"
         ]]>
     </command>
     <configfiles>
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <param argument="config" type="data" format="yaml,txt" label="Select the dataset containing model configuration" />
+        <param argument="config" type="data" format="yaml" label="Select the dataset containing model configuration" />
         <param argument="model_load_path" type="data" format="ludwig_model" optional="true" label="Load a pretrained model as initialization" help="Optional." />
         <param argument="model_resume_path" type="data" format="ludwig_model" optional="true" label="Load a pretained model to resume training" help="Optional." />
         <param argument="dataset" type="data" format="tabular,csv,h5,json,txt" optional="true" label="Input dataset" />
