@@ -109,8 +109,5 @@
 
         ]]>
     </help>
-    <citations>
-        <citation type="bibtex">
-        </citation>
-    </citations>
+    <expand macro="macro_citations" />
 </tool>
