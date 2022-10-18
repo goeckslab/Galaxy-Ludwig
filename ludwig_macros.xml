@@ -10,10 +10,6 @@
     <xml name="python_requirements">
         <requirements>
             <container type="docker">quay.io/goeckslab/galaxy-ludwig:@LUDWIG_VERSION@</container>
-            <requirement type="package" version="3.8">python</requirement>
-            <requirement type="package" version="@LUDWIG_VERSION@">ludwig</requirement>
-            <requirement type="package" version="0.1">model-unpickler</requirement>
-            <requirement type="package">petastorm</requirement>
         </requirements>
     </xml>
 

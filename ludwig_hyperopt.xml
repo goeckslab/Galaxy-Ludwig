@@ -59,8 +59,9 @@
                 --data_format '$data_format'
                 --random_seed $random_seed
                 --backend local
-                --skip_save_progress
+                --skip_save_progress &&
 
+            cp -r /tmp/ray "`pwd`/../tmp"
         ]]>
     </command>
     <configfiles>
@@ -102,7 +103,7 @@
     <help>
         <![CDATA[
 **What it does**
-
+Hyperparameter tuning.
 
 
 **Input**
