@@ -1,11 +1,9 @@
-<tool id="ludwig_evaluate" name="Ludwig Evaluate" version="@VERSION@" profile="@PROFILE@">
-    <description>loads a pretrained model and evaluates its performance by comparing its predictions with ground truth</description>
+<tool id="ludwig_predict" name="Ludwig Predict" version="@VERSION@" profile="@PROFILE@">
+    <description>loads a pretrained model to do prediction</description>
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements">
-        <container type="docker">quay.io/qiagu/galaxy-ludwig:latest</container>
-    </expand>
+    <expand macro="python_requirements" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
@@ -17,7 +15,7 @@
             #if $raw_data
             unzip -o -q '$raw_data' -d ./;
             #end if
-            python '$__tool_directory__/ludwig_evaluate.py'
+            python '$__tool_directory__/ludwig_predict.py'
                 #if $model_path
                 --model_path '$model_path.extra_files_path'
                 #end if
@@ -27,25 +25,17 @@
                 #if $disable_parallel_threads
                 --disable_parallel_threads
                 #end if
-                #if $skip_collect_predictions
-                --skip_collect_predictions
-                #end if
                 --output_directory "`pwd`/outputs"
                 --data_format '$data_format'
                 --split '$split'
                 --backend local
                 --skip_save_unprocessed_output &&
+            mkdir -p '${output.extra_files_path}' &&
             cd outputs &&
-            #if not $skip_collect_predictions
-            cp '$__tool_directory__/ludwig_predict_result.html' '$output_pred' &&
-            mkdir -p '$output_pred.extra_files_path' &&
-            mv predictions.parquet predictions.shapes.json '$output_pred.extra_files_path' &&
-            #end if
-            cp '$__tool_directory__/ludwig_evaluate_result.html' '$output_stat' &&
-            mkdir -p '$output_stat.extra_files_path' &&
-            cp *.json '$output_stat.extra_files_path' &&
+            cp '$__tool_directory__/ludwig_predict_result.html' '$output' &&
+            cp predictions.parquet predictions.shapes.json '${output.extra_files_path}' &&
             echo "Done!"
-            
+
         ]]>
     </command>
     <configfiles>
@@ -69,19 +59,14 @@
         </param>
         <param name="batch_size" type="integer" value="128" optional="true" label="Batch size" />
         <param name="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
-        <param name="skip_collect_predictions" type="boolean" checked="false" label="Whether to skip collecting predictions?" />
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
-        <data format="html" name="output_stat" label="${tool.name} statistics on ${on_string}" />
-        <data format="html" name="output_pred" label="${tool.name} predictions parquet on ${on_string}" >
-            <filter>not skip_collect_predictions</filter>
-        </data>
-        <collection type="list" name="output_pred_csv" label="${tool.name} predictions CSV on ${on_string}" >
+        <data format="html" name="output" label="${tool.name} parquet on ${on_string}" />
+        <collection type="list" name="output_csv" label="${tool.name} CSV on ${on_string}" >
             <discover_datasets pattern="(?P&lt;designation&gt;.+)\.csv" format="csv" directory="outputs" />
-            <filter>not skip_collect_predictions</filter>
         </collection>
-       
+        <!-- <data format="csv" name="output_top_k" label="${tool.name} top K predictions on ${on_string}" /> -->
     </outputs>
     <tests>
         <test>
@@ -93,18 +78,14 @@
             </param>
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="split" value="test" />
-            <output name="output_stat" ftype="html">
-                <extra_files type="file" name="test_statistics.json" value="temp_test_statistics.json" />
-            </output>
-            <output name="output_pred" ftype="html">
-                <extra_files type="file" name="predictions.parquet" value="temp_predictions.parquet" />
+            <output name="output" ftype="html">
+                <extra_files type="file" name="predictions.parquet" value="temp_predictions.parquet" compare="sim_size" delta="50"/>
                 <extra_files type="file" name="predictions.shapes.json" value="temp_predictions.shapes.json" />
             </output>
-            
-            <output_collection name="output_pred_csv">
+            <output_collection name="output_csv">
                 <element name="temperature_predictions">
                     <assert_contents>
-                        <has_n_lines n="9052" />
+                        <has_n_lines n="9051" />
                         <has_n_columns n="1" />
                         <has_size value="186816" delta="50" />
                     </assert_contents>
@@ -128,8 +109,5 @@
 
         ]]>
     </help>
-    <citations>
-        <citation type="bibtex">
-        </citation>
-    </citations>
+    <expand macro="macro_citations" />
 </tool>

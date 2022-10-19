@@ -3,9 +3,7 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements">
-        <container type="docker">quay.io/qiagu/galaxy-ludwig:latest</container>
-    </expand>
+    <expand macro="python_requirements" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
@@ -34,6 +32,9 @@
                 #end if
                 #if $model_load_path
                 --model_load_path '$model_load_path.extra_files_path'
+                #end if
+                #if $model_resume_path
+                --model_resume_path '$model_resume_path.model_resume_path'
                 #end if
                 #if $dataset
                 --dataset "`pwd`/${dataset.element_identifier}"
@@ -77,16 +78,17 @@
             cp '$__tool_directory__/ludwig_experiment_result.html' '$output_stat' &&
             mkdir -p '$output_stat.extra_files_path' &&
             cp *.json '$output_stat.extra_files_path' &&
-            echo "Done!"
 
+            echo "Experiment is Done!"
         ]]>
     </command>
     <configfiles>
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <param argument="config" type="data" format="yaml,txt" label="Select the dataset containing model configuration" />
+        <param argument="config" type="data" format="yaml" label="Select the dataset containing model configuration" />
         <param argument="model_load_path" type="data" format="ludwig_model" optional="true" label="Load a pretrained model as initialization" help="Optional." />
+        <param argument="model_resume_path" type="data" format="ludwig_model" optional="true" label="Load a pretained model to resume training" help="Optional." />
         <param argument="dataset" type="data" format="tabular,csv,h5,json,txt" optional="true" label="Input dataset" />
         <param argument="training_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input traning dataset" />
         <param argument="validation_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input validation dataset" />
@@ -133,21 +135,16 @@
     <help>
         <![CDATA[
 **What it does**
-
-
-
-**Input**
-
+Ludwig Experiment: train on one (portion of) dataset and evalue the model performance on another (portion of) dataset.
 
 
 **Output**
-
+An HTML containing the evaluation report of the trained model.
+A trained Ludwig model composite dataset.
+(Optional) Predictions results from the model evaluations.
 
 
         ]]>
     </help>
-    <citations>
-        <citation type="bibtex">
-        </citation>
-    </citations>
+    <expand macro="macro_citations" />
 </tool>

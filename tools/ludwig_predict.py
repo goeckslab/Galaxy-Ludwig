@@ -2,8 +2,9 @@ import logging
 import pickle
 import sys
 
+from ludwig.predict import cli
+
 from model_unpickler import SafeUnpickler
-from ludwig.experiment import cli
 
 
 logging.basicConfig(level=logging.DEBUG)

@@ -1,15 +1,15 @@
 <macros>
-    <token name="@VERSION@">0.1</token>
+    <token name="@LUDWIG_VERSION@">0.6.1</token>
+
+    <token name="@SUFFIX@">0</token>
+
+    <token name="@VERSION@">@LUDWIG_VERSION@+@SUFFIX@</token>
 
     <token name="@PROFILE@">21.05</token>
 
     <xml name="python_requirements">
         <requirements>
-            <yield />
-            <requirement type="package" version="3.7">python</requirement>
-            <requirement type="package" version="0.4">ludwig</requirement>
-            <requirement type="package" version="0.1">model-unpickler</requirement>
-            <requirement type="package">petastorm</requirement>
+            <container type="docker">quay.io/goeckslab/galaxy-ludwig:@LUDWIG_VERSION@</container>
         </requirements>
     </xml>
 
@@ -17,6 +17,22 @@
         <stdio>
             <exit_code range="1:" level="fatal" description="Error occurred. Please check Tool Standard Error" />
         </stdio>
+    </xml>
+
+    <xml name="macro_citations">
+        <citations>
+            <citation type="bibtex">
+@misc{https://doi.org/10.48550/arxiv.1909.07930,
+    doi = {10.48550/ARXIV.1909.07930},
+    url = {https://arxiv.org/abs/1909.07930},
+    author = {Molino, Piero and Dudin, Yaroslav and Miryala, Sai Sumanth},
+    title = {Ludwig: a type-based declarative deep learning toolbox},
+    publisher = {arXiv},
+    year = {2019},
+    copyright = {arXiv.org perpetual, non-exclusive license}
+}
+            </citation>
+        </citations>
     </xml>
 
     <xml name="encoder_parameters">

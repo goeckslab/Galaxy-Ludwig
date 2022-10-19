@@ -3,9 +3,7 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements">
-        <container type="docker">quay.io/qiagu/galaxy-ludwig:latest</container>
-    </expand>
+    <expand macro="python_requirements" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
@@ -358,29 +356,25 @@
                 <param name="file_type" value="pdf" />
             </conditional>
             <output_collection name="output" type="list">
-                <element name="hyperopt_pair_plot" file="temp_hyperopt_pair_plot.pdf" ftype="pdf" />
-                <element name="hyperopt_training.learning_rate" file="temp_hyperopt_training.learning_rate.pdf" ftype="pdf" />
+                <element name="hyperopt_trainer.learning_rate" file="temp_hyperopt_training.learning_rate.pdf" ftype="pdf" />
             </output_collection>
         </test>
     </tests>
     <help>
         <![CDATA[
 **What it does**
-
+This tool supports various of visualizations from Ludwig. 
 
 
 **Input**
-
+Report output from ludwig train/experiment/evaluate/predict tool. 
 
 
 **Output**
-
+PNG or PDF.
 
 
         ]]>
     </help>
-    <citations>
-        <citation type="bibtex">
-        </citation>
-    </citations>
+    <expand macro="macro_citations" />
 </tool>

@@ -1,0 +1,13 @@
+{
+    "combined": {
+        "loss": 0.03576650470495224
+    },
+    "temperature": {
+        "loss": 0.0357561819255352,
+        "mean_absolute_error": 0.12458418309688568,
+        "mean_squared_error": 0.035756174474954605,
+        "r2": 0.9645956754684448,
+        "root_mean_squared_error": 0.18909303843975067,
+        "root_mean_squared_percentage_error": 4.375900745391846
+    }
+}

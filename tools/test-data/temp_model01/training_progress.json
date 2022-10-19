@@ -1,0 +1,290 @@
+{
+    "batch_size": 128,
+    "best_eval_metric": 0.037319209426641464,
+    "best_increase_batch_size_eval_metric": Infinity,
+    "best_reduce_learning_rate_eval_metric": Infinity,
+    "epoch": 2,
+    "last_improvement": 0,
+    "last_improvement_steps": 496,
+    "last_increase_batch_size": 0,
+    "last_increase_batch_size_eval_metric_improvement": 0,
+    "last_increase_batch_size_steps": 0,
+    "last_learning_rate_reduction": 0,
+    "last_learning_rate_reduction_steps": 0,
+    "last_reduce_learning_rate_eval_metric_improvement": 0,
+    "learning_rate": 0.001,
+    "num_increases_batch_size": 0,
+    "num_reductions_learning_rate": 0,
+    "steps": 496,
+    "test_metrics": {
+        "combined": {
+            "loss": [
+                [
+                    0,
+                    248,
+                    0.04236835986375809
+                ],
+                [
+                    1,
+                    496,
+                    0.03576650470495224
+                ]
+            ]
+        },
+        "temperature": {
+            "loss": [
+                [
+                    0,
+                    248,
+                    0.04237547144293785
+                ],
+                [
+                    1,
+                    496,
+                    0.0357561819255352
+                ]
+            ],
+            "mean_absolute_error": [
+                [
+                    0,
+                    248,
+                    0.14415161311626434
+                ],
+                [
+                    1,
+                    496,
+                    0.12458418309688568
+                ]
+            ],
+            "mean_squared_error": [
+                [
+                    0,
+                    248,
+                    0.04237544536590576
+                ],
+                [
+                    1,
+                    496,
+                    0.035756174474954605
+                ]
+            ],
+            "r2": [
+                [
+                    0,
+                    248,
+                    0.9580415487289429
+                ],
+                [
+                    1,
+                    496,
+                    0.9645956754684448
+                ]
+            ],
+            "root_mean_squared_error": [
+                [
+                    0,
+                    248,
+                    0.20585297048091888
+                ],
+                [
+                    1,
+                    496,
+                    0.18909303843975067
+                ]
+            ],
+            "root_mean_squared_percentage_error": [
+                [
+                    0,
+                    248,
+                    4.875166893005371
+                ],
+                [
+                    1,
+                    496,
+                    4.375900745391846
+                ]
+            ]
+        }
+    },
+    "train_metrics": {
+        "combined": {
+            "loss": [
+                [
+                    0,
+                    248,
+                    0.04375645890831947
+                ],
+                [
+                    1,
+                    496,
+                    0.037139516323804855
+                ]
+            ]
+        },
+        "temperature": {
+            "loss": [
+                [
+                    0,
+                    248,
+                    0.04378647357225418
+                ],
+                [
+                    1,
+                    496,
+                    0.03717414662241936
+                ]
+            ],
+            "mean_absolute_error": [
+                [
+                    0,
+                    248,
+                    0.1454291194677353
+                ],
+                [
+                    1,
+                    496,
+                    0.12563756108283997
+                ]
+            ],
+            "mean_squared_error": [
+                [
+                    0,
+                    248,
+                    0.04378644376993179
+                ],
+                [
+                    1,
+                    496,
+                    0.03717412054538727
+                ]
+            ],
+            "r2": [
+                [
+                    0,
+                    248,
+                    0.9559695720672607
+                ],
+                [
+                    1,
+                    496,
+                    0.9626187682151794
+                ]
+            ],
+            "root_mean_squared_error": [
+                [
+                    0,
+                    248,
+                    0.20925210416316986
+                ],
+                [
+                    1,
+                    496,
+                    0.1928059160709381
+                ]
+            ],
+            "root_mean_squared_percentage_error": [
+                [
+                    0,
+                    248,
+                    3.7500557899475098
+                ],
+                [
+                    1,
+                    496,
+                    3.2892982959747314
+                ]
+            ]
+        }
+    },
+    "tune_checkpoint_num": 0,
+    "validation_metrics": {
+        "combined": {
+            "loss": [
+                [
+                    0,
+                    248,
+                    0.04391526058316231
+                ],
+                [
+                    1,
+                    496,
+                    0.037319209426641464
+                ]
+            ]
+        },
+        "temperature": {
+            "loss": [
+                [
+                    0,
+                    248,
+                    0.044203981757164
+                ],
+                [
+                    1,
+                    496,
+                    0.037562716752290726
+                ]
+            ],
+            "mean_absolute_error": [
+                [
+                    0,
+                    248,
+                    0.14616061747074127
+                ],
+                [
+                    1,
+                    496,
+                    0.12675794959068298
+                ]
+            ],
+            "mean_squared_error": [
+                [
+                    0,
+                    248,
+                    0.044203981757164
+                ],
+                [
+                    1,
+                    496,
+                    0.03756272420287132
+                ]
+            ],
+            "r2": [
+                [
+                    0,
+                    248,
+                    0.9565578699111938
+                ],
+                [
+                    1,
+                    496,
+                    0.9630846381187439
+                ]
+            ],
+            "root_mean_squared_error": [
+                [
+                    0,
+                    248,
+                    0.21024742722511292
+                ],
+                [
+                    1,
+                    496,
+                    0.1938110589981079
+                ]
+            ],
+            "root_mean_squared_percentage_error": [
+                [
+                    0,
+                    248,
+                    5.730774402618408
+                ],
+                [
+                    1,
+                    496,
+                    4.613331317901611
+                ]
+            ]
+        }
+    }
+}

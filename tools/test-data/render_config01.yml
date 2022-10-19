@@ -1,0 +1,245 @@
+input_features:
+- name: ''
+  encoder:
+    type: passthrough
+  type: number
+  column: ''
+  tied: null
+  preprocessing:
+    missing_value_strategy: fill_with_const
+    fill_value: 0.0
+    computed_fill_value: 0.0
+    normalization: null
+output_features:
+- name: ''
+  decoder:
+    type: classifier
+    fc_layers: null
+    num_fc_layers: 0
+    fc_output_size: 256
+    fc_use_bias: true
+    fc_weights_initializer: xavier_uniform
+    fc_bias_initializer: zeros
+    fc_norm: null
+    fc_norm_params: null
+    fc_activation: relu
+    fc_dropout: 0.0
+    input_size: null
+    num_classes: null
+    use_bias: true
+    weights_initializer: xavier_uniform
+    bias_initializer: zeros
+  loss:
+    type: softmax_cross_entropy
+    weight: 1.0
+    class_weights: null
+    robust_lambda: 0
+    confidence_penalty: 0.0
+    class_similarities_temperature: 0
+  top_k: 3
+  type: category
+  column: ''
+  dependencies: []
+  reduce_input: sum
+  reduce_dependencies: sum
+  preprocessing:
+    missing_value_strategy: drop_row
+    fill_value: <UNK>
+    computed_fill_value: <UNK>
+    lowercase: false
+    most_common: 10000
+  input_size: null
+  num_classes: null
+  calibration: false
+combiner:
+  type: concat
+  fc_layers: null
+  num_fc_layers: 0
+  output_size: 256
+  use_bias: true
+  weights_initializer: xavier_uniform
+  bias_initializer: zeros
+  norm: null
+  norm_params: null
+  activation: relu
+  dropout: 0.0
+  flatten_inputs: false
+  residual: false
+trainer:
+  type: trainer
+  learning_rate: 0.001
+  validation_metric: loss
+  validation_field: combined
+  eval_batch_size: null
+  early_stop: 5
+  evaluate_training_set: true
+  optimizer:
+    type: adam
+    lr: 0.001
+    betas:
+    - 0.9
+    - 0.999
+    eps: 1.0e-08
+    weight_decay: 0.0
+    amsgrad: false
+  epochs: 100
+  train_steps: null
+  regularization_lambda: 0.0
+  regularization_type: l2
+  should_shuffle: true
+  batch_size: 128
+  steps_per_checkpoint: 0
+  checkpoints_per_epoch: 0
+  reduce_learning_rate_on_plateau: 0.0
+  reduce_learning_rate_on_plateau_patience: 5
+  reduce_learning_rate_on_plateau_rate: 0.5
+  reduce_learning_rate_eval_metric: loss
+  reduce_learning_rate_eval_split: training
+  increase_batch_size_on_plateau: 0
+  increase_batch_size_on_plateau_patience: 5
+  increase_batch_size_on_plateau_rate: 2.0
+  increase_batch_size_on_plateau_max: 512
+  increase_batch_size_eval_metric: loss
+  increase_batch_size_eval_split: training
+  decay: false
+  decay_steps: 10000
+  decay_rate: 0.96
+  staircase: false
+  gradient_clipping:
+    clipglobalnorm: 0.5
+    clipnorm: null
+    clipvalue: null
+  learning_rate_warmup_epochs: 1.0
+  learning_rate_scaling: linear
+model_type: ecd
+defaults:
+  text:
+    preprocessing:
+      pretrained_model_name_or_path: null
+      tokenizer: space_punct
+      vocab_file: null
+      max_sequence_length: 256
+      most_common: 20000
+      padding_symbol: <PAD>
+      unknown_symbol: <UNK>
+      padding: right
+      lowercase: true
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+  category:
+    preprocessing:
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+      lowercase: false
+      most_common: 10000
+  set:
+    preprocessing:
+      tokenizer: space
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+      lowercase: false
+      most_common: 10000
+  bag:
+    preprocessing:
+      tokenizer: space
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+      lowercase: false
+      most_common: 10000
+  binary:
+    preprocessing:
+      missing_value_strategy: fill_with_false
+      fill_value: null
+      computed_fill_value: null
+      fallback_true_label: null
+  number:
+    preprocessing:
+      missing_value_strategy: fill_with_const
+      fill_value: 0.0
+      computed_fill_value: 0.0
+      normalization: null
+  sequence:
+    preprocessing:
+      tokenizer: space
+      vocab_file: null
+      max_sequence_length: 256
+      most_common: 20000
+      padding_symbol: <PAD>
+      unknown_symbol: <UNK>
+      padding: right
+      lowercase: false
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+  timeseries:
+    preprocessing:
+      tokenizer: space
+      timeseries_length_limit: 256
+      padding_value: 0.0
+      padding: right
+      missing_value_strategy: fill_with_const
+      fill_value: ''
+      computed_fill_value: ''
+  image:
+    preprocessing:
+      missing_value_strategy: bfill
+      fill_value: null
+      computed_fill_value: null
+      height: null
+      width: null
+      num_channels: null
+      resize_method: interpolate
+      infer_image_num_channels: true
+      infer_image_dimensions: true
+      infer_image_max_height: 256
+      infer_image_max_width: 256
+      infer_image_sample_size: 100
+      scaling: pixel_normalization
+      in_memory: true
+      num_processes: 1
+  audio:
+    preprocessing:
+      audio_file_length_limit_in_s: 7.5
+      missing_value_strategy: bfill
+      fill_value: null
+      computed_fill_value: null
+      in_memory: true
+      padding_value: 0.0
+      norm: null
+      type: fbank
+      window_length_in_s: 0.04
+      window_shift_in_s: 0.02
+      num_fft_points: null
+      window_type: hamming
+      num_filter_bands: 80
+  h3:
+    preprocessing:
+      missing_value_strategy: fill_with_const
+      fill_value: 576495936675512319
+      computed_fill_value: 576495936675512319
+  date:
+    preprocessing:
+      missing_value_strategy: fill_with_const
+      fill_value: ''
+      computed_fill_value: ''
+      datetime_format: null
+  vector:
+    preprocessing:
+      vector_size: null
+      missing_value_strategy: fill_with_const
+      fill_value: ''
+      computed_fill_value: ''
+preprocessing:
+  split:
+    type: random
+    probabilities:
+    - 0.7
+    - 0.1
+    - 0.2
+  undersample_majority: null
+  oversample_minority: null
+  sample_ratio: 1.0
