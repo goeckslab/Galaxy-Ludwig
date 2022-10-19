@@ -1,7 +1,9 @@
 import json
 import sys
-import yaml
+
 from ludwig.utils.defaults import merge_with_defaults
+
+import yaml
 
 
 inputs = sys.argv[1]
@@ -13,7 +15,7 @@ config = {}
 config['input_features'] = []
 for ftr in params['input_features']['input_feature']:
     config['input_features'].append(ftr['input_feature_selector'])
- 
+
 # output features
 config['output_features'] = []
 for ftr in params['output_features']['output_feature']:
@@ -36,11 +38,13 @@ with open('./pre_config.yml', 'w') as f:
 output = sys.argv[2]
 output_config = merge_with_defaults(config)
 
-def clean_proc_column (config: dict) -> None:
+
+def clean_proc_column(config: dict) -> None:
     for ftr in config["input_features"]:
         ftr.pop("proc_column", None)
     for ftr in config["output_features"]:
         ftr.pop("proc_column", None)
+
 
 clean_proc_column(output_config)
 

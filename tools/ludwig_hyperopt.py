@@ -2,8 +2,9 @@ import logging
 import pickle
 import sys
 
-from model_unpickler import SafeUnpickler
 from ludwig.hyperopt_cli import cli
+
+from model_unpickler import SafeUnpickler
 
 
 logging.basicConfig(level=logging.DEBUG)
