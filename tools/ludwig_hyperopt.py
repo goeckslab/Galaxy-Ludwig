@@ -3,14 +3,14 @@ import os
 import pickle
 import sys
 
-import yaml
-
 from jinja_report import generate_report
 
 from ludwig.hyperopt_cli import cli
 from ludwig.visualize import visualizations_registry
 
 from model_unpickler import SafeUnpickler
+
+import yaml
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -26,7 +26,10 @@ for ix, arg in enumerate(sys.argv):
         output_directory = sys.argv[ix+1]
         break
 
-hyperopt_stats_path = os.path.join(output_directory, "hyperopt", "hyperopt_statistics.json")
+hyperopt_stats_path = os.path.join(
+    output_directory,
+    "hyperopt", "hyperopt_statistics.json"
+)
 
 visualizations = ["hyperopt_report", "hyperopt_hiplot"]
 
@@ -46,9 +49,9 @@ report_config = {
     "visualizations": [
         {
             "src": f"visualizations/{fl}",
-            "type": "image" if fl[fl.rindex(".")+1:]=="png" else fl[fl.rindex(".")+1:],
-        }
-            for fl in os.listdir(viz_output_directory)
+            "type": "image" if fl[fl.rindex(".") + 1:] == "png" else
+                    fl[fl.rindex(".") + 1:],
+        } for fl in os.listdir(viz_output_directory)
     ],
     "raw stats": [
         {
