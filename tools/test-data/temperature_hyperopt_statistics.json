@@ -1,0 +1,229 @@
+{
+    "hyperopt_config": {
+        "executor": {
+            "num_samples": 2,
+            "type": "ray"
+        },
+        "goal": "minimize",
+        "metric": "loss",
+        "output_feature": "combined",
+        "parameters": {
+            "trainer.learning_rate": {
+                "lower": 0.0001,
+                "space": "uniform",
+                "upper": 0.1
+            }
+        },
+        "search_alg": {
+            "random_state": 42,
+            "type": "random"
+        },
+        "split": "validation"
+    },
+    "hyperopt_results": [
+        {
+            "eval_stats": {
+                "combined": {
+                    "loss": 0.053195301443338394
+                },
+                "temperature": {
+                    "loss": 0.053407300263643265,
+                    "mean_absolute_error": 0.14618726074695587,
+                    "mean_squared_error": 0.05340731143951416,
+                    "r2": 0.9475131630897522,
+                    "root_mean_squared_error": 0.23110021650791168,
+                    "root_mean_squared_percentage_error": 4.772668361663818
+                }
+            },
+            "metric_score": 0.053195301443338394,
+            "parameters": {
+                "trainer.learning_rate": 0.04394395613123003
+            },
+            "training_stats": {
+                "test": {
+                    "combined": {
+                        "loss": [
+                            0.05267306789755821
+                        ]
+                    },
+                    "temperature": {
+                        "loss": [
+                            0.05264146253466606
+                        ],
+                        "mean_absolute_error": [
+                            0.14691536128520966
+                        ],
+                        "mean_squared_error": [
+                            0.052641451358795166
+                        ],
+                        "r2": [
+                            0.9478765726089478
+                        ],
+                        "root_mean_squared_error": [
+                            0.22943724691867828
+                        ],
+                        "root_mean_squared_percentage_error": [
+                            6.454731464385986
+                        ]
+                    }
+                },
+                "training": {
+                    "combined": {
+                        "loss": [
+                            0.052854184061288834
+                        ]
+                    },
+                    "temperature": {
+                        "loss": [
+                            0.052901823073625565
+                        ],
+                        "mean_absolute_error": [
+                            0.14576640725135803
+                        ],
+                        "mean_squared_error": [
+                            0.05290185287594795
+                        ],
+                        "r2": [
+                            0.9468033909797668
+                        ],
+                        "root_mean_squared_error": [
+                            0.23000402748584747
+                        ],
+                        "root_mean_squared_percentage_error": [
+                            4.057754039764404
+                        ]
+                    }
+                },
+                "validation": {
+                    "combined": {
+                        "loss": [
+                            0.053195301443338394
+                        ]
+                    },
+                    "temperature": {
+                        "loss": [
+                            0.053407300263643265
+                        ],
+                        "mean_absolute_error": [
+                            0.14618726074695587
+                        ],
+                        "mean_squared_error": [
+                            0.05340731143951416
+                        ],
+                        "r2": [
+                            0.9475131630897522
+                        ],
+                        "root_mean_squared_error": [
+                            0.23110021650791168
+                        ],
+                        "root_mean_squared_percentage_error": [
+                            4.772668361663818
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "eval_stats": {
+                "combined": {
+                    "loss": 0.07325493544340134
+                },
+                "temperature": {
+                    "loss": 0.07352239638566971,
+                    "mean_absolute_error": 0.2023126631975174,
+                    "mean_squared_error": 0.07352243363857269,
+                    "r2": 0.9277446866035461,
+                    "root_mean_squared_error": 0.2711502015590668,
+                    "root_mean_squared_percentage_error": 6.274576187133789
+                }
+            },
+            "metric_score": 0.07325493544340134,
+            "parameters": {
+                "trainer.learning_rate": 0.07741820925074075
+            },
+            "training_stats": {
+                "test": {
+                    "combined": {
+                        "loss": [
+                            0.07461598515510559
+                        ]
+                    },
+                    "temperature": {
+                        "loss": [
+                            0.07462907582521439
+                        ],
+                        "mean_absolute_error": [
+                            0.20498159527778625
+                        ],
+                        "mean_squared_error": [
+                            0.07462908327579498
+                        ],
+                        "r2": [
+                            0.926105260848999
+                        ],
+                        "root_mean_squared_error": [
+                            0.2731832265853882
+                        ],
+                        "root_mean_squared_percentage_error": [
+                            6.231832981109619
+                        ]
+                    }
+                },
+                "training": {
+                    "combined": {
+                        "loss": [
+                            0.07510020583868027
+                        ]
+                    },
+                    "temperature": {
+                        "loss": [
+                            0.07517903298139572
+                        ],
+                        "mean_absolute_error": [
+                            0.20425966382026672
+                        ],
+                        "mean_squared_error": [
+                            0.07517902553081512
+                        ],
+                        "r2": [
+                            0.9244020581245422
+                        ],
+                        "root_mean_squared_error": [
+                            0.27418795228004456
+                        ],
+                        "root_mean_squared_percentage_error": [
+                            5.540431499481201
+                        ]
+                    }
+                },
+                "validation": {
+                    "combined": {
+                        "loss": [
+                            0.07325493544340134
+                        ]
+                    },
+                    "temperature": {
+                        "loss": [
+                            0.07352239638566971
+                        ],
+                        "mean_absolute_error": [
+                            0.2023126631975174
+                        ],
+                        "mean_squared_error": [
+                            0.07352243363857269
+                        ],
+                        "r2": [
+                            0.9277446866035461
+                        ],
+                        "root_mean_squared_error": [
+                            0.2711502015590668
+                        ],
+                        "root_mean_squared_percentage_error": [
+                            6.274576187133789
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
