@@ -51,7 +51,7 @@ report_config = {
             "src": f"visualizations/{fl}",
             "type": "image" if fl[fl.rindex(".") + 1:] == "png" else
                     fl[fl.rindex(".") + 1:],
-        } for fl in os.listdir(viz_output_directory)
+        } for fl in sorted(os.listdir(viz_output_directory))
     ],
     "raw stats": [
         {

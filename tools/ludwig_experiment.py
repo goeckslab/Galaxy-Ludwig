@@ -59,7 +59,7 @@ ground_truth_metadata = os.path.join(
     "model",
     "training_set_metadata.json",
 )
-probabilities = test_statistics = os.path.join(
+probabilities = os.path.join(
     experiment_output_directory,
     "predictions.parquet",
 )
@@ -94,13 +94,13 @@ report_config = {
             "src": f"visualizations/{fl}",
             "type": "image" if fl[fl.rindex(".") + 1:] == "png" else
                     fl[fl.rindex(".") + 1:],
-        } for fl in os.listdir(viz_output_directory)
+        } for fl in sorted(os.listdir(viz_output_directory))
     ],
     "raw outputs": [
         {
             "src": f"{fl}",
             "type": "json" if fl.endswith(".json") else "unclassified",
-        } for fl in os.listdir(experiment_output_directory) if fl.endswith((".json", ".parquet"))
+        } for fl in sorted(os.listdir(experiment_output_directory)) if fl.endswith((".json", ".parquet"))
     ],
 }
 with open(os.path.join(output_directory, "report_config.yml"), 'w') as fh:
