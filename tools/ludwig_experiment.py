@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 setattr(pickle, 'Unpickler', SafeUnpickler)
 
-# cli(sys.argv[1:])
+cli(sys.argv[1:])
 
 # visualization
 output_directory = None
@@ -59,10 +59,10 @@ ground_truth_metadata = os.path.join(
     "model",
     "training_set_metadata.json",
 )
-probabilities = [
-    os.path.abspath(os.path.join(experiment_output_directory, "predictions.parquet"), fl)
-    for fl in os.listdir(os.path.join(experiment_output_directory, "predictions.parquet"))
-]
+probabilities = test_statistics = os.path.join(
+    experiment_output_directory,
+    "predictions.parquet",
+)
 
 for viz in visualizations:
     viz_func = visualizations_registry[viz]
@@ -70,7 +70,7 @@ for viz in visualizations:
         viz_func(
             training_statistics=[training_statistics],
             test_statistics=[test_statistics],
-            probabilities=probabilities,
+            probabilities=[probabilities],
             top_n_classes=[0],
             output_feature_name=[],
             ground_truth_split=2,
