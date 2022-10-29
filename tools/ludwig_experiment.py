@@ -103,7 +103,8 @@ def render_report(title):
             {
                 "src": f"{fl}",
                 "type": "json" if fl.endswith(".json") else "unclassified",
-            } for fl in sorted(os.listdir(ludwig_output_directory)) if fl.endswith((".json", ".parquet"))
+            } for fl in sorted(os.listdir(ludwig_output_directory))
+            if fl.endswith((".json", ".parquet"))
         ],
     }
     with open(os.path.join(output_directory, "report_config.yml"), 'w') as fh:

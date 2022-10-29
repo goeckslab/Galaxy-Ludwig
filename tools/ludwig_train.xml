@@ -56,10 +56,12 @@
                 --random_seed $random_seed
                 --backend local &&
             mkdir -p '${output_model.extra_files_path}' &&
-            cp -r experiment_run/model/* '${output_model.extra_files_path}' &&
-            cp '$__tool_directory__/ludwig_train_result.html' '$output_other' &&
-            mkdir -p '${output_other.extra_files_path}' &&
-            cp experiment_run/*.* '${output_other.extra_files_path}'
+            cp -r experiment_run/model/*.json experiment_run/model/model_weights '${output_model.extra_files_path}' &&
+            mkdir -p '$output_report.extra_files_path' &&
+            cp experiment_run/*.json '$output_report.extra_files_path' &&
+            cp -r visualizations '$output_report.extra_files_path' &&
+
+            echo "Training is Done!"
         ]]>
     </command>
     <configfiles>
@@ -86,14 +88,14 @@
     </inputs>       
     <outputs>
         <data format="ludwig_model" name="output_model" label="${tool.name} model on ${on_string}" />
-        <data format="html" name="output_other" label="${tool.name} description and statistics on ${on_string}" />
+        <data format="html" name="output_report" from_work_dir="smart_report.html" label="${tool.name} report on ${on_string}" />
     </outputs>
     <tests>
         <test>
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="config" value="temperature_config.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
-            <output name="output_other" file="temperature_output.html" compare="sim_size" delta="10" />
+            <output name="output_report" file="temperature_train_report.html" compare="sim_size" delta="10" />
             <output name="output_model" >
                 <extra_files type="file" name="model_hyperparameters.json" value="temp_model01/model_hyperparameters.json" compare="diff" />
                 <extra_files type="file" name="model_weights" value="temp_model01/model_weights" compare="sim_size" delta="1000" />
