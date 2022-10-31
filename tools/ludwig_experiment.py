@@ -19,8 +19,6 @@ LOG = logging.getLogger(__name__)
 
 setattr(pickle, 'Unpickler', SafeUnpickler)
 
-cli(sys.argv[1:])
-
 # visualization
 output_directory = None
 for ix, arg in enumerate(sys.argv):
@@ -116,6 +114,9 @@ def render_report(title):
         fh.write(html)
 
 
-make_visualizations()
-title = "Ludwig Experiment"
-render_report(title)
+if __name__ == "__main__":
+    cli(sys.argv[1:])
+
+    make_visualizations()
+    title = "Ludwig Experiment"
+    render_report(title)

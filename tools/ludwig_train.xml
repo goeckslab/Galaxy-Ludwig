@@ -95,7 +95,7 @@
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="config" value="temperature_config.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
-            <output name="output_report" file="temperature_train_report.html" compare="sim_size" delta="10" />
+            <output name="output_report" file="temperature_train_report.html" compare="sim_size" delta="50" />
             <output name="output_model" >
                 <extra_files type="file" name="model_hyperparameters.json" value="temp_model01/model_hyperparameters.json" compare="diff" />
                 <extra_files type="file" name="model_weights" value="temp_model01/model_weights" compare="sim_size" delta="1000" />
