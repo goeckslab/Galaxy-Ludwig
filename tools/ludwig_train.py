@@ -15,7 +15,8 @@ setattr(pickle, 'Unpickler', SafeUnpickler)
 
 cli(sys.argv[1:])
 
+ludwig_output_directory_name = "experiment_run"
 
-make_visualizations()
+make_visualizations(ludwig_output_directory_name)
 title = "Ludwig Train"
-render_report(title)
+render_report(title, ludwig_output_directory_name)

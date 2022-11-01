@@ -26,11 +26,14 @@ for ix, arg in enumerate(sys.argv):
         output_directory = sys.argv[ix+1]
         break
 
-ludwig_output_directory = os.path.join(output_directory, "experiment_run")
 viz_output_directory = os.path.join(output_directory, "visualizations")
 
 
-def make_visualizations():
+def make_visualizations(ludwig_output_directory_name):
+    ludwig_output_directory = os.path.join(
+        output_directory,
+        ludwig_output_directory_name,
+    )
     visualizations = [
         "confidence_thresholding",
         "confidence_thresholding_data_vs_acc",
@@ -87,24 +90,34 @@ def make_visualizations():
 
 
 # report
-def render_report(title):
+def render_report(
+    title: str,
+    ludwig_output_directory_name: str,
+    show_visualization: bool = True
+):
+    ludwig_output_directory = os.path.join(
+        output_directory,
+        ludwig_output_directory_name,
+    )
     report_config = {
         "title": title,
-        "visualizations": [
+    }
+    if show_visualization:
+        report_config["visualizations"] = [
             {
                 "src": f"visualizations/{fl}",
                 "type": "image" if fl[fl.rindex(".") + 1:] == "png" else
                         fl[fl.rindex(".") + 1:],
             } for fl in sorted(os.listdir(viz_output_directory))
-        ],
-        "raw outputs": [
-            {
-                "src": f"{fl}",
-                "type": "json" if fl.endswith(".json") else "unclassified",
-            } for fl in sorted(os.listdir(ludwig_output_directory))
-            if fl.endswith((".json", ".parquet"))
-        ],
-    }
+        ]
+    report_config["raw outputs"] = [
+        {
+            "src": f"{fl}",
+            "type": "json" if fl.endswith(".json") else "unclassified",
+        } for fl in sorted(os.listdir(ludwig_output_directory))
+        if fl.endswith((".json", ".parquet"))
+    ]
+
     with open(os.path.join(output_directory, "report_config.yml"), 'w') as fh:
         yaml.dump(report_config, fh)
 
@@ -115,8 +128,11 @@ def render_report(title):
 
 
 if __name__ == "__main__":
+
     cli(sys.argv[1:])
 
-    make_visualizations()
+    ludwig_output_directory_name = "experiment_run"
+
+    make_visualizations(ludwig_output_directory_name)
     title = "Ludwig Experiment"
-    render_report(title)
+    render_report(title, ludwig_output_directory_name)
