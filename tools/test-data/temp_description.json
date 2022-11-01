@@ -1,0 +1,333 @@
+{
+    "command": "/Users/guq/projects/Galaxy-Ludwig/tools/ludwig_experiment.py --config /Users/guq/projects/galaxy_dev3/database/jobs_directory/000/103/working/config.yml --dataset /Users/guq/projects/galaxy_dev3/database/jobs_directory/000/103/working/temperature_la.csv --output_directory /Users/guq/projects/galaxy_dev3/database/jobs_directory/000/103/working --data_format auto --backend local --eval_split test --random_seed 42 --skip_save_unprocessed_output --skip_save_k_fold_split_indices",
+    "commit_hash": "e75a8d6ce5cb",
+    "compute": {
+        "num_nodes": 1
+    },
+    "config": {
+        "combiner": {
+            "activation": "relu",
+            "bias_initializer": "zeros",
+            "dropout": 0.0,
+            "fc_layers": null,
+            "flatten_inputs": false,
+            "norm": null,
+            "norm_params": null,
+            "num_fc_layers": 0,
+            "output_size": 256,
+            "residual": false,
+            "type": "concat",
+            "use_bias": true,
+            "weights_initializer": "xavier_uniform"
+        },
+        "defaults": {
+            "audio": {
+                "preprocessing": {
+                    "audio_file_length_limit_in_s": 7.5,
+                    "computed_fill_value": null,
+                    "fill_value": null,
+                    "in_memory": true,
+                    "missing_value_strategy": "bfill",
+                    "norm": null,
+                    "num_fft_points": null,
+                    "num_filter_bands": 80,
+                    "padding_value": 0.0,
+                    "type": "fbank",
+                    "window_length_in_s": 0.04,
+                    "window_shift_in_s": 0.02,
+                    "window_type": "hamming"
+                }
+            },
+            "bag": {
+                "preprocessing": {
+                    "computed_fill_value": "<UNK>",
+                    "fill_value": "<UNK>",
+                    "lowercase": false,
+                    "missing_value_strategy": "fill_with_const",
+                    "most_common": 10000,
+                    "tokenizer": "space"
+                }
+            },
+            "binary": {
+                "preprocessing": {
+                    "computed_fill_value": null,
+                    "fallback_true_label": null,
+                    "fill_value": null,
+                    "missing_value_strategy": "fill_with_false"
+                }
+            },
+            "category": {
+                "preprocessing": {
+                    "computed_fill_value": "<UNK>",
+                    "fill_value": "<UNK>",
+                    "lowercase": false,
+                    "missing_value_strategy": "fill_with_const",
+                    "most_common": 10000
+                }
+            },
+            "date": {
+                "preprocessing": {
+                    "computed_fill_value": "",
+                    "datetime_format": null,
+                    "fill_value": "",
+                    "missing_value_strategy": "fill_with_const"
+                }
+            },
+            "h3": {
+                "preprocessing": {
+                    "computed_fill_value": 576495936675512319,
+                    "fill_value": 576495936675512319,
+                    "missing_value_strategy": "fill_with_const"
+                }
+            },
+            "image": {
+                "preprocessing": {
+                    "computed_fill_value": null,
+                    "fill_value": null,
+                    "height": null,
+                    "in_memory": true,
+                    "infer_image_dimensions": true,
+                    "infer_image_max_height": 256,
+                    "infer_image_max_width": 256,
+                    "infer_image_num_channels": true,
+                    "infer_image_sample_size": 100,
+                    "missing_value_strategy": "bfill",
+                    "num_channels": null,
+                    "num_processes": 1,
+                    "resize_method": "interpolate",
+                    "scaling": "pixel_normalization",
+                    "width": null
+                }
+            },
+            "number": {
+                "preprocessing": {
+                    "computed_fill_value": 0.0,
+                    "fill_value": 0.0,
+                    "missing_value_strategy": "fill_with_const",
+                    "normalization": null
+                }
+            },
+            "sequence": {
+                "preprocessing": {
+                    "computed_fill_value": "<UNK>",
+                    "fill_value": "<UNK>",
+                    "lowercase": false,
+                    "max_sequence_length": 256,
+                    "missing_value_strategy": "fill_with_const",
+                    "most_common": 20000,
+                    "padding": "right",
+                    "padding_symbol": "<PAD>",
+                    "tokenizer": "space",
+                    "unknown_symbol": "<UNK>",
+                    "vocab_file": null
+                }
+            },
+            "set": {
+                "preprocessing": {
+                    "computed_fill_value": "<UNK>",
+                    "fill_value": "<UNK>",
+                    "lowercase": false,
+                    "missing_value_strategy": "fill_with_const",
+                    "most_common": 10000,
+                    "tokenizer": "space"
+                }
+            },
+            "text": {
+                "preprocessing": {
+                    "computed_fill_value": "<UNK>",
+                    "fill_value": "<UNK>",
+                    "lowercase": true,
+                    "max_sequence_length": 256,
+                    "missing_value_strategy": "fill_with_const",
+                    "most_common": 20000,
+                    "padding": "right",
+                    "padding_symbol": "<PAD>",
+                    "pretrained_model_name_or_path": null,
+                    "tokenizer": "space_punct",
+                    "unknown_symbol": "<UNK>",
+                    "vocab_file": null
+                }
+            },
+            "timeseries": {
+                "preprocessing": {
+                    "computed_fill_value": "",
+                    "fill_value": "",
+                    "missing_value_strategy": "fill_with_const",
+                    "padding": "right",
+                    "padding_value": 0.0,
+                    "timeseries_length_limit": 256,
+                    "tokenizer": "space"
+                }
+            },
+            "vector": {
+                "preprocessing": {
+                    "computed_fill_value": "",
+                    "fill_value": "",
+                    "missing_value_strategy": "fill_with_const",
+                    "vector_size": null
+                }
+            }
+        },
+        "input_features": [
+            {
+                "column": "temperature_feature",
+                "encoder": {
+                    "activation": "tanh",
+                    "bias_initializer": "zeros",
+                    "bidirectional": false,
+                    "cell_type": "rnn",
+                    "dropout": 0.0,
+                    "embedding_size": 32,
+                    "embeddings_on_cpu": false,
+                    "embeddings_trainable": true,
+                    "fc_activation": "relu",
+                    "fc_dropout": 0.0,
+                    "fc_layers": null,
+                    "max_sequence_length": null,
+                    "norm": null,
+                    "norm_params": null,
+                    "num_fc_layers": 0,
+                    "num_layers": 1,
+                    "output_size": 256,
+                    "pretrained_embeddings": null,
+                    "recurrent_activation": "sigmoid",
+                    "recurrent_dropout": 0.0,
+                    "recurrent_initializer": "orthogonal",
+                    "reduce_output": "last",
+                    "representation": "dense",
+                    "should_embed": true,
+                    "state_size": 32,
+                    "type": "rnn",
+                    "unit_forget_bias": true,
+                    "use_bias": true,
+                    "vocab": null,
+                    "weights_initializer": "xavier_uniform"
+                },
+                "name": "temperature_feature",
+                "preprocessing": {
+                    "computed_fill_value": "",
+                    "fill_value": "",
+                    "missing_value_strategy": "fill_with_const",
+                    "padding": "right",
+                    "padding_value": 0.0,
+                    "timeseries_length_limit": 256,
+                    "tokenizer": "space"
+                },
+                "proc_column": "temperature_feature_mZFLky",
+                "tied": null,
+                "type": "timeseries"
+            }
+        ],
+        "ludwig_version": "0.6.1",
+        "model_type": "ecd",
+        "output_features": [
+            {
+                "clip": null,
+                "column": "temperature",
+                "decoder": {
+                    "bias_initializer": "zeros",
+                    "fc_activation": "relu",
+                    "fc_bias_initializer": "zeros",
+                    "fc_dropout": 0.0,
+                    "fc_layers": null,
+                    "fc_norm": null,
+                    "fc_norm_params": null,
+                    "fc_output_size": 256,
+                    "fc_use_bias": true,
+                    "fc_weights_initializer": "xavier_uniform",
+                    "input_size": null,
+                    "num_fc_layers": 0,
+                    "type": "regressor",
+                    "use_bias": true,
+                    "weights_initializer": "xavier_uniform"
+                },
+                "dependencies": [],
+                "input_size": null,
+                "loss": {
+                    "type": "mean_squared_error",
+                    "weight": 1.0
+                },
+                "name": "temperature",
+                "num_classes": null,
+                "preprocessing": {
+                    "computed_fill_value": 0.0,
+                    "fill_value": 0.0,
+                    "missing_value_strategy": "drop_row",
+                    "normalization": null
+                },
+                "proc_column": "temperature_mZFLky",
+                "reduce_dependencies": "sum",
+                "reduce_input": "sum",
+                "type": "number"
+            }
+        ],
+        "preprocessing": {
+            "oversample_minority": null,
+            "sample_ratio": 1.0,
+            "split": {
+                "probabilities": [
+                    0.7,
+                    0.1,
+                    0.2
+                ],
+                "type": "random"
+            },
+            "undersample_majority": null
+        },
+        "trainer": {
+            "batch_size": 128,
+            "checkpoints_per_epoch": 0,
+            "decay": false,
+            "decay_rate": 0.96,
+            "decay_steps": 10000,
+            "early_stop": 5,
+            "epochs": 2,
+            "eval_batch_size": null,
+            "evaluate_training_set": true,
+            "gradient_clipping": {
+                "clipglobalnorm": 0.5,
+                "clipnorm": null,
+                "clipvalue": null
+            },
+            "increase_batch_size_eval_metric": "loss",
+            "increase_batch_size_eval_split": "training",
+            "increase_batch_size_on_plateau": 0,
+            "increase_batch_size_on_plateau_max": 512,
+            "increase_batch_size_on_plateau_patience": 5,
+            "increase_batch_size_on_plateau_rate": 2.0,
+            "learning_rate": 0.001,
+            "learning_rate_scaling": "linear",
+            "learning_rate_warmup_epochs": 1.0,
+            "optimizer": {
+                "amsgrad": false,
+                "betas": [
+                    0.9,
+                    0.999
+                ],
+                "eps": 1e-08,
+                "lr": 0.001,
+                "type": "adam",
+                "weight_decay": 0.0
+            },
+            "reduce_learning_rate_eval_metric": "loss",
+            "reduce_learning_rate_eval_split": "training",
+            "reduce_learning_rate_on_plateau": 0.0,
+            "reduce_learning_rate_on_plateau_patience": 5,
+            "reduce_learning_rate_on_plateau_rate": 0.5,
+            "regularization_lambda": 0.0,
+            "regularization_type": "l2",
+            "should_shuffle": true,
+            "staircase": false,
+            "steps_per_checkpoint": 0,
+            "train_steps": null,
+            "type": "trainer",
+            "validation_field": "combined",
+            "validation_metric": "loss"
+        }
+    },
+    "data_format": "csv",
+    "dataset": "/Users/guq/projects/galaxy_dev3/database/jobs_directory/000/103/working/temperature_la.csv",
+    "ludwig_version": "0.6.1",
+    "random_seed": 42,
+    "torch_version": "1.12.1+cu102"
+}
