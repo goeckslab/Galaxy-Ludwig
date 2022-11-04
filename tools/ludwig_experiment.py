@@ -8,9 +8,8 @@ from jinja_report import generate_report
 from ludwig.experiment import cli
 from ludwig.globals import (
     PREDICTIONS_PARQUET_FILE_NAME,
-    TRAIN_SET_METADATA_FILE_NAME,
     TEST_STATISTICS_FILE_NAME,
-
+    TRAIN_SET_METADATA_FILE_NAME,
 )
 from ludwig.visualize import visualizations_registry
 

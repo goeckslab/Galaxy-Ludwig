@@ -5,10 +5,10 @@ import sys
 
 from jinja_report import generate_report
 
-from ludwig.hyperopt_cli import cli
 from ludwig.globals import (
     HYPEROPT_STATISTICS_FILE_NAME,
 )
+from ludwig.hyperopt_cli import cli
 from ludwig.visualize import visualizations_registry
 
 from model_unpickler import SafeUnpickler
