@@ -6,6 +6,12 @@ import sys
 from jinja_report import generate_report
 
 from ludwig.experiment import cli
+from ludwig.globals import (
+    PREDICTIONS_PARQUET_FILE_NAME,
+    TRAIN_SET_METADATA_FILE_NAME,
+    TEST_STATISTICS_FILE_NAME,
+
+)
 from ludwig.visualize import visualizations_registry
 
 from model_unpickler import SafeUnpickler
@@ -57,16 +63,16 @@ def make_visualizations(ludwig_output_directory_name):
     )
     test_statistics = os.path.join(
         ludwig_output_directory,
-        "test_statistics.json",
+        TEST_STATISTICS_FILE_NAME,
     )
     ground_truth_metadata = os.path.join(
         ludwig_output_directory,
         "model",
-        "training_set_metadata.json",
+        TRAIN_SET_METADATA_FILE_NAME,
     )
     probabilities = os.path.join(
         ludwig_output_directory,
-        "predictions.parquet",
+        PREDICTIONS_PARQUET_FILE_NAME,
     )
 
     for viz in visualizations:

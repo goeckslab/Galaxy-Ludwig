@@ -6,6 +6,9 @@ import sys
 from jinja_report import generate_report
 
 from ludwig.hyperopt_cli import cli
+from ludwig.globals import (
+    HYPEROPT_STATISTICS_FILE_NAME,
+)
 from ludwig.visualize import visualizations_registry
 
 from model_unpickler import SafeUnpickler
@@ -28,7 +31,7 @@ for ix, arg in enumerate(sys.argv):
 
 hyperopt_stats_path = os.path.join(
     output_directory,
-    "hyperopt", "hyperopt_statistics.json"
+    "hyperopt", HYPEROPT_STATISTICS_FILE_NAME
 )
 
 visualizations = ["hyperopt_report", "hyperopt_hiplot"]
