@@ -6,7 +6,7 @@
     <expand macro="python_requirements" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
-    <command detect_errors="aggressive">
+    <command>
         <![CDATA[
             #if $config
             ln -sf '$config' "`pwd`/config.yml";
@@ -67,17 +67,12 @@
                 --skip_save_predictions
                 #end if
                 --skip_save_k_fold_split_indices &&
-            cd experiment_run &&
+
             mkdir -p '$output_model.extra_files_path' &&
-            cp -r model/* '$output_model.extra_files_path' &&
-            #if not $skip_save_predictions
-            cp '$__tool_directory__/ludwig_predict_result.html' '$output_pred' &&
-            mkdir -p '$output_pred.extra_files_path' &&
-            mv predictions.parquet predictions.shapes.json '$output_pred.extra_files_path' &&
-            #end if
-            cp '$__tool_directory__/ludwig_experiment_result.html' '$output_stat' &&
-            mkdir -p '$output_stat.extra_files_path' &&
-            cp *.json '$output_stat.extra_files_path' &&
+            cp -r experiment_run/model/*.json experiment_run/model/model_weights '$output_model.extra_files_path' &&
+            mkdir -p '$output_report.extra_files_path' &&
+            cp experiment_run/*.json experiment_run/*.parquet '$output_report.extra_files_path' &&
+            cp -r visualizations '$output_report.extra_files_path' &&
 
             echo "Experiment is Done!"
         ]]>
@@ -115,10 +110,7 @@
     </inputs>       
     <outputs>
         <data format="ludwig_model" name="output_model" label="${tool.name} trained model on ${on_string}" />
-        <data format="html" name="output_stat" label="${tool.name} description and statistics on ${on_string}" />
-        <data format="html" name="output_pred" label="${tool.name} predictions parquet on ${on_string}" >
-            <filter>not skip_save_predictions</filter>
-        </data>
+        <data format="html" name="output_report" from_work_dir="smart_report.html" label="${tool.name} report on ${on_string}" />
         <collection type="list" name="output_pred_csv" label="${tool.name} predictions CSV on ${on_string}" >
             <discover_datasets pattern="(?P&lt;designation&gt;.+)\.csv" format="csv" directory="experiment_run" />
             <filter>not skip_save_predictions</filter>
@@ -129,7 +121,13 @@
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="config" value="temperature_config.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
-            <output name="output_stat" file="temperature_experiment.html" compare="sim_size" delta="10" />
+            <output name="output_report" file="temperature_experiment_report.html" compare="sim_size" delta="10" >
+                <extra_files type="file" name="predictions.parquet" value="temp_predictions.parquet" compare="sim_size" delta="50" />
+                <extra_files type="file" name="predictions.shapes.json" value="temp_predictions.shapes.json" lines_diff="10" />
+                <extra_files type="file" name="test_statistics.json" value="temp_test_statistics.json" lines_diff="10" />
+                <extra_files type="file" name="training_statistics.json" value="temp_training_statistics.json" compare="sim_size" delta="50" />
+                <extra_files type="file" name="description.json" value="temp_description.json" lines_diff="10" />
+            </output>
         </test>
     </tests>
     <help>
