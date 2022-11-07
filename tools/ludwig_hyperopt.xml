@@ -64,7 +64,10 @@
             hyperopt_stats_path='hyperopt_statistics.json' &&
             mkdir -p '$output_hyperopt.extra_files_path' &&
             cp "hyperopt/\$hyperopt_stats_path" '$output_hyperopt.extra_files_path' &&
-            cp -r visualizations '$output_hyperopt.extra_files_path'
+            cp -r visualizations '$output_hyperopt.extra_files_path' &&
+            best_trail=\$(cat ../outputs/tool_stdout | grep "^Current best trial:" | tail -1 | cut -d" " -f 4) &&
+            mkdir -p '$output_model.extra_files_path' &&
+            cp hyperopt/trial_\$best_trail/hyperopt_run/model/*.json hyperopt/trial_\$best_trail/hyperopt_run/model/model_weights '$output_model.extra_files_path'
 
         ]]>
     </command>
@@ -91,10 +94,9 @@
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
-        <!-- <collection format="ludwig_model" type="list" name="output_models" label="${tool.name} trained models on ${on_string}" >
-            <filter>save_model</filter>
-        </collection> -->
-        <data format="html" name="output_hyperopt" from_work_dir="smart_report.html" label="${tool.name} on ${on_string}" />
+        <data format="ludwig_model" name="output_model" label="${tool.name} best model on ${on_string}" >
+        </data>
+        <data format="html" name="output_hyperopt" from_work_dir="smart_report.html" label="${tool.name} report on ${on_string}" />
     </outputs>
     <tests>
         <test>
@@ -116,6 +118,8 @@ Hyperparameter tuning.
 
 **Output**
 
+- Hyperopt report
+- The best Ludwig model
 
 
         ]]>
