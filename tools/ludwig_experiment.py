@@ -127,9 +127,11 @@ def render_report(
         yaml.dump(report_config, fh)
 
     report_path = os.path.join(output_directory, "smart_report.html")
-    with open(report_path, "w") as fh:
-        html = generate_report.main(report_config, schema={"html_height": 800})
-        fh.write(html)
+    generate_report.main(
+        report_config,
+        schema={"html_height": 800},
+        outfile=report_path,
+    )
 
 
 if __name__ == "__main__":
