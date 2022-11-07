@@ -65,9 +65,9 @@
             mkdir -p '$output_hyperopt.extra_files_path' &&
             cp "hyperopt/\$hyperopt_stats_path" '$output_hyperopt.extra_files_path' &&
             cp -r visualizations '$output_hyperopt.extra_files_path' &&
-            best_trail=\$(cat ../outputs/tool_stdout | grep "^Current best trial:" | tail -1 | cut -d" " -f 4) &&
+            best_trial=\$(cat ../outputs/tool_stdout | grep "^Current best trial:" | tail -1 | cut -d" " -f 4) &&
             mkdir -p '$output_model.extra_files_path' &&
-            cp hyperopt/trial_\$best_trail/hyperopt_run/model/*.json hyperopt/trial_\$best_trail/hyperopt_run/model/model_weights '$output_model.extra_files_path'
+            cp hyperopt/trial_\$best_trial/hyperopt_run/model/*.json hyperopt/trial_\$best_trial/hyperopt_run/model/model_weights '$output_model.extra_files_path'
 
         ]]>
     </command>
