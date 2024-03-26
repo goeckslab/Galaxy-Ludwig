@@ -4,6 +4,7 @@ import pickle
 import sys
 
 from jinja_report import generate_report
+
 from ludwig.experiment import cli
 from ludwig.globals import (
     PREDICTIONS_PARQUET_FILE_NAME,
