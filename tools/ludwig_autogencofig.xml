@@ -26,7 +26,6 @@
     
     <!-- <param name="output_feature" type="" data_ref="input_file" multiple="True" numerical="False" label="Output Feature"> -->
     <param argument="output_feature" type="text" value="" label="Output Feature" />
-    <param name="config" type="text" area="true" />
     </inputs>
 
     <outputs>
