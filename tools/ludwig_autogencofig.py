@@ -1,5 +1,4 @@
 import argparse
-
 import logging
 
 from ludwig import automl
