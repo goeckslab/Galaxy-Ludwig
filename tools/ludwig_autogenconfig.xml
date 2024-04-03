@@ -11,7 +11,7 @@
             #if $input_file
             ln -sf '$input_file' "`pwd`/${input_file.element_identifier}";
             #end if
-            python '$__tool_directory__/ludwig_autogencofig.py' 
+            python '$__tool_directory__/ludwig_autogenconfig.py' 
                 #if $input_file   
                 --dataset "`pwd`/${input_file.element_identifier}"
                 #end if
