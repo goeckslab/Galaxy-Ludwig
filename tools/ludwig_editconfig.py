@@ -13,7 +13,17 @@ def main():
     config_str = sys.argv[1]
     output_file_path = sys.argv[2]
 
+    # Galaxy text box will replace
+    #  ‘\n’, ‘<>‘, [], ‘’ 
+    # into 
+    # “_cn_“, “__lt__*__gt__“,
+    # “__ob____cb__“, “__sq____sq__”
+    # So replace them back
     config_str = config_str.replace("__cn__", "\n")
+    config_str = config_str.replace("__lt__", "<")
+    config_str = config_str.replace("__gt__", ">")
+    config_str = config_str.replace("__ob____cb__", "[]")
+    config_str = config_str.replace("__sq____sq__", "''")
 
     # Load YAML config from input string
     try:
