@@ -1,0 +1,24 @@
+<tool id="ludwig_config_editor" name="Ludwig Config Editor" version="@VERSION@" profile="@PROFILE@">
+    <description>Edit a config file for Ludwig training.</description>
+    <macros>
+        <import>ludwig_macros.xml</import>
+    </macros>
+    <expand macro="macro_stdio" />
+    <version_command>echo "@VERSION@"</version_command>
+    <command>
+        <![CDATA[
+            python '$__tool_directory__/ludwig_editconfig.py' "$config" "$output"
+        ]]>
+    </command>
+    <inputs>
+        <param name="config" type="text" area="true" />
+    </inputs>
+
+    <outputs>
+        <data name="output" format="yaml" label="${tool.name}" />
+    </outputs>
+</tool>
+
+
+
+
