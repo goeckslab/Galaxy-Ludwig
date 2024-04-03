@@ -17,8 +17,6 @@ def main():
     
     args_init = ["--dataset", args.dataset, "--target", args.output_feature, "--output", args.output]
     automl.cli_init_config(args_init)
-    args_render = ["--config", args.output, "--output", args.output]
-    defaults.cli_render_config(args_render)
 
 if __name__ == "__main__":
     main()
