@@ -26,7 +26,7 @@ def main():
     # Write YAML data to output file
     try:
         with open(output_file_path, 'w') as outfile:
-            yaml.safe_dump(config_data, outfile, default_flow_style=False)
+            yaml.safe_dump(config_data, outfile, sort_keys=False)
         LOG.info(f"YAML config successfully written to {output_file_path}")
     except IOError as e:
         LOG.error(f"Error writing to file: {e}")
