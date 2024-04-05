@@ -1,0 +1,45 @@
+<tool id="ludwig_config_generator" name="Ludwig Config Generator" version="@VERSION@" profile="@PROFILE@">
+    <description>Auto-generate a config file from a dataset for Ludwig training.</description>
+    <macros>
+        <import>ludwig_macros.xml</import>
+    </macros>
+    <expand macro="python_requirements" />
+    <expand macro="macro_stdio" />
+    <version_command>echo "@VERSION@"</version_command>
+    <command>
+        <![CDATA[
+            #if $input_file
+            ln -sf '$input_file' "`pwd`/${input_file.element_identifier}";
+            #end if
+            python '$__tool_directory__/ludwig_autogenconfig.py' 
+                #if $input_file   
+                --dataset "`pwd`/${input_file.element_identifier}"
+                #end if
+                --output_feature '$output_feature' 
+                --output '$output'
+                #if $renderconfig
+                '$renderconfig'
+                #end if
+        ]]>
+    </command>
+    <inputs>
+        <param name="input_file" type="data" label="Select CSV File" format="tabular,csv,h5,json,txt" help="Choose a dataset file for processing">
+    
+        </param>
+    
+    <!-- <param name="output_feature" type="" data_ref="input_file" multiple="True" numerical="False" label="Output Feature"> -->
+    <param argument="output_feature" type="text" value="" label="Output Feature" />
+    <param name="renderconfig" type="boolean" checked="true" label="Rendered config?"
+            truevalue="--renderconfig" falsevalue="" />
+    </inputs>
+
+    <outputs>
+        <data name="output" format="yaml" label="${tool.name}" />
+    </outputs>
+
+    <tests>
+        <test>
+            <!-- TO DO -->
+        </test>
+    </tests>
+</tool>
