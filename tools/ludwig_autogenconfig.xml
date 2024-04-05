@@ -15,8 +15,11 @@
                 #if $input_file   
                 --dataset "`pwd`/${input_file.element_identifier}"
                 #end if
-                --output_feature '$output_feature'
+                --output_feature '$output_feature' 
                 --output '$output'
+                #if $renderconfig
+                '$renderconfig'
+                #end if
         ]]>
     </command>
     <inputs>
@@ -26,6 +29,8 @@
     
     <!-- <param name="output_feature" type="" data_ref="input_file" multiple="True" numerical="False" label="Output Feature"> -->
     <param argument="output_feature" type="text" value="" label="Output Feature" />
+    <param name="renderconfig" type="boolean" checked="true" label="Rendered config?"
+            truevalue="--renderconfig" falsevalue="" />
     </inputs>
 
     <outputs>
