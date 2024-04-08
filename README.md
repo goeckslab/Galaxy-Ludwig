@@ -18,7 +18,7 @@ We assume that you have Galaxy running and docker installed in your server/lapto
 </section>
 ```
 
-* Configure the `job_conf.yml` under `lib/galaxy/config` to enable the docker for the environment you want the Ludwig related job running in. This is an example:
+* Configure the `job_conf.yml` under `lib/galaxy/config/sample` to enable the docker for the environment you want the Ludwig related job running in. This is an example:
 ```
 execution:
  default: local
