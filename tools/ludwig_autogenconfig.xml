@@ -23,12 +23,13 @@
         ]]>
     </command>
     <inputs>
-        <param name="input_file" type="data" label="Select CSV File" format="tabular,csv,h5,json,txt" help="Choose a dataset file for processing">
-    
+        <param name="input_file" type="data" label="Select CSV File" format="tabular,csv" help="Choose a dataset file for processing">
+
         </param>
+        <param name="output_feature" multiple="false" type="data_column" use_header_names="true" data_ref="input_file" label="Select target column(s):" />
     
     <!-- <param name="output_feature" type="" data_ref="input_file" multiple="True" numerical="False" label="Output Feature"> -->
-    <param argument="output_feature" type="text" value="" label="Output Feature" />
+    <!-- <param argument="output_feature" type="text" value="" label="Output Feature" /> -->
     <param name="renderconfig" type="boolean" checked="true" label="Rendered config?"
             truevalue="--renderconfig" falsevalue="" />
     </inputs>
