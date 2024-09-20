@@ -18,16 +18,29 @@ We assume that you have Galaxy running and docker installed in your server/lapto
 </section>
 ```
 
-* Configure the `job_conf.yml` under `lib/galaxy/config` to enable the docker for the environment you want the Ludwig related job running in. This is an example:
+* This is an example of a `job_conf.yml` file located under `lib/galaxy/config` that you can create to enable Docker for a local Galaxy instance where you want Ludwig-related jobs to run:
 ```
+runners:
+  local:
+    load: galaxy.jobs.runners.local:LocalJobRunner
+    workers: 4
 execution:
- default: local
- environments:
-   local:
-     runner: local
-     docker_enabled: true
+  default: local
+  environments:
+    local:
+      runner: local
+      docker_enabled: true
 ```
 If you are using an older version of Galaxy, then `job_conf.xml` would be something you want to configure instead of `job_conf.yml`. Then you would want to configure destination instead of execution and environment. 
 See [documentation](https://docs.galaxyproject.org/en/master/admin/jobs.html#running-jobs-in-containers) for job_conf configuration. 
 * If you haven’t set `sanitize_all_html: false` in `galaxy.yml`, please set it to False to enable our HTML report functionality.
+
+# Get Galaxy-Ludwig docker image
+
+This step is optional.
+If you want to speed up your runs, execute the following command:
+```
+docker pull quay.io/goeckslab/galaxy-ludwig:0.10.3
+```
+
 * Should be good to go. 
