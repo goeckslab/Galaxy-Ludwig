@@ -488,7 +488,7 @@
         <data format="yaml" name="output" label="${tool.name}" />
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="1">
             <output name="output" file="render_config01.yml" />
         </test>
     </tests>
