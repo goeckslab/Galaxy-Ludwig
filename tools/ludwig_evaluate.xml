@@ -73,7 +73,7 @@
         <data format="html" name="output_report" from_work_dir="outputs/smart_report.html" label="${tool.name} report on ${on_string}" />
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="3">
             <param name="model_path" value="" ftype="ludwig_model">
                 <composite_data value="temp_model01/model_hyperparameters.json" />
                 <composite_data value="temp_model01/model_weights" />
