@@ -10,7 +10,7 @@ from ludwig.constants import (
     PROC_COLUMN,
     TRAINER,
 )
-from ludwig.utils.defaults import merge_with_defaults
+from ludwig.schema.model_types.utils import merge_with_defaults
 
 import yaml
 

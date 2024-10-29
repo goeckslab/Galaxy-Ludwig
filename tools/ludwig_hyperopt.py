@@ -9,7 +9,7 @@ from ludwig.globals import (
     HYPEROPT_STATISTICS_FILE_NAME,
 )
 from ludwig.hyperopt_cli import cli
-from ludwig.visualize import visualizations_registry
+from ludwig.visualize import get_visualizations_registry
 
 from model_unpickler import SafeUnpickler
 
@@ -38,7 +38,7 @@ visualizations = ["hyperopt_report", "hyperopt_hiplot"]
 
 viz_output_directory = os.path.join(output_directory, "visualizations")
 for viz in visualizations:
-    viz_func = visualizations_registry[viz]
+    viz_func = get_visualizations_registry()[viz]
     viz_func(
         hyperopt_stats_path=hyperopt_stats_path,
         output_directory=viz_output_directory,

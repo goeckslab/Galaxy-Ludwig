@@ -11,7 +11,7 @@ from ludwig.globals import (
     TEST_STATISTICS_FILE_NAME,
     TRAIN_SET_METADATA_FILE_NAME,
 )
-from ludwig.visualize import visualizations_registry
+from ludwig.visualize import get_visualizations_registry
 
 from model_unpickler import SafeUnpickler
 
@@ -75,7 +75,7 @@ def make_visualizations(ludwig_output_directory_name):
     )
 
     for viz in visualizations:
-        viz_func = visualizations_registry[viz]
+        viz_func = get_visualizations_registry()[viz]
         try:
             viz_func(
                 training_statistics=[training_statistics],
