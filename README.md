@@ -4,7 +4,7 @@ A library of Galaxy deep learning tools based on Ludwig.
 # Install Galaxy-Ludwig into Galaxy
 We assume that you have Galaxy running and docker installed in your server/laptop. 
 * Create a new folder named ludwig(or whatever) under Galaxy’s tools folder.
-* Copy all XML, py files under the tools folder in this repo to the ludwig folder(the folder you created in the last step).
+* Select and download the branch you want to install and use. Copy all XML, py files under the tools folder in this repo to the ludwig folder(the folder you created in the last step).
 * Update `tool_conf.xml` to include Galaxy-Ludwig. See [documentation](https://docs.galaxyproject.org/en/master/admin/tool_panel.html) for more details. This is an example:
 ```
 <section id="ludwig" name="Ludwig Applications">
