@@ -3,9 +3,11 @@ on:
   push:
     branches:
       - main
+      - 'release/**'
   pull_request:
     branches:
       - main
+      - 'release/**'
 env:
   GALAXY_FORK: galaxyproject
   GALAXY_BRANCH: release_22.05
