@@ -8,27 +8,38 @@
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
+            #import re
             #if $config
-            ln -sf '$config' "`pwd`/config.yml";
+                ln -sf '$config' "./config.yml";
             #end if
+
             #if $dataset
-            ln -sf '$dataset' "`pwd`/${dataset.element_identifier}";
+                set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
+                ln -sf '$dataset' "./${sanitized_dataset}";
             #end if
+
             #if $training_set
-            ln -sf '$training_set' "`pwd`/${training_set.element_identifier}";
+                set $sanitized_training_set = re.sub('[^\w\-_\.]', '_', $training_set.element_identifier)
+                ln -sf '$training_set' "./${sanitized_training_set}";
             #end if
+
             #if $validation_set
-            ln -sf '$validation_set' "`pwd`/${validation_set.element_identifier}";
+                set $sanitized_validation_set = re.sub('[^\w\-_\.]', '_', $validation_set.element_identifier)
+                ln -sf '$validation_set' "./${sanitized_validation_set}";
             #end if
+
             #if $test_set
-            ln -sf '$test_set' "`pwd`/${test_set.element_identifier}";
+                set $sanitized_test_set = re.sub('[^\w\-_\.]', '_', $test_set.element_identifier)
+                ln -sf '$test_set' "./${sanitized_test_set}";
             #end if
+
             #if $raw_data
-            unzip -o -q '$raw_data' -d ./;
+                unzip -o -q '$raw_data' -d ./;
             #end if
+
             python '$__tool_directory__/ludwig_experiment.py'
                 #if $config
-                --config "`pwd`/config.yml"
+                --config "./config.yml"
                 #end if
                 #if $model_load_path
                 --model_load_path '$model_load_path.extra_files_path'
@@ -37,16 +48,16 @@
                 --model_resume_path '$model_resume_path.model_resume_path'
                 #end if
                 #if $dataset
-                --dataset "`pwd`/${dataset.element_identifier}"
+                --dataset "./${sanitized_dataset}"
                 #end if
                 #if $training_set
-                --training_set "`pwd`/${training_set.element_identifier}"
+                --training_set "./${sanitized_training_set}"
                 #end if
                 #if $validation_set
-                --validation_set "`pwd`/${validation_set.element_identifier}"
+                --validation_set "./${sanitized_validation_set}"
                 #end if
                 #if $test_set
-                --test_set "`pwd`/${test_set.element_identifier}"
+                --test_set "./${sanitized_test_set}"
                 #end if
                 #if $training_set_metadata
                 --training_set_metadata '$training_set_metadata'
@@ -57,7 +68,7 @@
                 #if $k_fold
                 --k_fold '$k_fold'
                 #end if
-                --output_directory "`pwd`"
+                --output_directory "."
                 --data_format '$data_format'
                 --backend local
                 --eval_split '$eval_split'
@@ -74,7 +85,7 @@
             cp experiment_run/*.json experiment_run/*.parquet '$output_report.extra_files_path' &&
             cp -r visualizations '$output_report.extra_files_path' &&
 
-            echo "Experiment is Done!"
+            echo "Experiment is Done!"        
         ]]>
     </command>
     <configfiles>
@@ -102,8 +113,8 @@
             <option value="test" selected="true">test</option>
             <option value="full">full</option>
         </param>
-        <param argument="k_fold" type="integer" value="" optional="true" label="number of folds for a k-fold cross validation run" />
-        <param argument="random_seed" type="integer" value="42" label="Randonness seed" />
+        <param argument="k_fold" type="integer" value="" optional="true" label="number of folds for a k-fold cross validation run" min="2" max="10"/>
+        <param argument="random_seed" type="integer" value="42" label="Randomness seed" min="0" max="999999"/>
         <param argument="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
         <param argument="skip_save_predictions" type="boolean" checked="false" label="Whether to skip saving predictions?" />
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>

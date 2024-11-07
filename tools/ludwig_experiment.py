@@ -124,7 +124,7 @@ def render_report(
     ]
 
     with open(os.path.join(output_directory, "report_config.yml"), 'w') as fh:
-        yaml.dump(report_config, fh)
+        yaml.safe_dump(report_config, fh)
 
     report_path = os.path.join(output_directory, "smart_report.html")
     generate_report.main(
