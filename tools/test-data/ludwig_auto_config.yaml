@@ -1,0 +1,777 @@
+input_features:
+- active: true
+  name: Unnamed_ 0
+  type: number
+  column: Unnamed_ 0
+  proc_column: Unnamed__0_sMoadH
+  tied: null
+  preprocessing:
+    missing_value_strategy: fill_with_const
+    fill_value: 0.0
+    computed_fill_value: 0.0
+    normalization: zscore
+    outlier_strategy: null
+    outlier_threshold: 3.0
+    computed_outlier_fill_value: 0.0
+  encoder:
+    type: passthrough
+    skip: false
+- active: true
+  name: temperature
+  type: number
+  column: temperature
+  proc_column: temperature_sMoadH
+  tied: null
+  preprocessing:
+    missing_value_strategy: fill_with_const
+    fill_value: 0.0
+    computed_fill_value: 0.0
+    normalization: zscore
+    outlier_strategy: null
+    outlier_threshold: 3.0
+    computed_outlier_fill_value: 0.0
+  encoder:
+    type: passthrough
+    skip: false
+output_features:
+- active: true
+  name: temperature_feature
+  type: text
+  column: temperature_feature
+  proc_column: temperature_feature_IgonTM
+  reduce_input: sum
+  default_validation_metric: loss
+  dependencies: []
+  reduce_dependencies: sum
+  input_size: null
+  num_classes: null
+  decoder:
+    type: generator
+    fc_layers: null
+    num_fc_layers: 0
+    fc_output_size: 256
+    fc_use_bias: true
+    fc_weights_initializer: xavier_uniform
+    fc_bias_initializer: zeros
+    fc_norm: null
+    fc_norm_params: null
+    fc_activation: relu
+    fc_dropout: 0.0
+    vocab_size: null
+    max_sequence_length: null
+    cell_type: gru
+    input_size: 256
+    reduce_input: sum
+    num_layers: 1
+  loss:
+    type: sequence_softmax_cross_entropy
+    weight: 1.0
+    class_weights: null
+    robust_lambda: 0
+    confidence_penalty: 0
+    class_similarities: null
+    class_similarities_temperature: 0
+    unique: false
+  class_similarities: null
+  preprocessing:
+    pretrained_model_name_or_path: null
+    tokenizer: space_punct
+    vocab_file: null
+    sequence_length: null
+    max_sequence_length: 256
+    most_common: 20000
+    padding_symbol: <PAD>
+    unknown_symbol: <UNK>
+    padding: right
+    lowercase: false
+    missing_value_strategy: drop_row
+    fill_value: <UNK>
+    computed_fill_value: <UNK>
+    ngram_size: 2
+    cache_encoder_embeddings: false
+    compute_idf: false
+model_type: ecd
+trainer:
+  validation_field: temperature_feature
+  validation_metric: loss
+  early_stop: 5
+  skip_all_evaluation: false
+  enable_profiling: false
+  profiler:
+    wait: 1
+    warmup: 1
+    active: 3
+    repeat: 5
+    skip_first: 0
+  learning_rate: 0.001
+  learning_rate_scheduler:
+    decay: null
+    decay_rate: 0.96
+    decay_steps: 10000
+    staircase: false
+    reduce_on_plateau: 0
+    reduce_on_plateau_patience: 10
+    reduce_on_plateau_rate: 0.1
+    warmup_evaluations: 0
+    warmup_fraction: 0.0
+    reduce_eval_metric: loss
+    reduce_eval_split: training
+    t_0: null
+    t_mult: 1
+    eta_min: 0
+  epochs: 100
+  checkpoints_per_epoch: 0
+  train_steps: null
+  eval_steps: null
+  steps_per_checkpoint: 0
+  effective_batch_size: auto
+  batch_size: auto
+  max_batch_size: 1099511627776
+  gradient_accumulation_steps: auto
+  eval_batch_size: null
+  evaluate_training_set: false
+  optimizer:
+    type: adam
+    betas:
+    - 0.9
+    - 0.999
+    eps: 1.0e-08
+    weight_decay: 0.0
+    amsgrad: false
+  regularization_type: l2
+  regularization_lambda: 0.0
+  should_shuffle: true
+  increase_batch_size_on_plateau: 0
+  increase_batch_size_on_plateau_patience: 5
+  increase_batch_size_on_plateau_rate: 2.0
+  increase_batch_size_eval_metric: loss
+  increase_batch_size_eval_split: training
+  gradient_clipping:
+    clipglobalnorm: 0.5
+    clipnorm: null
+    clipvalue: null
+  learning_rate_scaling: linear
+  bucketing_field: null
+  use_mixed_precision: false
+  compile: false
+  enable_gradient_checkpointing: false
+preprocessing:
+  sample_ratio: 1.0
+  sample_size: null
+  oversample_minority: null
+  undersample_majority: null
+  split:
+    type: random
+    probabilities:
+    - 0.7
+    - 0.1
+    - 0.2
+  global_max_sequence_length: null
+defaults:
+  audio:
+    preprocessing:
+      audio_file_length_limit_in_s: 7.5
+      missing_value_strategy: bfill
+      fill_value: null
+      computed_fill_value: null
+      in_memory: true
+      padding_value: 0.0
+      norm: null
+      type: fbank
+      window_length_in_s: 0.04
+      window_shift_in_s: 0.02
+      num_fft_points: null
+      window_type: hamming
+      num_filter_bands: 80
+    encoder:
+      type: parallel_cnn
+      skip: false
+      dropout: 0.0
+      activation: relu
+      max_sequence_length: null
+      representation: dense
+      vocab: null
+      use_bias: true
+      bias_initializer: zeros
+      weights_initializer: xavier_uniform
+      should_embed: true
+      embedding_size: 256
+      embeddings_on_cpu: false
+      embeddings_trainable: true
+      pretrained_embeddings: null
+      reduce_output: sum
+      num_conv_layers: null
+      conv_layers: null
+      num_filters: 256
+      filter_size: 3
+      pool_function: max
+      pool_size: null
+      output_size: 256
+      norm: null
+      norm_params: null
+      num_fc_layers: null
+      fc_layers: null
+  bag:
+    preprocessing:
+      tokenizer: space
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+      lowercase: false
+      most_common: 10000
+    encoder:
+      type: embed
+      skip: false
+      dropout: 0.0
+      activation: relu
+      vocab: null
+      representation: dense
+      embedding_size: 50
+      force_embedding_size: false
+      embeddings_on_cpu: false
+      embeddings_trainable: true
+      pretrained_embeddings: null
+      use_bias: true
+      bias_initializer: zeros
+      weights_initializer: xavier_uniform
+      output_size: 10
+      norm: null
+      norm_params: null
+      num_fc_layers: 0
+      fc_layers: null
+  binary:
+    decoder:
+      type: regressor
+      fc_layers: null
+      num_fc_layers: 0
+      fc_output_size: 256
+      fc_use_bias: true
+      fc_weights_initializer: xavier_uniform
+      fc_bias_initializer: zeros
+      fc_norm: null
+      fc_norm_params: null
+      fc_activation: relu
+      fc_dropout: 0.0
+      input_size: null
+      use_bias: true
+      weights_initializer: xavier_uniform
+      bias_initializer: zeros
+    loss:
+      type: binary_weighted_cross_entropy
+      weight: 1.0
+      positive_class_weight: null
+      robust_lambda: 0
+      confidence_penalty: 0
+    preprocessing:
+      missing_value_strategy: fill_with_false
+      fallback_true_label: null
+      fill_value: null
+      computed_fill_value: null
+    encoder:
+      type: passthrough
+      skip: false
+  category:
+    decoder:
+      type: classifier
+      fc_layers: null
+      num_fc_layers: 0
+      fc_output_size: 256
+      fc_use_bias: true
+      fc_weights_initializer: xavier_uniform
+      fc_bias_initializer: zeros
+      fc_norm: null
+      fc_norm_params: null
+      fc_activation: relu
+      fc_dropout: 0.0
+      input_size: null
+      num_classes: null
+      use_bias: true
+      weights_initializer: xavier_uniform
+      bias_initializer: zeros
+    loss:
+      type: softmax_cross_entropy
+      weight: 1.0
+      class_weights: null
+      robust_lambda: 0
+      confidence_penalty: 0
+      class_similarities: null
+      class_similarities_temperature: 0
+    preprocessing:
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+      lowercase: false
+      most_common: 10000
+      cache_encoder_embeddings: false
+    encoder:
+      type: dense
+      skip: false
+      dropout: 0.0
+      vocab: null
+      embedding_initializer: null
+      embedding_size: 50
+      embeddings_on_cpu: false
+      embeddings_trainable: true
+      pretrained_embeddings: null
+  date:
+    preprocessing:
+      missing_value_strategy: fill_with_const
+      fill_value: ''
+      computed_fill_value: ''
+      datetime_format: null
+    encoder:
+      type: embed
+      skip: false
+      dropout: 0.0
+      activation: relu
+      use_bias: true
+      bias_initializer: zeros
+      weights_initializer: xavier_uniform
+      embedding_size: 10
+      embeddings_on_cpu: false
+      output_size: 10
+      norm: null
+      norm_params: null
+      num_fc_layers: 0
+      fc_layers: null
+  h3:
+    preprocessing:
+      missing_value_strategy: fill_with_const
+      fill_value: 576495936675512319
+      computed_fill_value: 576495936675512319
+    encoder:
+      type: embed
+      skip: false
+      dropout: 0.0
+      activation: relu
+      use_bias: true
+      bias_initializer: zeros
+      weights_initializer: xavier_uniform
+      embedding_size: 10
+      embeddings_on_cpu: false
+      reduce_output: sum
+      output_size: 10
+      norm: null
+      norm_params: null
+      num_fc_layers: 0
+      fc_layers: null
+  image:
+    decoder:
+      type: unet
+      fc_layers: null
+      num_fc_layers: 0
+      fc_output_size: 256
+      fc_use_bias: true
+      fc_weights_initializer: xavier_uniform
+      fc_bias_initializer: zeros
+      fc_norm: null
+      fc_norm_params: null
+      fc_activation: relu
+      fc_dropout: 0.0
+      input_size: 1024
+      height: null
+      width: null
+      num_channels: null
+      conv_norm: batch
+      num_classes: null
+    loss:
+      type: softmax_cross_entropy
+      weight: 1.0
+      class_weights: null
+      robust_lambda: 0
+      confidence_penalty: 0
+      class_similarities: null
+      class_similarities_temperature: 0
+    preprocessing:
+      missing_value_strategy: bfill
+      fill_value: null
+      computed_fill_value: null
+      height: null
+      width: null
+      num_channels: null
+      resize_method: interpolate
+      infer_image_num_channels: true
+      infer_image_dimensions: true
+      infer_image_max_height: 256
+      infer_image_max_width: 256
+      infer_image_sample_size: 100
+      standardize_image: null
+      in_memory: true
+      num_processes: 1
+      requires_equal_dimensions: false
+      num_classes: null
+      infer_image_num_classes: false
+    encoder:
+      type: stacked_cnn
+      skip: false
+      conv_dropout: 0.0
+      conv_activation: relu
+      height: null
+      width: null
+      num_channels: null
+      out_channels: 32
+      kernel_size: 3
+      stride: 1
+      padding_mode: zeros
+      padding: valid
+      dilation: 1
+      groups: 1
+      pool_function: max
+      pool_kernel_size: 2
+      pool_stride: null
+      pool_padding: 0
+      pool_dilation: 1
+      output_size: 128
+      conv_use_bias: true
+      conv_norm: null
+      conv_norm_params: null
+      num_conv_layers: null
+      conv_layers: null
+      fc_dropout: 0.0
+      fc_activation: relu
+      fc_use_bias: true
+      fc_bias_initializer: zeros
+      fc_weights_initializer: xavier_uniform
+      fc_norm: null
+      fc_norm_params: null
+      num_fc_layers: 1
+      fc_layers: null
+    augmentation: []
+  number:
+    decoder:
+      type: regressor
+      fc_layers: null
+      num_fc_layers: 0
+      fc_output_size: 256
+      fc_use_bias: true
+      fc_weights_initializer: xavier_uniform
+      fc_bias_initializer: zeros
+      fc_norm: null
+      fc_norm_params: null
+      fc_activation: relu
+      fc_dropout: 0.0
+      input_size: null
+      use_bias: true
+      weights_initializer: xavier_uniform
+      bias_initializer: zeros
+    loss:
+      type: mean_squared_error
+      weight: 1.0
+    preprocessing:
+      missing_value_strategy: fill_with_const
+      fill_value: 0.0
+      computed_fill_value: 0.0
+      normalization: zscore
+      outlier_strategy: null
+      outlier_threshold: 3.0
+      computed_outlier_fill_value: 0.0
+    encoder:
+      type: passthrough
+      skip: false
+  sequence:
+    decoder:
+      type: generator
+      fc_layers: null
+      num_fc_layers: 0
+      fc_output_size: 256
+      fc_use_bias: true
+      fc_weights_initializer: xavier_uniform
+      fc_bias_initializer: zeros
+      fc_norm: null
+      fc_norm_params: null
+      fc_activation: relu
+      fc_dropout: 0.0
+      vocab_size: null
+      max_sequence_length: null
+      cell_type: gru
+      input_size: 256
+      reduce_input: sum
+      num_layers: 1
+    loss:
+      type: sequence_softmax_cross_entropy
+      weight: 1.0
+      class_weights: null
+      robust_lambda: 0
+      confidence_penalty: 0
+      class_similarities: null
+      class_similarities_temperature: 0
+      unique: false
+    preprocessing:
+      tokenizer: space
+      vocab_file: null
+      sequence_length: null
+      max_sequence_length: 256
+      most_common: 20000
+      padding_symbol: <PAD>
+      unknown_symbol: <UNK>
+      padding: right
+      lowercase: false
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+      ngram_size: 2
+      cache_encoder_embeddings: false
+    encoder:
+      type: embed
+      skip: false
+      dropout: 0.0
+      max_sequence_length: null
+      representation: dense
+      vocab: null
+      weights_initializer: uniform
+      reduce_output: sum
+      embedding_size: 256
+      embeddings_on_cpu: false
+      embeddings_trainable: true
+      pretrained_embeddings: null
+  set:
+    decoder:
+      type: classifier
+      fc_layers: null
+      num_fc_layers: 0
+      fc_output_size: 256
+      fc_use_bias: true
+      fc_weights_initializer: xavier_uniform
+      fc_bias_initializer: zeros
+      fc_norm: null
+      fc_norm_params: null
+      fc_activation: relu
+      fc_dropout: 0.0
+      input_size: null
+      num_classes: null
+      use_bias: true
+      weights_initializer: xavier_uniform
+      bias_initializer: zeros
+    loss:
+      type: sigmoid_cross_entropy
+      weight: 1.0
+      class_weights: null
+    preprocessing:
+      tokenizer: space
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+      lowercase: false
+      most_common: 10000
+    encoder:
+      type: embed
+      skip: false
+      dropout: 0.0
+      activation: relu
+      representation: dense
+      vocab: null
+      use_bias: true
+      bias_initializer: zeros
+      weights_initializer: xavier_uniform
+      embedding_size: 50
+      embeddings_on_cpu: false
+      embeddings_trainable: true
+      pretrained_embeddings: null
+      output_size: 10
+      norm: null
+      norm_params: null
+      num_fc_layers: 0
+      fc_layers: null
+  text:
+    decoder:
+      type: generator
+      fc_layers: null
+      num_fc_layers: 0
+      fc_output_size: 256
+      fc_use_bias: true
+      fc_weights_initializer: xavier_uniform
+      fc_bias_initializer: zeros
+      fc_norm: null
+      fc_norm_params: null
+      fc_activation: relu
+      fc_dropout: 0.0
+      vocab_size: null
+      max_sequence_length: null
+      cell_type: gru
+      input_size: 256
+      reduce_input: sum
+      num_layers: 1
+    loss:
+      type: sequence_softmax_cross_entropy
+      weight: 1.0
+      class_weights: null
+      robust_lambda: 0
+      confidence_penalty: 0
+      class_similarities: null
+      class_similarities_temperature: 0
+      unique: false
+    preprocessing:
+      pretrained_model_name_or_path: null
+      tokenizer: space_punct
+      vocab_file: null
+      sequence_length: null
+      max_sequence_length: 256
+      most_common: 20000
+      padding_symbol: <PAD>
+      unknown_symbol: <UNK>
+      padding: right
+      lowercase: false
+      missing_value_strategy: fill_with_const
+      fill_value: <UNK>
+      computed_fill_value: <UNK>
+      ngram_size: 2
+      cache_encoder_embeddings: false
+      compute_idf: false
+      prompt:
+        template: null
+        task: null
+        retrieval:
+          type: null
+          index_name: null
+          model_name: null
+          k: 0
+    encoder:
+      type: parallel_cnn
+      skip: false
+      dropout: 0.0
+      activation: relu
+      max_sequence_length: null
+      representation: dense
+      vocab: null
+      use_bias: true
+      bias_initializer: zeros
+      weights_initializer: xavier_uniform
+      should_embed: true
+      embedding_size: 256
+      embeddings_on_cpu: false
+      embeddings_trainable: true
+      pretrained_embeddings: null
+      reduce_output: sum
+      num_conv_layers: null
+      conv_layers: null
+      num_filters: 256
+      filter_size: 3
+      pool_function: max
+      pool_size: null
+      output_size: 256
+      norm: null
+      norm_params: null
+      num_fc_layers: null
+      fc_layers: null
+  timeseries:
+    decoder:
+      type: projector
+      fc_layers: null
+      num_fc_layers: 0
+      fc_output_size: 256
+      fc_use_bias: true
+      fc_weights_initializer: xavier_uniform
+      fc_bias_initializer: zeros
+      fc_norm: null
+      fc_norm_params: null
+      fc_activation: relu
+      fc_dropout: 0.0
+      input_size: null
+      output_size: null
+      use_bias: true
+      weights_initializer: xavier_uniform
+      bias_initializer: zeros
+      activation: null
+      multiplier: 1.0
+      clip: null
+    loss:
+      type: huber
+      weight: 1.0
+      delta: 1.0
+    preprocessing:
+      tokenizer: space
+      timeseries_length_limit: 256
+      padding_value: 0.0
+      padding: right
+      missing_value_strategy: fill_with_const
+      fill_value: ''
+      computed_fill_value: ''
+      window_size: 0
+    encoder:
+      type: parallel_cnn
+      skip: false
+      dropout: 0.0
+      activation: relu
+      max_sequence_length: null
+      representation: dense
+      vocab: null
+      use_bias: true
+      bias_initializer: zeros
+      weights_initializer: xavier_uniform
+      should_embed: true
+      embedding_size: 256
+      embeddings_on_cpu: false
+      embeddings_trainable: true
+      pretrained_embeddings: null
+      reduce_output: sum
+      num_conv_layers: null
+      conv_layers: null
+      num_filters: 256
+      filter_size: 3
+      pool_function: max
+      pool_size: null
+      output_size: 256
+      norm: null
+      norm_params: null
+      num_fc_layers: null
+      fc_layers: null
+  vector:
+    decoder:
+      type: projector
+      fc_layers: null
+      num_fc_layers: 0
+      fc_output_size: 256
+      fc_use_bias: true
+      fc_weights_initializer: xavier_uniform
+      fc_bias_initializer: zeros
+      fc_norm: null
+      fc_norm_params: null
+      fc_activation: relu
+      fc_dropout: 0.0
+      input_size: null
+      output_size: null
+      use_bias: true
+      weights_initializer: xavier_uniform
+      bias_initializer: zeros
+      activation: null
+      multiplier: 1.0
+      clip: null
+    loss:
+      type: mean_squared_error
+      weight: 1.0
+    preprocessing:
+      vector_size: null
+      missing_value_strategy: fill_with_const
+      fill_value: ''
+      computed_fill_value: ''
+    encoder:
+      type: dense
+      skip: false
+      dropout: 0.0
+      activation: relu
+      input_size: null
+      output_size: 256
+      use_bias: true
+      bias_initializer: zeros
+      weights_initializer: xavier_uniform
+      norm: null
+      norm_params: null
+      num_layers: 1
+      fc_layers: null
+hyperopt: null
+backend: null
+ludwig_version: 0.10.3
+combiner:
+  type: concat
+  dropout: 0.0
+  activation: relu
+  flatten_inputs: false
+  residual: false
+  use_bias: true
+  bias_initializer: zeros
+  weights_initializer: xavier_uniform
+  num_fc_layers: 0
+  output_size: 256
+  norm: null
+  norm_params: null
+  fc_layers: null

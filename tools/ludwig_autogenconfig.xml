@@ -40,7 +40,13 @@
 
     <tests>
         <test>
-            <!-- TO DO -->
+            <param name="input_file" value="temperature_la.csv" />
+            <param name="output_feature" value="4" />
+            <output name="output" value="ludwig_auto_config.yaml" />
         </test>
     </tests>
+    <help>
+        Auto-generate a config file from a dataset for Ludwig training.
+    </help>
+    <expand macro="macro_citations" />
 </tool>

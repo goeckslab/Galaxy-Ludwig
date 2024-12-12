@@ -1,5 +1,6 @@
 import json
 import sys
+import logging
 
 from ludwig.constants import (
     COMBINER,
@@ -14,10 +15,12 @@ from ludwig.schema.model_types.utils import merge_with_defaults
 
 import yaml
 
-
+logging.basicConfig(level=logging.DEBUG)
+LOG = logging.getLogger(__name__)
 inputs = sys.argv[1]
 with open(inputs, 'r') as handler:
     params = json.load(handler)
+LOG.error(params)
 
 config = {}
 # input features
