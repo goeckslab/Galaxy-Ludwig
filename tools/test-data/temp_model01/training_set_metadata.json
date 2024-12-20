@@ -1,7 +1,7 @@
 {
-    "checksum": "RAkfhGAja1iaIIkYvRMhYA==",
-    "data_train_hdf5_fp": "/private/var/folders/3_/wwvbc5lj6wsdvb1y9pn76nwh0000gn/T/tmpduny30ad/job_working_directory/000/14/working/temperature_la.training.hdf5",
-    "dataset_src": "/private/var/folders/3_/wwvbc5lj6wsdvb1y9pn76nwh0000gn/T/tmpduny30ad/job_working_directory/000/14/working/temperature_la.csv",
+    "checksum": "Jbmy_ivercWYnCSYbcBm8A==",
+    "data_train_hdf5_fp": "/tmp/tmp_nv27oze/job_working_directory/000/3/working/temperature_la.training.hdf5",
+    "dataset_src": "/tmp/tmp_nv27oze/job_working_directory/000/3/working/temperature_la.csv",
     "temperature": {
         "preprocessing": {
             "computed_fill_value": 0.0,

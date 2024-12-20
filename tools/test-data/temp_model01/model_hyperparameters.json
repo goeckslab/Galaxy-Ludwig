@@ -787,7 +787,7 @@
         "undersample_majority": null
     },
     "trainer": {
-        "batch_size": 128,
+        "batch_size": 8,
         "bucketing_field": null,
         "checkpoints_per_epoch": 0,
         "compile": false,
@@ -796,7 +796,7 @@
         "enable_gradient_checkpointing": false,
         "enable_profiling": false,
         "epochs": 2,
-        "eval_batch_size": 16,
+        "eval_batch_size": 128,
         "eval_steps": null,
         "evaluate_training_set": false,
         "gradient_accumulation_steps": 1,

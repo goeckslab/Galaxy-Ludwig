@@ -1,5 +1,5 @@
 {
-    "command": "/Users/qjunhao/Documents/GitHub/Galaxy-Ludwig/tools/ludwig_experiment.py --config /private/var/folders/3_/wwvbc5lj6wsdvb1y9pn76nwh0000gn/T/tmpduny30ad/job_working_directory/000/17/working/config.yml --dataset /private/var/folders/3_/wwvbc5lj6wsdvb1y9pn76nwh0000gn/T/tmpduny30ad/job_working_directory/000/17/working/temperature_la.csv --output_directory /private/var/folders/3_/wwvbc5lj6wsdvb1y9pn76nwh0000gn/T/tmpduny30ad/job_working_directory/000/17/working --data_format csv --backend local --eval_split test --random_seed 42 --skip_save_unprocessed_output --skip_save_k_fold_split_indices",
+    "command": "/home/ubuntu24/Galaxy-Ludwig/tools/ludwig_experiment.py --config /tmp/tmp0u6yc1yw/job_working_directory/000/3/working/config.yml --dataset /tmp/tmp0u6yc1yw/job_working_directory/000/3/working/temperature_la.csv --output_directory /tmp/tmp0u6yc1yw/job_working_directory/000/3/working --data_format csv --backend local --eval_split test --random_seed 42 --skip_save_unprocessed_output --skip_save_k_fold_split_indices",
     "compute": {
         "num_nodes": 1
     },
@@ -861,7 +861,7 @@
         }
     },
     "data_format": "csv",
-    "dataset": "/private/var/folders/3_/wwvbc5lj6wsdvb1y9pn76nwh0000gn/T/tmpduny30ad/job_working_directory/000/17/working/temperature_la.csv",
+    "dataset": "/tmp/tmp0u6yc1yw/job_working_directory/000/3/working/temperature_la.csv",
     "ludwig_version": "0.10.1",
     "random_seed": 42,
     "torch_version": "2.1.0+cu118"

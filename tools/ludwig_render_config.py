@@ -41,7 +41,8 @@ config[TRAINER] = params[TRAINER][TRAINER]
 config[MODEL_TYPE] = config[TRAINER].pop(MODEL_TYPE)
 
 # hyperopt
-if params[HYPEROPT]['do_hyperopt']:
+if params[HYPEROPT]['do_hyperopt'] == 'true':
+    LOG.debug(params[HYPEROPT]['do_hyperopt'])
     config[HYPEROPT] = params[HYPEROPT][HYPEROPT]
 
 with open('./pre_config.yml', 'w') as f:

@@ -84,9 +84,9 @@
             <output_collection name="output_csv">
                 <element name="temperature_predictions">
                     <assert_contents>
-                        <has_n_lines n="9051" />
+                        <has_n_lines n="9050" />
                         <has_n_columns n="1" />
-                        <has_size value="186816" delta="50" />
+                        <has_size value="186752" delta="50" />
                     </assert_contents>
                 </element>
             </output_collection>

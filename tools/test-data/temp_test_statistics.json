@@ -1,14 +1,14 @@
 {
     "combined": {
-        "loss": 0.0372934453189373
+        "loss": 0.03626325726509094
     },
     "temperature": {
-        "loss": 0.03727591410279274,
-        "mean_absolute_error": 0.12977202236652374,
-        "mean_absolute_percentage_error": 0.8740615844726562,
-        "mean_squared_error": 0.03727588802576065,
-        "r2": 0.9630910158157349,
-        "root_mean_squared_error": 0.19306965172290802,
-        "root_mean_squared_percentage_error": 4.760334014892578
+        "loss": 0.036242932081222534,
+        "mean_absolute_error": 0.13141514360904694,
+        "mean_absolute_percentage_error": 0.8438004851341248,
+        "mean_squared_error": 0.03624293953180313,
+        "r2": 0.9641138315200806,
+        "root_mean_squared_error": 0.19037578999996185,
+        "root_mean_squared_percentage_error": 3.6561713218688965
     }
 }
