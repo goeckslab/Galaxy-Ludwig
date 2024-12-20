@@ -20,7 +20,6 @@ LOG = logging.getLogger(__name__)
 inputs = sys.argv[1]
 with open(inputs, 'r') as handler:
     params = json.load(handler)
-LOG.error(params)
 
 config = {}
 # input features
@@ -42,7 +41,6 @@ config[MODEL_TYPE] = config[TRAINER].pop(MODEL_TYPE)
 
 # hyperopt
 if params[HYPEROPT]['do_hyperopt'] == 'true':
-    LOG.debug(params[HYPEROPT]['do_hyperopt'])
     config[HYPEROPT] = params[HYPEROPT][HYPEROPT]
 
 with open('./pre_config.yml', 'w') as f:
