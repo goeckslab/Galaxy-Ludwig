@@ -6,6 +6,7 @@ on:
   pull_request:
     branches:
       - main
+      - release_v*
 env:
   GALAXY_FORK: galaxyproject
   GALAXY_BRANCH: release_22.05
