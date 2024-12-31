@@ -1,9 +1,8 @@
+import json
 import logging
 import os
 import pickle
 import sys
-
-from jinja_report import generate_report
 
 from ludwig.globals import (
     HYPEROPT_STATISTICS_FILE_NAME,
@@ -13,14 +12,67 @@ from ludwig.visualize import get_visualizations_registry
 
 from model_unpickler import SafeUnpickler
 
-import yaml
-
+from utils import (
+    encode_image_to_base64,
+    get_html_closing,
+    get_html_template,
+    json_to_html_table
+)
 
 logging.basicConfig(level=logging.DEBUG)
+
+LOG = logging.getLogger(__name__)
 
 setattr(pickle, 'Unpickler', SafeUnpickler)
 
 cli(sys.argv[1:])
+
+
+def generate_html_report(title):
+
+    # Read test statistics JSON and convert to HTML table
+    try:
+        test_statistics_path = hyperopt_stats_path
+        with open(test_statistics_path, "r") as f:
+            test_statistics = json.load(f)
+        test_statistics_html = "<h2>Hyperopt Statistics</h2>"
+        test_statistics_html = json_to_html_table(test_statistics)
+    except Exception as e:
+        LOG.info(f"Error reading hyperopt statistics: {e}")
+
+    # Convert visualizations to HTML
+    plots_html = ""
+    for plot_file in sorted(os.listdir(viz_output_directory)):
+        plot_path = os.path.join(viz_output_directory, plot_file)
+        if os.path.isfile(plot_path) and plot_file.endswith((".png", ".jpg")):
+            encoded_image = encode_image_to_base64(plot_path)
+            plots_html += (
+                f'<div class="plot">'
+                f'<h3>{os.path.splitext(plot_file)[0]}</h3>'
+                '<img src="data:image/png;base64,'
+                f'{encoded_image}" alt="{plot_file}">'
+                f'</div>'
+            )
+
+    # Generate the full HTML content
+    html_content = f"""
+    {get_html_template()}
+        <h1>{title}</h1>
+        <h2>Visualizations</h2>
+        {plots_html}
+        {test_statistics_html}
+    {get_html_closing()}
+    """
+
+    # Save the HTML report
+    title: str
+    report_name = title.lower().replace(" ", "_")
+    report_path = os.path.join(output_directory, f"{report_name}_report.html")
+    with open(report_path, "w") as report_file:
+        report_file.write(html_content)
+
+    LOG.info(f"HTML report generated at: {report_path}")
+
 
 # visualization
 output_directory = None
@@ -47,27 +99,4 @@ for viz in visualizations:
 
 # report
 title = "Ludwig Hyperopt"
-report_config = {
-    "title": title,
-    "visualizations": [
-        {
-            "src": f"visualizations/{fl}",
-            "type": "image" if fl[fl.rindex(".") + 1:] == "png" else
-                    fl[fl.rindex(".") + 1:],
-        } for fl in sorted(os.listdir(viz_output_directory))
-    ],
-    "raw stats": [
-        {
-            "src": os.path.basename(hyperopt_stats_path), "type": "json",
-        },
-    ],
-}
-with open(os.path.join(output_directory, "report_config.yml"), 'w') as fh:
-    yaml.dump(report_config, fh)
-
-report_path = os.path.join(output_directory, "smart_report.html")
-generate_report.main(
-    report_config,
-    schema={"html_height": 800},
-    outfile=report_path,
-)
+generate_html_report(title)

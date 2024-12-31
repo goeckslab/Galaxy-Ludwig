@@ -3,7 +3,7 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="python_requirements_gpu" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
@@ -470,7 +470,10 @@
         <!-- <section name="preprocessing" title="Preprocessing" expanded="false">
         </section> -->
         <conditional name="hyperopt">
-            <param name="do_hyperopt" type="boolean" checked="false" label="Whether to do hyperparameter optimization?" />
+            <param name="do_hyperopt" type="select" label="Whether to do hyperparameter optimization?">
+                <option value="false" selected="true">No</option>
+                <option value="true">Yes</option>
+            </param>
             <when value="true">
                 <section name="hyperopt" title="Hyperparameter Optimization configuration" expanded="false">
                     <conditional name="executor">

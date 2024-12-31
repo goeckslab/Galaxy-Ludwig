@@ -3,17 +3,17 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="python_requirements_gpu" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
             #if $input_file
-            ln -sf '$input_file' "`pwd`/${input_file.element_identifier}";
+            ln -sf '$input_file' "./${input_file.element_identifier}";
             #end if
             python '$__tool_directory__/ludwig_autogenconfig.py' 
                 #if $input_file   
-                --dataset "`pwd`/${input_file.element_identifier}"
+                --dataset "./${input_file.element_identifier}"
                 #end if
                 --output_feature '$output_feature' 
                 --output '$output'
@@ -27,20 +27,24 @@
 
         </param>
         <param name="output_feature" multiple="false" type="data_column" use_header_names="true" data_ref="input_file" label="Select target column(s):" />
-    
-    <!-- <param name="output_feature" type="" data_ref="input_file" multiple="True" numerical="False" label="Output Feature"> -->
-    <!-- <param argument="output_feature" type="text" value="" label="Output Feature" /> -->
     <param name="renderconfig" type="boolean" checked="true" label="Rendered config?"
             truevalue="--renderconfig" falsevalue="" />
     </inputs>
 
     <outputs>
-        <data name="output" format="yaml" label="${tool.name}" />
+        <data name="output" format="yaml" label="${tool.name} config on ${on_string}" />
     </outputs>
 
     <tests>
         <test>
-            <!-- TO DO -->
+            <param name="input_file" value="temperature_la.csv" />
+            <param name="output_feature" value="2" />
+            <param name="renderconfig" value="false" />
+            <output name="output" value="ludwig_auto_config.yaml" />
         </test>
     </tests>
+    <help>
+        Auto-generate a config file from a dataset for Ludwig training.
+    </help>
+    <expand macro="macro_citations" />
 </tool>
