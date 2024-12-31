@@ -60,6 +60,9 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Free up disk space
+      run: |
+        docker system prune -af --volumes
     - name: Cache .cache/pip
       uses: actions/cache@v4
       id: cache-pip
@@ -240,6 +243,9 @@ jobs:
       with:
         path: ~/.cache/pip
         key: pip_cache_py_${{ matrix.python-version }}_gxy_${{ needs.setup.outputs.galaxy-head-sha }}
+    - name: Free up disk space
+      run: |
+        docker system prune -af --volumes
     - name: Cache .planemo
       uses: actions/cache@v4
       id: cache-planemo
