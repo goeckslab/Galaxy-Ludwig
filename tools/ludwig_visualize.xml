@@ -10,10 +10,10 @@
         <![CDATA[
             #set $visualization = $visualization_selector.visualization.value
 
-            mkdir -p "`pwd`/results" &&
+            mkdir -p "./results" &&
             python '$__tool_directory__/ludwig_visualize.py'
                 --visualization '$visualization'
-                --output_directory "`pwd`/results"
+                --output_directory "./results"
                 #if 'hyperopt_stats_path' in $visualization_selector
                     --hyperopt_stats_path '${visualization_selector.hyperopt_stats_path}'
                 #end if

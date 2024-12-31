@@ -10,7 +10,7 @@
         <![CDATA[
             mkdir -p outputs &&
             #if $dataset
-            ln -sf '$dataset' "`pwd`/${dataset.element_identifier}";
+            ln -sf '$dataset' "./${dataset.element_identifier}";
             #end if
             #if $raw_data
             unzip -o -q '$raw_data' -d ./;
@@ -20,12 +20,12 @@
                 --model_path '$model_path.extra_files_path'
                 #end if
                 #if $dataset
-                --dataset "`pwd`/${dataset.element_identifier}"
+                --dataset "./${dataset.element_identifier}"
                 #end if
                 #if $disable_parallel_threads
                 --disable_parallel_threads
                 #end if
-                --output_directory "`pwd`/outputs"
+                --output_directory "./outputs"
                 --data_format '$data_format'
                 --split '$split'
                 --backend local

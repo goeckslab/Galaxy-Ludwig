@@ -9,41 +9,41 @@
     <command>
         <![CDATA[
             #if $config
-            cp '$config' "`pwd`/config.yml";
+            cp '$config' "./config.yml";
             #end if
             #if $dataset
-            ln -sf '$dataset' "`pwd`/${dataset.element_identifier}";
+            ln -sf '$dataset' "./${dataset.element_identifier}";
             #end if
             #if $training_set
-            ln -sf '$training_set' "`pwd`/${training_set.element_identifier}";
+            ln -sf '$training_set' "./${training_set.element_identifier}";
             #end if
             #if $validation_set
-            ln -sf '$validation_set' "`pwd`/${validation_set.element_identifier}";
+            ln -sf '$validation_set' "./${validation_set.element_identifier}";
             #end if
             #if $test_set
-            ln -sf '$test_set' "`pwd`/${test_set.element_identifier}";
+            ln -sf '$test_set' "./${test_set.element_identifier}";
             #end if
             #if $raw_data
             unzip -o -q '$raw_data' -d ./;
             #end if
             python '$__tool_directory__/ludwig_train.py'
                 #if $config
-                --config "`pwd`/config.yml"
+                --config "./config.yml"
                 #end if
                 #if $model_load_path
                 --model_load_path '${model_load_path.extra_files_path}'
                 #end if
                 #if $dataset
-                --dataset "`pwd`/${dataset.element_identifier}"
+                --dataset "./${dataset.element_identifier}"
                 #end if
                 #if $training_set
-                --training_set "`pwd`/${training_set.element_identifier}"
+                --training_set "./${training_set.element_identifier}"
                 #end if
                 #if $validation_set
-                --validation_set "`pwd`/${validation_set.element_identifier}"
+                --validation_set "./${validation_set.element_identifier}"
                 #end if
                 #if $test_set
-                --test_set "`pwd`/${test_set.element_identifier}"
+                --test_set "./${test_set.element_identifier}"
                 #end if
                 #if $training_set_metadata
                 --training_set_metadata '$training_set_metadata'
@@ -51,7 +51,7 @@
                 #if $disable_parallel_threads
                 --disable_parallel_threads
                 #end if
-                --output_directory "`pwd`"
+                --output_directory "."
                 --data_format '$data_format'
                 --random_seed $random_seed
                 --backend local &&
