@@ -8,28 +8,33 @@
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
+            #import re
             mkdir -p outputs &&
             #if $dataset
-            ln -sf '$dataset' "`pwd`/${dataset.element_identifier}";
+                set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
+                ln -sf '$dataset' "./${sanitized_dataset}";
             #end if
+
             #if $raw_data
-            unzip -o -q '$raw_data' -d ./;
+                unzip -o -q '$raw_data' -d ./;
             #end if
+
             python '$__tool_directory__/ludwig_predict.py'
                 #if $model_path
                 --model_path '$model_path.extra_files_path'
                 #end if
                 #if $dataset
-                --dataset "`pwd`/${dataset.element_identifier}"
+                --dataset "./${sanitized_dataset}"
                 #end if
                 #if $disable_parallel_threads
                 --disable_parallel_threads
                 #end if
-                --output_directory "`pwd`/outputs"
+                --output_directory "./outputs"
                 --data_format '$data_format'
                 --split '$split'
                 --backend local
                 --skip_save_unprocessed_output &&
+
             mkdir -p '$output_report.extra_files_path' &&
             cp outputs/*.json outputs/*.parquet '$output_report.extra_files_path' &&
 
@@ -41,7 +46,7 @@
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <param name="model_path" type="data" format="ludwig_model" label="Load the pretrained model" />
+        <param name="model_path" type="data" format="html" label="Load the pretrained model" />
         <param name="dataset" type="data" format="tabular,csv,h5,json,txt" label="Input dataset" />
         <param name="data_format" type="select" label="Data format">
             <option value="auto" selected="true">auto</option>
@@ -56,7 +61,7 @@
             <option value="test">test</option>
             <option value="full" selected="true">full</option>
         </param>
-        <param name="batch_size" type="integer" value="128" optional="true" label="Batch size" />
+        <param name="batch_size" type="integer" value="128" optional="true" label="Batch size" min="1" max="4096" />
         <param name="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
