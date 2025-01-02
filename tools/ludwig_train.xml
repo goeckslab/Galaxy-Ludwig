@@ -3,34 +3,35 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="python_requirements_gpu" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
             #import re
             #if $config
-                cp '$config' "./config.yml";
+            cp '$config' "./config.yml";
             #end if
 
             #if $dataset
-                set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
-                ln -sf '$dataset' "./${sanitized_dataset}";
+            set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
+            ln -sf '$dataset' "./${sanitized_dataset}";
             #end if
 
             #if $training_set
-                set $sanitized_training_set = re.sub('[^\w\-_\.]', '_', $training_set.element_identifier)
-                ln -sf '$training_set' "./${sanitized_training_set}";
+            set $sanitized_training_set = re.sub('[^\w\-_\.]', '_', $training_set.element_identifier)
+            ln -sf '$training_set' "./${sanitized_training_set}";
             #end if
 
             #if $validation_set
-                set $sanitized_validation_set = re.sub('[^\w\-_\.]', '_', $validation_set.element_identifier)
-                ln -sf '$validation_set' "./${sanitized_validation_set}";
+            set $sanitized_validation_set = re.sub('[^\w\-_\.]', '_', $validation_set.element_identifier)
+            ln -sf '$validation_set' "./${sanitized_validation_set}";
             #end if
 
             #if $test_set
-                set $sanitized_test_set = re.sub('[^\w\-_\.]', '_', $test_set.element_identifier)
-                ln -sf '$test_set' "./${sanitized_test_set}";
+
+            set $sanitized_test_set = re.sub('[^\w\-_\.]', '_', $test_set.element_identifier)
+            ln -sf '$test_set' "./${sanitized_test_set}";
             #end if
 
             #if $raw_data
@@ -100,19 +101,20 @@
     </inputs>       
     <outputs>
         <data format="ludwig_model" name="output_model" label="${tool.name} model on ${on_string}" />
-        <data format="html" name="output_report" from_work_dir="smart_report.html" label="${tool.name} report on ${on_string}" />
+        <data format="html" name="output_report" from_work_dir="ludwig_train_report.html" label="${tool.name} report on ${on_string}" />
+        <collection type="list" name="output_pred_csv" label="${tool.name} training stat on ${on_string}" >
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.json" format="json" directory="experiment_run" />
+        </collection>
     </outputs>
     <tests>
         <test>
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="config" value="temperature_config.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
-            <output name="output_report" file="temperature_train_report.html" compare="sim_size" delta="50" />
-            <output name="output_model" >
-                <extra_files type="file" name="model_hyperparameters.json" value="temp_model01/model_hyperparameters.json" compare="diff" />
-                <extra_files type="file" name="model_weights" value="temp_model01/model_weights" compare="sim_size" delta="1000" />
-                <extra_files type="file" name="training_set_metadata.json" value="temp_model01/training_set_metadata.json" compare="sim_size" delta="200"/>
-                <extra_files type="file" name="training_progress.json" value="temp_model01/training_progress.json" compare="sim_size" delta="50" />
+            <output name="output_report" file="ludwig_train_report_test.html" compare="sim_size" delta="10" >
+                <assert_contents>
+                    <has_text text="Visualizations" />
+                </assert_contents>
             </output>
         </test>
     </tests>

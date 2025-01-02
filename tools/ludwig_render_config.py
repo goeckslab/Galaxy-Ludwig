@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 
 from ludwig.constants import (
@@ -14,7 +15,8 @@ from ludwig.schema.model_types.utils import merge_with_defaults
 
 import yaml
 
-
+logging.basicConfig(level=logging.DEBUG)
+LOG = logging.getLogger(__name__)
 inputs = sys.argv[1]
 with open(inputs, 'r') as handler:
     params = json.load(handler)
@@ -38,7 +40,7 @@ config[TRAINER] = params[TRAINER][TRAINER]
 config[MODEL_TYPE] = config[TRAINER].pop(MODEL_TYPE)
 
 # hyperopt
-if params[HYPEROPT]['do_hyperopt']:
+if params[HYPEROPT]['do_hyperopt'] == 'true':
     config[HYPEROPT] = params[HYPEROPT][HYPEROPT]
 
 with open('./pre_config.yml', 'w') as f:

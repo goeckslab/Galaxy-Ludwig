@@ -18,7 +18,9 @@ We assume that you have Galaxy running and docker installed in your server/lapto
 </section>
 ```
 
-* This is an example of a `job_conf.yml` file located under `lib/galaxy/config` that you can create to enable Docker for a local Galaxy instance where you want Ludwig-related jobs to run:
+
+* This is an example of a `job_conf.yml` file that you can create to enable Docker for a local Galaxy instance where you want Ludwig-related jobs to run:
+
 ```
 runners:
   local:

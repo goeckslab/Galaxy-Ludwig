@@ -1,0 +1,8 @@
+input_features:
+- name: 'Unnamed: 0'
+  type: number
+- name: temperature_feature
+  type: text
+output_features:
+- name: temperature
+  type: number

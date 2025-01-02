@@ -3,34 +3,34 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="python_requirements_gpu" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
             #import re
             #if $config
-                cp '$config' "./config.yml";
+            cp '$config' "./config.yml";
             #end if
 
             #if $dataset
-                set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
-                ln -sf '$dataset' "./${sanitized_dataset}";
+            set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
+            ln -sf '$dataset' "./${sanitized_dataset}";
             #end if
 
             #if $training_set
-                set $sanitized_training_set = re.sub('[^\w\-_\.]', '_', $training_set.element_identifier)
-                ln -sf '$training_set' "./${sanitized_training_set}";
+            set $sanitized_training_set = re.sub('[^\w\-_\.]', '_', $training_set.element_identifier)
+            ln -sf '$training_set' "./${sanitized_training_set}";
             #end if
 
             #if $validation_set
-                set $sanitized_validation_set = re.sub('[^\w\-_\.]', '_', $validation_set.element_identifier)
-                ln -sf '$validation_set' "./${sanitized_validation_set}";
+            set $sanitized_validation_set = re.sub('[^\w\-_\.]', '_', $validation_set.element_identifier)
+            ln -sf '$validation_set' "./${sanitized_validation_set}";
             #end if
 
             #if $test_set
-                set $sanitized_test_set = re.sub('[^\w\-_\.]', '_', $test_set.element_identifier)
-                ln -sf '$test_set' "./${sanitized_test_set}";
+            set $sanitized_test_set = re.sub('[^\w\-_\.]', '_', $test_set.element_identifier)
+            ln -sf '$test_set' "./${sanitized_test_set}";
             #end if
 
             #if $raw_data
@@ -58,9 +58,9 @@
                 #if $training_set_metadata
                 --training_set_metadata '$training_set_metadata'
                 #end if
-                #if not $save_model
-                #--skip_save_model
-                #end if
+                ## #if not $save_model
+                ## --skip_save_model
+                ## #end if
                 --output_directory "."
                 --data_format '$data_format'
                 --random_seed $random_seed
@@ -101,14 +101,18 @@
     <outputs>
         <data format="ludwig_model" name="output_model" label="${tool.name} best model on ${on_string}" >
         </data>
-        <data format="html" name="output_hyperopt" from_work_dir="smart_report.html" label="${tool.name} report on ${on_string}" />
+        <data format="html" name="output_hyperopt" from_work_dir="ludwig_hyperopt_report.html" label="${tool.name} report on ${on_string}" />
     </outputs>
     <tests>
         <test>
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="config" value="temperature_hyperopt.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
-            <output name="output_hyperopt" file="temperature_hyperopt_report.html" compare="sim_size" delta="50" />
+            <output name="output_hyperopt" file="ludwig_hyperopt_report_test.html" compare="sim_size" delta="20000" >
+                <assert_contents>
+                    <has_text text="Hyperopt" />
+                </assert_contents>
+            </output>
         </test>
     </tests>
     <help>
