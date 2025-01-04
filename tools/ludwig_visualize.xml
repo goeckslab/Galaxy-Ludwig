@@ -345,10 +345,7 @@
     </inputs>       
     <outputs>
         <collection type="list" name="output" label="${tool.name} ${visualization_selector.visualization} on ${on_string}">
-            <!-- Discover PDF files -->
-            <discover_datasets pattern="__name__.pdf" format="pdf" directory="results" />
-            <!-- Discover PNG files -->
-            <discover_datasets pattern="__name__.png" format="png" directory="results" />
+            <discover_datasets pattern="__name_and_ext__" format="auto" directory="results" /> 
         </collection>
     </outputs>
     <tests>

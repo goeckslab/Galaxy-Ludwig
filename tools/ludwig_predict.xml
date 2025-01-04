@@ -11,7 +11,7 @@
             #import re
             mkdir -p outputs &&
             #if $dataset
-            set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
+            #set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
             ln -sf '$dataset' "./${sanitized_dataset}";
             #end if
 
@@ -34,8 +34,6 @@
                 --split '$split'
                 --backend local
                 --skip_save_unprocessed_output &&
-            mkdir -p '$output_report.extra_files_path' &&
-            cp outputs/*.json outputs/*.parquet '$output_report.extra_files_path' &&
             echo "Prediction is done!"
 
         ]]>
@@ -44,7 +42,7 @@
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <param name="model_path" type="data" format="html" label="Load the pretrained model" />
+        <param name="model_path" type="data" format="ludwig_model" label="Load the pretrained model" />
         <param name="dataset" type="data" format="tabular,csv,h5,json,txt" label="Input dataset" />
         <param name="data_format" type="select" label="Data format">
             <option value="auto" selected="true">auto</option>
