@@ -53,6 +53,7 @@
                 #if $validation_set
                 --validation_set "./${sanitized_validation_set}"
                 #end if
+                #if $test_set
                 --test_set "./${sanitized_test_set}"
                 #end if
                 #if $training_set_metadata
