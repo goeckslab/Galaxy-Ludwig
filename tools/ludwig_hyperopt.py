@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import pickle
@@ -15,8 +14,7 @@ from model_unpickler import SafeUnpickler
 from utils import (
     encode_image_to_base64,
     get_html_closing,
-    get_html_template,
-    json_to_html_table
+    get_html_template
 )
 
 logging.basicConfig(level=logging.DEBUG)
@@ -42,7 +40,8 @@ def generate_html_report(title):
 
     plots_html = ""
     # Convert visualizations to HTML
-    hyperopt_hiplot_path = os.path.join(viz_output_directory, "hyperopt_hiplot.html")
+    hyperopt_hiplot_path = os.path.join(
+        viz_output_directory, "hyperopt_hiplot.html")
     if os.path.isfile(hyperopt_hiplot_path):
         with open(hyperopt_hiplot_path, "r", encoding="utf-8") as file:
             hyperopt_hiplot_html = file.read()
