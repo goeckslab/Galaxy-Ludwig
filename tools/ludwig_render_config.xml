@@ -218,9 +218,9 @@
                                 <option value="passthrough">passthrough</option>
                             </param>
                             <when value="classifier">
-                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" />
-                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." />
-                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" />
+                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" min="0" max="20" />
+                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." min="1" max="1024" />
+                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" min="0" max="1" />
                             </when>
                             <when value="passthrough" />
                         </conditional>
@@ -230,7 +230,7 @@
                             </param>
                             <when value="softmax_cross_entropy" />
                         </conditional>
-                        <param argument="top_k" type="integer" value="3" help="The number of categories to consider when computing the first k measure." />
+                        <param argument="top_k" type="integer" value="3" help="The number of categories to consider when computing the first k measure." min="2" max="10" />
                     </when>
                     <when value="binary">
                         <param argument="name" type="text" value="" />
@@ -240,9 +240,9 @@
                                 <option value="passthrough">passthrough</option>
                             </param>
                             <when value="regressor">
-                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" />
-                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." />
-                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" />
+                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" min="1" max="20" />
+                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." min="1" max="1024" />
+                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" min="0" max="1" />
                             </when>
                             <when value="passthrough" />
                         </conditional>
@@ -251,10 +251,10 @@
                                 <option value="binary_weighted_cross_entropy" selected="true">binary_weighted_cross_entropy</option>
                             </param>
                             <when value="binary_weighted_cross_entropy">
-                                <param argument="positive_class_weight" type="integer" value="1" help="Multiplies the loss for the positive class, increasing its importance" />
+                                <param argument="positive_class_weight" type="integer" value="1" help="Multiplies the loss for the positive class, increasing its importance" min="1" max="100" />
                             </when>
                         </conditional>
-                        <param argument="threshold" type="float" value="0.5" help="The threshold above which the predicted output of the sigmoid will be mapped to 1." />
+                        <param argument="threshold" type="float" value="0.5" help="The threshold above which the predicted output of the sigmoid will be mapped to 1." min="0" max="1.0" />
                     </when>
                     <when value="set">
                         <param argument="name" type="text" value="" />
@@ -264,9 +264,9 @@
                                 <option value="passthrough">passthrough</option>
                             </param>
                             <when value="classifier">
-                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" />
-                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." />
-                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" />
+                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" min="1" max="20" />
+                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." min="1" max="1024" />
+                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" min="0" max="1" />
                             </when>
                             <when value="passthrough" />
                         </conditional>
@@ -286,9 +286,9 @@
                             </param>
                             <when value="projector">
                                 <param argument="softmax" type="boolean" value="false" help="Whether to apply a softmax at the end of the decoder?" />
-                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" />
-                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." />
-                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" />
+                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" min="0" max="20" />
+                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." min="1" max="1024" />
+                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" min="0" max="1" />
                             </when>
                             <when value="passthrough" />
                         </conditional>
@@ -311,9 +311,9 @@
                                 <option value="passthrough">passthrough</option>
                             </param>
                             <when value="regressor">
-                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" />
-                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." />
-                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" />
+                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" min="1" max="20" />
+                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." min="1" max="1024" />
+                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" min="0" max="1" />
                             </when>
                             <when value="passthrough" />
                         </conditional>
@@ -344,18 +344,18 @@
                                     <option value="rnn">rnn</option>
                                     <option value="lstm">lstm</option>
                                 </param>
-                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" />
-                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." />
-                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" />
+                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" min="1" max="20" />
+                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." min="1" max="1024" />
+                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" min="0" max="1" />
                             </when>
                             <when value="tagger">
                                 <param argument="use_attention" type="boolean" value="false" help="Whether to apply a multi-head self attention layer before prediction?" />
                                 <param argument="use_bias" type="boolean" value="true" help="whether the layer uses a bias vector?" />
-                                <param argument="attention_embedding_size" type="integer" value="256" help="The embedding size of the multi-head self attention layer." />
-                                <param argument="attention_num_heads" type="integer" value="8" help="The number of attention heads in the multi-head self attention layer." />
-                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" />
-                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." />
-                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" />
+                                <param argument="attention_embedding_size" type="integer" value="256" help="The embedding size of the multi-head self attention layer." min="1" max="1024" />
+                                <param argument="attention_num_heads" type="integer" value="8" help="The number of attention heads in the multi-head self attention layer." min="1" max="16"/>
+                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" min="1" max="20" />
+                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." min="1" max="1024" />
+                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" min="0" max="1" />
                             </when>
                             <when value="passthrough" />
                         </conditional>
@@ -380,18 +380,17 @@
                                     <option value="rnn">rnn</option>
                                     <option value="lstm">lstm</option>
                                 </param>
-                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" />
-                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." />
-                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" />
+                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" min="1" max="20" />
+                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." min="1" max="1024" />
+                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" min="0" max="1" />
                             </when>
                             <when value="tagger">
                                 <param argument="use_attention" type="boolean" value="false" help="Whether to apply a multi-head self attention layer before prediction?" />
                                 <param argument="use_bias" type="boolean" value="true" help="whether the layer uses a bias vector?" />
-                                <param argument="attention_embedding_size" type="integer" value="256" help="The embedding size of the multi-head self attention layer." />
-                                <param argument="attention_num_heads" type="integer" value="8" help="The number of attention heads in the multi-head self attention layer." />
-                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" />
-                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." />
-                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" />
+                                <param argument="attention_embedding_size" type="integer" value="256" help="The embedding size of the multi-head self attention layer." min="1" max="1024" />
+                                <param argument="attention_num_heads" type="integer" value="8" help="The number of attention heads in the multi-head self attention layer." min="1" max="16"/>                                <param argument="num_fc_layers" type="integer" value="0" help="The number of stacked fully connected layers that the input to the feature passes through" min="1" max="20" />
+                                <param argument="output_size" type="integer" value="256" help="The Size of the output of a fully connected layer." min="1" max="1024" />
+                                <param argument="fc_dropout" type="float" value="0" help="Dropout rate" min="0" max="1" />
                             </when>
                             <when value="passthrough" />
                         </conditional>
@@ -424,8 +423,8 @@
                     <option value="gbm">gbm</option>
                 </param>
                 <when value="ecd">
-                    <param argument="batch_size" type="integer" value="128" help="Batch size" />
-                    <param argument="epochs" type="integer" value="100" help="Number of epochs" />
+                    <param argument="batch_size" type="integer" value="128" help="Batch size" min="1" max="4096" />
+                    <param argument="epochs" type="integer" value="100" help="Number of epochs" min="1" max="1000" />
                     <conditional name="optimizer">
                         <param name="type" type="select" label="Select an optimizer">
                             <option value="adam" selected="true">adam</option>
@@ -448,8 +447,8 @@
                         <when value="nadam" />
                         <when value="rmsprop" />
                     </conditional>
-                    <param argument="learning_rate" type="float" value="0.001" help="Learning rate" />
-                    <param argument="early_stop" type="integer" value="5" help="Number of epochs of patience without an improvement on the validation measure before the training is stopped." />
+                    <param argument="learning_rate" type="float" value="0.001" help="Learning rate" min="0" max="1.0" />
+                    <param argument="early_stop" type="integer" value="5" help="Number of epochs of patience without an improvement on the validation measure before the training is stopped." min="1" max="20"/>
                 </when>
                 <when value="gbm">
                     <param argument="boosting_type" type="select" label="Select the type of boosting algorithm" >
@@ -458,12 +457,12 @@
                         <option value="dart">dart</option>
                         <option value="goss">goss</option>
                     </param>
-                    <param argument="num_boost_round" type="integer" value="1000" help="Number of boosting rounds to perform." />
-                    <param argument="learning_rate" type="float" value="0.03" help="Learning rate." />
-                    <param argument="lambda_l1" type="float" value="0.25" help="L1 regularization factor." />
-                    <param argument="lambda_l2" type="float" value="0.2" help="L2 regularization factor." />
-                    <param argument="max_depth" type="integer" value="18" help="Maximum depth of a tree. A negative value means no limit." />
-                    <param argument="early_stop" type="integer" value="5" help="Number of epochs of patience without an improvement on the validation measure before the training is stopped." />
+                    <param argument="num_boost_round" type="integer" value="1000" help="Number of boosting rounds to perform." min="1" max="5000" />
+                    <param argument="learning_rate" type="float" value="0.03" help="Learning rate." min="0.0001" max="1.0" />
+                    <param argument="lambda_l1" type="float" value="0.25" help="L1 regularization factor." min="0" max="10.0" />
+                    <param argument="lambda_l2" type="float" value="0.2" help="L2 regularization factor." min="0" max="10.0" />
+                    <param argument="max_depth" type="integer" value="18" help="Maximum depth of a tree. A negative value means no limit." min="3" max="50" />
+                    <param argument="early_stop" type="integer" value="5" help="Number of epochs of patience without an improvement on the validation measure before the training is stopped." min="1" max="20" />                
                 </when>
             </conditional>
         </section>

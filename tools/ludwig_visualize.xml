@@ -345,7 +345,8 @@
     </inputs>       
     <outputs>
         <collection type="list" name="output" label="${tool.name} ${visualization_selector.visualization} on ${on_string}">
-            <discover_datasets pattern="__name_and_ext__" format="auto" directory="results" />
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.pdf" format="pdf" directory="results" />
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.png" format="png" directory="results" /> 
         </collection>
     </outputs>
     <tests>

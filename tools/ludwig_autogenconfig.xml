@@ -8,18 +8,20 @@
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
+            #import re
             #if $input_file
-            ln -sf '$input_file' "./${input_file.element_identifier}";
+            #set $sanitized_input_file = re.sub('[^\w\-_\.]', '_', $input_file.element_identifier)
+            ln -sf '$input_file' "./${sanitized_input_file}";
             #end if
             python '$__tool_directory__/ludwig_autogenconfig.py' 
-                #if $input_file   
-                --dataset "./${input_file.element_identifier}"
+                #if $input_file
+                --dataset "./${sanitized_input_file}"
                 #end if
                 --output_feature '$output_feature' 
                 --output '$output'
                 #if $renderconfig
                 '$renderconfig'
-                #end if
+            #end if
         ]]>
     </command>
     <inputs>
