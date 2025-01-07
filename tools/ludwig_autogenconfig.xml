@@ -10,7 +10,7 @@
         <![CDATA[
             #import re
             #if $input_file
-            #set $sanitized_input_file = re.sub('[^\w\-_\.]', '_', $input_file.element_identifier)
+            #set $sanitized_input_file = re.sub('[^\w\-_\.]', '_', $input_file.element_identifier.strip())
             ln -sf '$input_file' "./${sanitized_input_file}";
             #end if
             python '$__tool_directory__/ludwig_autogenconfig.py' 

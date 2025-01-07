@@ -1,5 +1,5 @@
 <macros>
-    <token name="@LUDWIG_VERSION@">0.10.3</token>
+    <token name="@LUDWIG_VERSION@">0.10.1</token>
 
     <token name="@SUFFIX@">0</token>
 
@@ -15,7 +15,7 @@
 
     <xml name="python_requirements">
         <requirements>
-            <container type="docker">quay.io/goeckslab/galaxy-ludwig:@LUDWIG_VERSION@</container>
+            <container type="docker">quay.io/goeckslab/galaxy-ludwig:0.10.3</container>
         </requirements>
     </xml>
 

@@ -11,7 +11,7 @@
             #import re
             mkdir -p outputs &&
             #if $dataset
-            #set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
+            #set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier.strip())
             ln -sf '$dataset' "./${sanitized_dataset}";
             #end if
 

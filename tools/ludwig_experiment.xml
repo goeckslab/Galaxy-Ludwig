@@ -15,24 +15,24 @@
 
             #if $dataset
 
-            #set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier)
+            #set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier.strip())
             ln -sf '$dataset' "./${sanitized_dataset}";
             #end if
 
             #if $training_set
-            #set $sanitized_training_set = re.sub('[^\w\-_\.]', '_', $training_set.element_identifier)
+            #set $sanitized_training_set = re.sub('[^\w\-_\.]', '_', $training_set.element_identifier.strip())
             ln -sf '$training_set' "./${sanitized_training_set}";
             #end if
 
             #if $validation_set
 
-            #set $sanitized_validation_set = re.sub('[^\w\-_\.]', '_', $validation_set.element_identifier)
+            #set $sanitized_validation_set = re.sub('[^\w\-_\.]', '_', $validation_set.element_identifier.strip())
             ln -sf '$validation_set' "./${sanitized_validation_set}";
             #end if
 
             #if $test_set
 
-            #set $sanitized_test_set = re.sub('[^\w\-_\.]', '_', $test_set.element_identifier)
+            #set $sanitized_test_set = re.sub('[^\w\-_\.]', '_', $test_set.element_identifier.strip())
             ln -sf '$test_set' "./${sanitized_test_set}";
             #end if
 
