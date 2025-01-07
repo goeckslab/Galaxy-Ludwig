@@ -210,18 +210,18 @@ def generate_html_report(title, ludwig_output_directory_name):
     ludwig_output_directory = os.path.join(
         output_directory, ludwig_output_directory_name)
 
-    test_statistics_html = ""
-    # Read test statistics JSON and convert to HTML table
-    try:
-        test_statistics_path = os.path.join(
-            ludwig_output_directory, TEST_STATISTICS_FILE_NAME)
-        with open(test_statistics_path, "r") as f:
-            test_statistics = json.load(f)
-        test_statistics_html = "<h2>Test Statistics</h2>"
-        test_statistics_html += json_to_html_table(
-            test_statistics)
-    except Exception as e:
-        LOG.info(f"Error reading test statistics: {e}")
+    # test_statistics_html = ""
+    # # Read test statistics JSON and convert to HTML table
+    # try:
+    #     test_statistics_path = os.path.join(
+    #         ludwig_output_directory, TEST_STATISTICS_FILE_NAME)
+    #     with open(test_statistics_path, "r") as f:
+    #         test_statistics = json.load(f)
+    #     test_statistics_html = "<h2>Test Statistics</h2>"
+    #     test_statistics_html += json_to_html_table(
+    #         test_statistics)
+    # except Exception as e:
+    #     LOG.info(f"Error reading test statistics: {e}")
 
     # Convert visualizations to HTML
     plots_html = ""
@@ -244,7 +244,6 @@ def generate_html_report(title, ludwig_output_directory_name):
     {get_html_template()}
         <h1>{title}</h1>
         {plots_html}
-        {test_statistics_html}
     {get_html_closing()}
     """
 
