@@ -46,6 +46,8 @@ def generate_html_report(title):
         with open(hyperopt_hiplot_path, "r", encoding="utf-8") as file:
             hyperopt_hiplot_html = file.read()
             plots_html += f'<div class="hiplot">{hyperopt_hiplot_html}</div>'
+            plots_html += "uid is the identifier for different hyperopt runs"
+            plots_html += "<br><br>"
 
     # Iterate through other files in viz_output_directory
     for plot_file in sorted(os.listdir(viz_output_directory)):

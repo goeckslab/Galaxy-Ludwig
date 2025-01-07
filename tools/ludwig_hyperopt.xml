@@ -104,7 +104,7 @@
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
-        <data format="ludwig_model" name="output_model" label="${tool.name} best model on ${on_string}" >
+        <data format="ludwig_model" name="output_model" label="${tool.name} best model files on ${on_string}" >
         </data>
         <data format="html" name="output_hyperopt" from_work_dir="ludwig_hyperopt_report.html" label="${tool.name} report on ${on_string}" />
         <data format="json" name="output_hyperopt_stats" from_work_dir="hyperopt/hyperopt_statistics.json" label="${tool.name} statistics on ${on_string}" />
