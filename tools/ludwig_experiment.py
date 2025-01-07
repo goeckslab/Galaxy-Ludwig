@@ -23,8 +23,7 @@ import pandas as pd
 from utils import (
     encode_image_to_base64,
     get_html_closing,
-    get_html_template,
-    json_to_html_table
+    get_html_template
 )
 
 import yaml
@@ -207,8 +206,8 @@ def convert_parquet_to_csv(ludwig_output_directory_name):
 
 
 def generate_html_report(title, ludwig_output_directory_name):
-    ludwig_output_directory = os.path.join(
-        output_directory, ludwig_output_directory_name)
+    # ludwig_output_directory = os.path.join(
+    #     output_directory, ludwig_output_directory_name)
 
     # test_statistics_html = ""
     # # Read test statistics JSON and convert to HTML table
