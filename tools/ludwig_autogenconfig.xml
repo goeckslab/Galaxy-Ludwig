@@ -1,0 +1,52 @@
+<tool id="ludwig_config_generator" name="Ludwig Config Generator" version="@VERSION@" profile="@PROFILE@">
+    <description>Auto-generate a config file from a dataset for Ludwig training.</description>
+    <macros>
+        <import>ludwig_macros.xml</import>
+    </macros>
+    <expand macro="python_requirements_gpu" />
+    <expand macro="macro_stdio" />
+    <version_command>echo "@VERSION@"</version_command>
+    <command>
+        <![CDATA[
+            #import re
+            #if $input_file
+            #set $sanitized_input_file = re.sub('[^\w\-_\.]', '_', $input_file.element_identifier.strip())
+            ln -sf '$input_file' "./${sanitized_input_file}";
+            #end if
+            python '$__tool_directory__/ludwig_autogenconfig.py' 
+                #if $input_file
+                --dataset "./${sanitized_input_file}"
+                #end if
+                --output_feature '$output_feature' 
+                --output '$output'
+                #if $renderconfig
+                '$renderconfig'
+            #end if
+        ]]>
+    </command>
+    <inputs>
+        <param name="input_file" type="data" label="Select CSV File" format="tabular,csv" help="Choose a dataset file for processing">
+
+        </param>
+        <param name="output_feature" multiple="false" type="data_column" use_header_names="true" data_ref="input_file" label="Select target column(s):" />
+    <param name="renderconfig" type="boolean" checked="true" label="Rendered config?"
+            truevalue="--renderconfig" falsevalue="" />
+    </inputs>
+
+    <outputs>
+        <data name="output" format="yaml" label="${tool.name} config on ${on_string}" />
+    </outputs>
+
+    <tests>
+        <test>
+            <param name="input_file" value="temperature_la.csv" />
+            <param name="output_feature" value="2" />
+            <param name="renderconfig" value="false" />
+            <output name="output" value="ludwig_auto_config.yaml" />
+        </test>
+    </tests>
+    <help>
+        Auto-generate a config file from a dataset for Ludwig training.
+    </help>
+    <expand macro="macro_citations" />
+</tool>

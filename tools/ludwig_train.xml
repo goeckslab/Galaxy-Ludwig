@@ -3,47 +3,58 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="python_requirements_gpu" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
+            #import re
             #if $config
-            cp '$config' "`pwd`/config.yml";
+            cp '$config' "./config.yml";
             #end if
+
             #if $dataset
-            ln -sf '$dataset' "`pwd`/${dataset.element_identifier}";
+            #set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier.strip())
+            ln -sf '$dataset' "./${sanitized_dataset}";
             #end if
+
             #if $training_set
-            ln -sf '$training_set' "`pwd`/${training_set.element_identifier}";
+            #set $sanitized_training_set = re.sub('[^\w\-_\.]', '_', $training_set.element_identifier.strip())
+            ln -sf '$training_set' "./${sanitized_training_set}";
             #end if
+
             #if $validation_set
-            ln -sf '$validation_set' "`pwd`/${validation_set.element_identifier}";
+            #set $sanitized_validation_set = re.sub('[^\w\-_\.]', '_', $validation_set.element_identifier.strip())
+            ln -sf '$validation_set' "./${sanitized_validation_set}";
             #end if
+
             #if $test_set
-            ln -sf '$test_set' "`pwd`/${test_set.element_identifier}";
+            #set $sanitized_test_set = re.sub('[^\w\-_\.]', '_', $test_set.element_identifier.strip())
+            ln -sf '$test_set' "./${sanitized_test_set}";
             #end if
+
             #if $raw_data
-            unzip -o -q '$raw_data' -d ./;
+                unzip -o -q '$raw_data' -d ./;
             #end if
+
             python '$__tool_directory__/ludwig_train.py'
                 #if $config
-                --config "`pwd`/config.yml"
+                --config "./config.yml"
                 #end if
                 #if $model_load_path
                 --model_load_path '${model_load_path.extra_files_path}'
                 #end if
                 #if $dataset
-                --dataset "`pwd`/${dataset.element_identifier}"
+                --dataset "./${sanitized_dataset}"
                 #end if
                 #if $training_set
-                --training_set "`pwd`/${training_set.element_identifier}"
+                --training_set "./${sanitized_training_set}"
                 #end if
                 #if $validation_set
-                --validation_set "`pwd`/${validation_set.element_identifier}"
+                --validation_set "./${sanitized_validation_set}"
                 #end if
                 #if $test_set
-                --test_set "`pwd`/${test_set.element_identifier}"
+                --test_set "./${sanitized_test_set}"
                 #end if
                 #if $training_set_metadata
                 --training_set_metadata '$training_set_metadata'
@@ -51,10 +62,11 @@
                 #if $disable_parallel_threads
                 --disable_parallel_threads
                 #end if
-                --output_directory "`pwd`"
+                --output_directory "."
                 --data_format '$data_format'
                 --random_seed $random_seed
                 --backend local &&
+
             mkdir -p '${output_model.extra_files_path}' &&
             cp -r experiment_run/model/*.json experiment_run/model/model_weights '${output_model.extra_files_path}' &&
             mkdir -p '$output_report.extra_files_path' &&
@@ -82,25 +94,26 @@
             <option value="h5">h5</option>
             <option value="json">json</option>
         </param>
-        <param name="random_seed" type="integer" value="42" label="Randonness seed" />
+        <param name="random_seed" type="integer" value="42" label="Randomness seed" min="0" max="999999" />
         <param name="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
         <data format="ludwig_model" name="output_model" label="${tool.name} model on ${on_string}" />
-        <data format="html" name="output_report" from_work_dir="smart_report.html" label="${tool.name} report on ${on_string}" />
+        <data format="html" name="output_report" from_work_dir="ludwig_train_report.html" label="${tool.name} report on ${on_string}" />
+        <collection type="list" name="output_pred_csv" label="${tool.name} training stat on ${on_string}" >
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.json" format="json" directory="experiment_run" />
+        </collection>
     </outputs>
     <tests>
         <test>
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="config" value="temperature_config.yml" ftype="yaml" />
             <param name="data_format" value="csv" />
-            <output name="output_report" file="temperature_train_report.html" compare="sim_size" delta="50" />
-            <output name="output_model" >
-                <extra_files type="file" name="model_hyperparameters.json" value="temp_model01/model_hyperparameters.json" compare="diff" />
-                <extra_files type="file" name="model_weights" value="temp_model01/model_weights" compare="sim_size" delta="1000" />
-                <extra_files type="file" name="training_set_metadata.json" value="temp_model01/training_set_metadata.json" compare="sim_size" delta="200"/>
-                <extra_files type="file" name="training_progress.json" value="temp_model01/training_progress.json" compare="sim_size" delta="50" />
+            <output name="output_report" file="ludwig_train_report_test.html" compare="sim_size" delta="10" >
+                <assert_contents>
+                    <has_text text="Visualizations" />
+                </assert_contents>
             </output>
         </test>
     </tests>

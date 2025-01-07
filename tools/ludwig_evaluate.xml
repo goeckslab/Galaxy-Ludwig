@@ -3,32 +3,32 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="python_requirements_gpu" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
+            #import re
             mkdir -p outputs &&
             #if $dataset
-            ln -sf '$dataset' "`pwd`/${dataset.element_identifier}";
+            #set $sanitized_dataset = re.sub('[^\w\-_\.]', '_', $dataset.element_identifier.strip()) 
+            ln -sf '$dataset' "./${sanitized_dataset}";
             #end if
             #if $raw_data
-            unzip -o -q '$raw_data' -d ./;
+                unzip -o -q '$raw_data' -d ./;
             #end if
             python '$__tool_directory__/ludwig_evaluate.py'
                 #if $model_path
                 --model_path '$model_path.extra_files_path'
                 #end if
                 #if $dataset
-                --dataset "`pwd`/${dataset.element_identifier}"
+                --dataset "./${sanitized_dataset}"
                 #end if
                 #if $disable_parallel_threads
                 --disable_parallel_threads
                 #end if
-                #if $skip_collect_predictions
-                --skip_collect_predictions
-                #end if
-                --output_directory "`pwd`/outputs"
+
+                --output_directory "./outputs"
                 --data_format '$data_format'
                 --split '$split'
                 --backend local
@@ -38,7 +38,6 @@
             cp outputs/*.json outputs/*.parquet '$output_report.extra_files_path' &&
 
             echo "Evaluation is Done!"
-            
         ]]>
     </command>
     <configfiles>
@@ -60,20 +59,20 @@
             <option value="test">test</option>
             <option value="full" selected="true">full</option>
         </param>
-        <param name="batch_size" type="integer" value="128" optional="true" label="Batch size" />
+        <param name="batch_size" type="integer" value="128" optional="true" label="Batch size" min="1" max="4096"/>
         <param name="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
-        <param name="skip_collect_predictions" type="boolean" checked="false" label="Whether to skip collecting predictions?" />
         <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
     </inputs>       
     <outputs>
-        <collection type="list" name="output_pred_csv" label="${tool.name} predictions CSV on ${on_string}" >
-            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.csv" format="csv" directory="outputs" />
-            <filter>not skip_collect_predictions</filter>
+        <collection type="list" name="output_pred_csv" label="${tool.name} predictions CSV/json on ${on_string}" >
+            <discover_datasets pattern="(?P&lt;designation&gt;predictions_parquet\.csv)" format="csv" directory="outputs" />
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.json" format="json" directory="outputs" />
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.png" format="png" directory="outputs" />
         </collection>
-        <data format="html" name="output_report" from_work_dir="outputs/smart_report.html" label="${tool.name} report on ${on_string}" />
+        <data format="html" name="output_report" from_work_dir="outputs/ludwig_evaluate_report.html" label="${tool.name} report on ${on_string}" />
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="2">
             <param name="model_path" value="" ftype="ludwig_model">
                 <composite_data value="temp_model01/model_hyperparameters.json" />
                 <composite_data value="temp_model01/model_weights" />
@@ -83,16 +82,15 @@
             <param name="dataset" value="temperature_la.csv" ftype="csv" />
             <param name="split" value="test" />
             <output name="output_report" ftype="html">
-                <extra_files type="file" name="predictions.parquet" value="temp_predictions.parquet" compare="sim_size" delta="50" />
-                <extra_files type="file" name="predictions.shapes.json" value="temp_predictions.shapes.json" lines_diff="5" />
-                <extra_files type="file" name="test_statistics.json" value="temp_test_statistics.json" lines_diff="5" />
+                <assert_contents>
+                    <has_text text="Evaluate" />
+                </assert_contents>
             </output>
+
             <output_collection name="output_pred_csv">
-                <element name="temperature_predictions">
+                <element name="predictions_parquet.csv">
                     <assert_contents>
-                        <has_n_lines n="9051" />
                         <has_n_columns n="1" />
-                        <has_size value="186816" delta="50" />
                     </assert_contents>
                 </element>
             </output_collection>

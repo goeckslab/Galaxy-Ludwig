@@ -1,5 +1,5 @@
 <macros>
-    <token name="@LUDWIG_VERSION@">0.6.1</token>
+    <token name="@LUDWIG_VERSION@">0.10.1</token>
 
     <token name="@SUFFIX@">0</token>
 
@@ -7,9 +7,15 @@
 
     <token name="@PROFILE@">21.05</token>
 
+    <xml name="python_requirements_gpu">
+        <requirements>
+            <container type="docker">quay.io/goeckslab/galaxy-ludwig-gpu:latest</container>
+        </requirements>
+    </xml>
+
     <xml name="python_requirements">
         <requirements>
-            <container type="docker">quay.io/goeckslab/galaxy-ludwig:@LUDWIG_VERSION@</container>
+            <container type="docker">quay.io/goeckslab/galaxy-ludwig:0.10.3</container>
         </requirements>
     </xml>
 
@@ -111,7 +117,7 @@
     </xml>
 
     <xml name="visualize_labels_limit">
-        <param argument="labels_limit" type="integer" value="" optional="true" label="Set the upper limit on the numeric encoded label value" help="Encoded numeric label values in dataset that are higher than `label_limit` are considered to be 'rare' labels." />
+        <param argument="labels_limit" type="integer" value="" optional="true" label="Set the upper limit on the numeric encoded label value" help="Encoded numeric label values in dataset that are higher than `label_limit` are considered to be 'rare' labels." min="1" max="1000"/>
     </xml>
 
     <xml name="visualize_metrics">
@@ -124,7 +130,7 @@
     </xml>
 
     <xml name="visualize_positive_label">
-        <param argument="positive_label" type="integer" value="1" label="Numeric encoded value for the positive class" />
+        <param argument="positive_label" type="integer" value="1" label="Numeric encoded value for the positive class" min="1" max="1000" />
     </xml>
 
     <xml name="visualize_ground_truth_apply_idx">

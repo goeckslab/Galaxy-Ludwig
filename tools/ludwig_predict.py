@@ -4,7 +4,7 @@ import sys
 
 from ludwig.predict import cli
 
-from ludwig_experiment import render_report
+from ludwig_experiment import convert_parquet_to_csv
 
 from model_unpickler import SafeUnpickler
 
@@ -15,6 +15,6 @@ setattr(pickle, 'Unpickler', SafeUnpickler)
 
 cli(sys.argv[1:])
 
-ludwig_output_directory_name = ""
-title = "Ludwig Prediction"
-render_report(title, ludwig_output_directory_name, show_visualization=False)
+convert_parquet_to_csv(
+    ""
+)

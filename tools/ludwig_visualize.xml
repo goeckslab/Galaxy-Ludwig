@@ -3,17 +3,17 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="python_requirements_gpu" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
         <![CDATA[
             #set $visualization = $visualization_selector.visualization.value
 
-            mkdir -p "`pwd`/results" &&
+            mkdir -p "./results" &&
             python '$__tool_directory__/ludwig_visualize.py'
                 --visualization '$visualization'
-                --output_directory "`pwd`/results"
+                --output_directory "./results"
                 #if 'hyperopt_stats_path' in $visualization_selector
                     --hyperopt_stats_path '${visualization_selector.hyperopt_stats_path}'
                 #end if
@@ -345,7 +345,8 @@
     </inputs>       
     <outputs>
         <collection type="list" name="output" label="${tool.name} ${visualization_selector.visualization} on ${on_string}">
-            <discover_datasets pattern="__name_and_ext__" format="auto" directory="results" />
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.pdf" format="pdf" directory="results" />
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.png" format="png" directory="results" /> 
         </collection>
     </outputs>
     <tests>
