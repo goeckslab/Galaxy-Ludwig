@@ -58,21 +58,40 @@ def extract_embeddings(image_dir, model_name, output_csv):
     if model_name not in MODEL_CONFIGS:
         raise ValueError(f"Unsupported model: {model_name}. Supported models are: {list(MODEL_CONFIGS.keys())}")
 
+    weights_path = "resnet50-0676ba61.pth"
     # Get model-specific settings
     config = MODEL_CONFIGS[model_name]
     img_size = config["img_size"]
     normalization = config["normalization"]
-    model_class = config["model"]
-    # Initialize the model
 
+    
+    #model_class = config["model"]
+    # Initialize the model
+    #model = model_class().to(device)
+    #print("model_class")
+    #model.fc = torch.nn.Identity()  # Remove classification head
+    #print("model.fc")
+    #model.eval()
+    #print("model.eval")
+    #device = torch.device("cpu")
+    #print("device")
+
+    # resnet50 
     device = torch.device("cpu")
-    print("device")
-    model = model_class().to(device)
-    print("model_class")
-    model.fc = torch.nn.Identity()  # Remove classification head
-    print("model.fc")
+    model = models.resnet50()
+    # Load weights from the local file
+    try:
+        state_dict = torch.load(weights_path, map_location=device)
+        model.load_state_dict(state_dict)
+        print("loaded weights from resnet50.pth")
+    except Exception as e:
+        raise RuntimeError(f"Error loading weights from {weights_path}: {e}")
+    #Remove classification head
+    model.fc = torch.nn.Identity()
+    model = model.to(device)
     model.eval()
-    print("model.eval")
+
+    
 
     # Define image transformation pipeline
     transform = transforms.Compose([
