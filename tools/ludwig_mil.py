@@ -156,7 +156,7 @@ def create_bags_from_split(split_data, split, repeats, bag_size, balance_enforce
 
     return bags
 
-def process_csv(embeddings_csv, metadata_csv, bag_size, balance_enforce, pooling_method):
+def process_csv(embeddings_csv, metadata_csv, bag_size, balance_enforce, pooling_method, split_proportions):
     """
     Process CSV files to create bags of data based on the specified parameters.
 
@@ -207,20 +207,23 @@ def process_csv(embeddings_csv, metadata_csv, bag_size, balance_enforce, pooling
         print(f"Processed {len(bags)} bags for split {split}.")
 
     print(f"Total bags created: {len(all_bags)}")
-    print("Example bag:", all_bags[0] if all_bags else "No bags created.")
+    #print("Example bag:", all_bags[0] if all_bags else "No bags created.")
+    all_bags_df = pd.DataFrame(all_bags)
+    output_file = "all_bags.csv"
+    all_bags_df.to_csv(output_file, index=False)
 
 def check_csv_and_columns(csv_file, required_columns):
     """Helper function to check if CSV file exists and contains required columns."""
     if not os.path.exists(csv_file):
         raise FileNotFoundError(f"The file {csv_file} does not exist.")
-    
+
     # Read the CSV file to check its columns
     df = pd.read_csv(csv_file)
-    
+
     for column in required_columns:
         if column not in df.columns:
             raise ValueError(f"The column '{column}' is missing from {csv_file}.")
-    
+
     return df
 
 
@@ -288,7 +291,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--split_proportions",
         type=str,
-        default=None,
+        default='0.7,0.1,0.2',
         help="Comma-separated proportions for train, validation, and test splits (e.g., '0.7,0.2,0.1'). If not provided, use metadata CSV."
     )
 
@@ -320,4 +323,3 @@ if __name__ == "__main__":
         pooling_method=args.pooling_method,
         split_proportions=args.split_proportions
     )
-
