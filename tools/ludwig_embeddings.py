@@ -92,7 +92,7 @@ def process_image(image_path, transform, device):
         print(f"Skipping {image_path}: {e}")
         return None
 
-def extract_embeddings(image_dir, model_name, output_csv):
+def extract_embeddings(image_dir, model_name, output_csv, apply_normalization):
     """Extracts embeddings from images using a specified model."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = load_model(model_name, device)
@@ -100,14 +100,20 @@ def extract_embeddings(image_dir, model_name, output_csv):
     # Retrieve the resize and normalize values for the selected model
     model_settings = MODEL_DEFAULTS.get(model_name, MODEL_DEFAULTS["default"])
     resize = model_settings["resize"]
-    normalize = model_settings["normalize"]
 
-    # Image preprocessing
-    transform = transforms.Compose([
-        transforms.Resize(resize),  # Dynamic size based on model
-        transforms.ToTensor(),
-        transforms.Normalize(mean=normalize[0], std=normalize[1])
-    ])
+    # Apply normalization if required by the user
+    if apply_normalization:
+        normalize = model_settings.get("normalize", ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
+        transform = transforms.Compose([
+            transforms.Resize(resize),  # Dynamic size based on model
+            transforms.ToTensor(),
+            transforms.Normalize(mean=normalize[0], std=normalize[1])
+        ])
+    else:
+        transform = transforms.Compose([
+            transforms.Resize(resize),  # Dynamic size based on model
+            transforms.ToTensor(),
+        ])
 
     results = []
     image_files = [
@@ -149,10 +155,11 @@ if __name__ == "__main__":
     parser.add_argument("--zip_file", required=True, help="Path to the ZIP file containing images.")
     parser.add_argument("--model_name", required=True, choices=AVAILABLE_MODELS.keys(), help="Model for embedding extraction.")
     parser.add_argument("--output_csv", required=True, help="Path to save extracted embeddings.")
+    parser.add_argument("--normalize", action="store_true", help="Whether to apply normalization.")
     args = parser.parse_args()
 
     temp_dir = "temp_images"
     extract_zip(args.zip_file, temp_dir)
-    extract_embeddings(temp_dir, args.model_name, args.output_csv)
+    extract_embeddings(temp_dir, args.model_name, args.output_csv, args.normalize)
     cleanup_directory(temp_dir)
 
