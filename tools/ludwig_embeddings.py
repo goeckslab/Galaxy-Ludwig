@@ -15,16 +15,6 @@ MODEL_DEFAULTS = {
     "default": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
 
     # Models using (224, 224) resize and ImageNet normalization
-    "alexnet": {"resize": (224, 224)},
-    "convnext_tiny": {"resize": (224, 224)},
-    "convnext_small": {"resize": (224, 224)},
-    "convnext_base": {"resize": (224, 224)},
-    "convnext_large": {"resize": (224, 224)},
-    "densenet121": {"resize": (224, 224)},
-    "densenet161": {"resize": (224, 224)},
-    "densenet169": {"resize": (224, 224)},
-    "densenet201": {"resize": (224, 224)},
-    "efficientnet_b0": {"resize": (224, 224)},
     "efficientnet_b1": {"resize": (240, 240)},
     "efficientnet_b2": {"resize": (260, 260)},
     "efficientnet_b3": {"resize": (300, 300)},
@@ -32,42 +22,12 @@ MODEL_DEFAULTS = {
     "efficientnet_b5": {"resize": (456, 456)},
     "efficientnet_b6": {"resize": (528, 528)},
     "efficientnet_b7": {"resize": (600, 600)},
-    "googlenet": {"resize": (224, 224)},
     "inception_v3": {"resize": (299, 299)},
-    "mnasnet0_5": {"resize": (224, 224)},
-    "mnasnet0_75": {"resize": (224, 224)},
-    "mnasnet1_0": {"resize": (224, 224)},
-    "mnasnet1_3": {"resize": (224, 224)},
-    "mobilenet_v2": {"resize": (224, 224)},
-    "mobilenet_v3_large": {"resize": (224, 224)},
-    "mobilenet_v3_small": {"resize": (224, 224)},
-    "regnet_x_400mf": {"resize": (224, 224)},
-    "regnet_x_800mf": {"resize": (224, 224)},
-    "regnet_x_1_6gf": {"resize": (224, 224)},
-    "regnet_x_3_2gf": {"resize": (224, 224)},
-    "regnet_x_8gf": {"resize": (224, 224)},
-    "resnet18": {"resize": (224, 224)},
-    "resnet34": {"resize": (224, 224)},
-    "resnet50": {"resize": (224, 224)},
-    "resnet101": {"resize": (224, 224)},
-    "resnet152": {"resize": (224, 224)},
-    "resnext50_32x4d": {"resize": (224, 224)},
-    "resnext101_32x8d": {"resize": (224, 224)},
-    "shufflenet_v2_x0_5": {"resize": (224, 224)},
-    "shufflenet_v2_x1_0": {"resize": (224, 224)},
-    "squeezenet1_0": {"resize": (224, 224)},
-    "squeezenet1_1": {"resize": (224, 224)},
     "swin_b": {"resize": (224, 224), "normalize": ([0.5, 0.0, 0.5], [0.5, 0.5, 0.5])},
     "swin_s": {"resize": (224, 224), "normalize": ([0.5, 0.0, 0.5], [0.5, 0.5, 0.5])},
     "swin_t": {"resize": (224, 224), "normalize": ([0.5, 0.0, 0.5], [0.5, 0.5, 0.5])},
-    "vgg11": {"resize": (224, 224)},
-    "vgg13": {"resize": (224, 224)},
-    "vgg16": {"resize": (224, 224)},
-    "vgg19": {"resize": (224, 224)},
     "vit_b_16": {"resize": (224, 224), "normalize": ([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])},
     "vit_b_32": {"resize": (224, 224), "normalize": ([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])},
-    "wide_resnet50_2": {"resize": (224, 224)},
-    "wide_resnet101_2": {"resize": (224, 224)}
 }
 
 # Ensure all models have normalization applied (if not defined)
@@ -104,7 +64,7 @@ def load_model(model_name, device):
         model.classifier = torch.nn.Identity()
     elif hasattr(model, 'head'):  # Vision Transformer
         model.head = torch.nn.Identity()
-    
+
     model.eval()
     return model
 
