@@ -9,21 +9,21 @@ from torchvision import transforms
 from PIL import Image
 
 # Define the default resize and normalization settings for models
+
 MODEL_DEFAULTS = {
     # Default normalization (ImageNet)
     "default": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
 
     # Models using (224, 224) resize and ImageNet normalization
-    "alexnet", "vgg11", "vgg13", "vgg16", "vgg19",
-    "resnet18", "resnet34", "resnet50", "resnet101", "resnet152",
-    "wide_resnet50_2", "wide_resnet101_2",
-    "densenet121", "densenet161", "densenet169", "densenet201",
-    "regnet_x_400mf", "regnet_x_800mf", "regnet_x_1_6gf", "regnet_x_3_2gf", "regnet_x_8gf",
-    "mobilenet_v2", "mobilenet_v3_large", "mobilenet_v3_small",
-    "shufflenet_v2_x0_5", "shufflenet_v2_x1_0",
-    "convnext_tiny", "convnext_small", "convnext_base", "convnext_large",
-    "googlenet"
-}: {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "alexnet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "vgg": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "resnet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "densenet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "regnet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "mobilenet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "shufflenet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "convnext": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "googlenet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
 
     # EfficientNet models with different resize values
     "efficientnet_b0": {"resize": (224, 224)},
@@ -38,17 +38,13 @@ MODEL_DEFAULTS = {
     # Inception-V3 has a unique input size
     "inception_v3": {"resize": (299, 299)},
 
-    # Vision Transformer models use (384, 384) with different normalization
-    "vit_b_16", "vit_b_32": {"resize": (384, 384), "normalize": ([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])},
+    # Vision Transformer models with different normalization
+    "vit_b_16": {"resize": (384, 384), "normalize": ([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])},
+    "vit_b_32": {"resize": (384, 384), "normalize": ([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])},
 
-    # Swin Transformer models use (224, 224) with different normalization
-    "swin_t", "swin_s", "swin_b": {"resize": (224, 224), "normalize": ([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])}
+    # Swin Transformer models with different normalization
+    "swin": {"resize": (224, 224), "normalize": ([0.5, 0.0, 0.5], [0.5, 0.5, 0.5])}
 }
-
-# Ensure all models have normalization applied (if not defined)
-for model in MODEL_DEFAULTS:
-    if "normalize" not in MODEL_DEFAULTS[model]:
-        MODEL_DEFAULTS[model]["normalize"] = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
 # Get all model names from torchvision.models
 AVAILABLE_MODELS = {name: getattr(models, name) for name in dir(models) if callable(getattr(models, name))}
