@@ -39,7 +39,7 @@ MODEL_DEFAULTS = {
     "inception_v3": {"resize": (299, 299)},
 
     # Vision Transformer models with different normalization
-    "vit_b_16": {"resize": (384, 384), "normalize": ([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])},
+    "vit_b_16": {"resize": (224, 224), "normalize": ([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])},
     "vit_b_32": {"resize": (384, 384), "normalize": ([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])},
 
     # Swin Transformer models with different normalization
