@@ -15,15 +15,15 @@ MODEL_DEFAULTS = {
     "default": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
 
     # Models using (224, 224) resize and ImageNet normalization
-    "alexnet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
-    "vgg": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
-    "resnet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
-    "densenet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
-    "regnet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
-    "mobilenet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
-    "shufflenet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
-    "convnext": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
-    "googlenet": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
+    "alexnet": {"resize": (224, 224)},
+    "vgg": {"resize": (224, 224)},
+    "resnet": {"resize": (224, 224)},
+    "densenet": {"resize": (224, 224)},
+    "regnet": {"resize": (224, 224)},
+    "mobilenet": {"resize": (224, 224)},
+    "shufflenet": {"resize": (224, 224)},
+    "convnext": {"resize": (224, 224)},
+    "googlenet": {"resize": (224, 224)},
 
     # EfficientNet models with different resize values
     "efficientnet_b0": {"resize": (224, 224)},
