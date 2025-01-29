@@ -137,6 +137,7 @@ def extract_embeddings(image_dir, model_name, output_csv, apply_normalization):
             transforms.Normalize(mean=normalize[0], std=normalize[1])
         ])
     else:
+        print(f"Resize = {resize}")
         transform = transforms.Compose([
             transforms.Resize(resize),  # Dynamic size based on model
             transforms.ToTensor(),
