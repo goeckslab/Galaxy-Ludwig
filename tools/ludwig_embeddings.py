@@ -4,37 +4,12 @@ import argparse
 import shutil
 import pandas as pd
 import torch
-from torchvision import models, transforms
+import torchvision.models as models
+from torchvision import transforms
 from PIL import Image
-from torchvision.models import ResNet50_Weights, EfficientNet_B0_Weights, DenseNet121_Weights
 
-# Model configurations
-MODEL_CONFIGS = {
-    "resnet": {
-        "model": lambda: models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1),
-        "img_size": (224, 224),
-        "normalization": {
-            "mean": [0.485, 0.456, 0.406],
-            "std": [0.229, 0.224, 0.225]
-        }
-    },
-    "efficientnet": {
-        "model": lambda: models.efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1),
-        "img_size": (224, 224),
-        "normalization": {
-            "mean": [0.485, 0.456, 0.406],
-            "std": [0.229, 0.224, 0.225]
-        }
-    },
-    "densenet": {
-        "model": lambda: models.densenet121(weights=DenseNet121_Weights.IMAGENET1K_V1),
-        "img_size": (224, 224),
-        "normalization": {
-            "mean": [0.485, 0.456, 0.406],
-            "std": [0.229, 0.224, 0.225]
-        }
-    }
-}
+# Get all model names from torchvision.models
+AVAILABLE_MODELS = {name: getattr(models, name) for name in dir(models) if callable(getattr(models, name))}
 
 def extract_zip(zip_file, output_dir):
     """Extracts a ZIP file into a given directory."""
@@ -49,16 +24,22 @@ def extract_zip(zip_file, output_dir):
         raise RuntimeError(f"Error extracting ZIP file: {e}")
 
 def load_model(model_name, device):
-    """Loads a specified pretrained model with its appropriate settings."""
-    if model_name not in MODEL_CONFIGS:
-        raise ValueError(f"Unsupported model: {model_name}. Supported: {list(MODEL_CONFIGS.keys())}")
+    """Loads a specified torchvision model and modifies it for feature extraction."""
+    if model_name not in AVAILABLE_MODELS:
+        raise ValueError(f"Unsupported model: {model_name}. Available models: {list(AVAILABLE_MODELS.keys())}")
 
-    config = MODEL_CONFIGS[model_name]
-    model = config["model"]().to(device)
-    model.fc = torch.nn.Identity() if hasattr(model, 'fc') else model.classifier  # Adjust last layer if exists
-    model.eval()
+    model = AVAILABLE_MODELS[model_name](weights="DEFAULT").to(device)
+
+    # Remove classification head dynamically
+    if hasattr(model, 'fc'):  # ResNet, EfficientNet, etc.
+        model.fc = torch.nn.Identity()
+    elif hasattr(model, 'classifier'):  # MobileNet, DenseNet, etc.
+        model.classifier = torch.nn.Identity()
+    elif hasattr(model, 'head'):  # Vision Transformer
+        model.head = torch.nn.Identity()
     
-    return model, config["img_size"], config["normalization"]
+    model.eval()
+    return model
 
 def process_image(image_path, transform, device):
     """Loads and transforms an image."""
@@ -70,14 +51,15 @@ def process_image(image_path, transform, device):
         return None
 
 def extract_embeddings(image_dir, model_name, output_csv):
-    """Extracts embeddings from images using the specified model."""
+    """Extracts embeddings from images using a specified model."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model, img_size, normalization = load_model(model_name, device)
+    model = load_model(model_name, device)
 
+    # Image preprocessing
     transform = transforms.Compose([
-        transforms.Resize(img_size),
+        transforms.Resize((224, 224)),  # Default size for most models
         transforms.ToTensor(),
-        transforms.Normalize(mean=normalization["mean"], std=normalization["std"])
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
     results = []
@@ -97,12 +79,10 @@ def extract_embeddings(image_dir, model_name, output_csv):
             embedding = model(input_tensor).squeeze().cpu().numpy()
             results.append([os.path.basename(image_path)] + embedding.tolist())
 
-    # Define the CSV header
+    # Save results to CSV
     if results:
         num_features = len(results[0]) - 1  # Subtract 1 for the filename
         header = ["sample_name"] + [f"vector{i+1}" for i in range(num_features)]
-        
-        # Save results to CSV with header
         df = pd.DataFrame(results, columns=header)
         df.to_csv(output_csv, index=False)
         print(f"Saved embeddings to {output_csv}")
@@ -118,9 +98,9 @@ def cleanup_directory(directory):
         print(f"Error cleaning up directory {directory}: {e}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Extract image embeddings using a pretrained model.")
+    parser = argparse.ArgumentParser(description="Extract image embeddings using a torchvision model.")
     parser.add_argument("--zip_file", required=True, help="Path to the ZIP file containing images.")
-    parser.add_argument("--model_name", required=True, choices=MODEL_CONFIGS.keys(), help="Model for embedding extraction.")
+    parser.add_argument("--model_name", required=True, choices=AVAILABLE_MODELS.keys(), help="Model for embedding extraction.")
     parser.add_argument("--output_csv", required=True, help="Path to save extracted embeddings.")
     args = parser.parse_args()
 
