@@ -46,6 +46,11 @@ MODEL_DEFAULTS = {
     "swin": {"resize": (224, 224), "normalize": ([0.5, 0.0, 0.5], [0.5, 0.5, 0.5])}
 }
 
+# Ensure all models have normalization applied (if not defined)
+for model in MODEL_DEFAULTS:
+    if "normalize" not in MODEL_DEFAULTS[model]:
+        MODEL_DEFAULTS[model]["normalize"] = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+
 # Get all model names from torchvision.models
 AVAILABLE_MODELS = {name: getattr(models, name) for name in dir(models) if callable(getattr(models, name))}
 
@@ -99,7 +104,7 @@ def extract_embeddings(image_dir, model_name, output_csv, apply_normalization):
 
     # Apply normalization if required by the user
     if apply_normalization:
-        normalize = model_settings.get("normalize", ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
+        normalize = model_settings.get("normalize")
         transform = transforms.Compose([
             transforms.Resize(resize),  # Dynamic size based on model
             transforms.ToTensor(),
