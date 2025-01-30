@@ -2,19 +2,14 @@ import argparse
 import pandas as pd
 import numpy as np
 import random
-import os
+import os 
 
 def load_csv(file_path):
-    """
-    Load a CSV file into a pandas DataFrame.
-
-    Args:
-        file_path (str): Path to the CSV file.
-
-    Returns:
-        pd.DataFrame: Loaded DataFrame.
-    """
     return pd.read_csv(file_path)
+
+def str_array_split(split_proportions):
+    array_split_proportion = split_proportions.split(",")
+    return array_split_proportion
 
 def UniqueSamples(load_data):
     """
@@ -26,13 +21,12 @@ def UniqueSamples(load_data):
     Returns:
         tuple: Unique samples and their count.
     """
-    np.random.seed(42)  # Set a seed for reproducibility
     unique_samples = load_data["sample_name"].unique()
     num_samples = len(unique_samples)
     print(f"This is the length of unique samples: {num_samples}", flush=True)
     return unique_samples, num_samples
 
-def SplitData(unique_samples, num_samples, data):
+def SplitData(unique_samples, num_samples, data, proportions=[0.7,0.1,0.2]):
     """
     Create train, validation, and test splits based on unique samples.
 
@@ -44,8 +38,9 @@ def SplitData(unique_samples, num_samples, data):
     Returns:
         tuple: Updated DataFrame with split column, and split samples.
     """
-    train_count = int(0.7 * num_samples)
-    val_count = int(0.1 * num_samples)
+
+    train_count = int(proportions[0] * num_samples)
+    val_count = int(proportions[1] * num_samples)
 
     # Randomly shuffle the samples
     shuffled_samples = np.random.permutation(unique_samples)
@@ -64,27 +59,9 @@ def SplitData(unique_samples, num_samples, data):
     return data, train_samples, val_samples, test_samples
 
 def aggregate_embeddings_with_max_pooling(embeddings):
-    """
-    Perform max pooling on a set of embeddings.
-
-    Args:
-        embeddings (np.array): Array of embeddings.
-
-    Returns:
-        np.array: Aggregated embedding.
-    """
     return np.max(embeddings, axis=0)
 
 def convert_embedding_to_string(embedding):
-    """
-    Convert an embedding to a string representation.
-
-    Args:
-        embedding (np.array): Embedding to convert.
-
-    Returns:
-        str: String representation of the embedding.
-    """
     return ",".join(map(str, embedding))
 
 def create_bags_from_split(split_data, split, repeats, bag_size, balance_enforce):
@@ -156,7 +133,15 @@ def create_bags_from_split(split_data, split, repeats, bag_size, balance_enforce
 
     return bags
 
-def process_csv(embeddings_csv, metadata_csv, bag_size, balance_enforce, pooling_method, split_proportions):
+def bag_size(size_numbers):
+    if isinstance(size_numbers, str) and '-' in size_numbers:
+        min_size, max_size = map(int, size_numbers.split('-'))
+    else:
+        min_size = max_size = int(size_numbers)
+
+    return min_size, max_size
+
+def process_csv(embeddings_csv, metadata_csv, bag_size, balance_enforce, pooling_method, split_proportions, dataleak):
     """
     Process CSV files to create bags of data based on the specified parameters.
 
@@ -172,15 +157,12 @@ def process_csv(embeddings_csv, metadata_csv, bag_size, balance_enforce, pooling
     """
     embeddings_data = load_csv(embeddings_csv)
     metadata = load_csv(metadata_csv)
-
-    if isinstance(bag_size, str) and '-' in bag_size:
-        min_size, max_size = map(int, bag_size.split('-'))
-    else:
-        min_size = max_size = int(bag_size)
+    split_proportions = str_array_split(split_proportions)
+    bag_min, bag_max = bag_size(bag_size)
 
     print(f"Loaded {len(embeddings_data)} records from embeddings file.")
     print(f"Loaded {len(metadata)} records from metadata file.")
-    print(f"Bag size range: {min_size}-{max_size}")
+    print(f"Bag size range: {bag_min}-{bag_max}")
     print(f"Balance enforcement: {balance_enforce}")
 
     if embeddings_data.shape[1] < 2:
@@ -188,9 +170,11 @@ def process_csv(embeddings_csv, metadata_csv, bag_size, balance_enforce, pooling
     if not all(col in metadata.columns for col in ["sample_name", "label"]):
         raise ValueError("Metadata CSV file must contain 'sample_name' and 'label' columns.")
 
-    if "split" not in metadata.columns:
+    if "split" not in metadata.columns and dataleak:
         unique_samples, num_samples = UniqueSamples(metadata)
         metadata, _, _, _ = SplitData(unique_samples, num_samples, metadata)
+    elif "split" not in metadata.columns:
+        metadata, _, _, _ = SplitData(metadata)
 
     merged_data = pd.merge(
         metadata, embeddings_data, left_on="sample_name", right_on=embeddings_data.columns[0]
@@ -211,38 +195,6 @@ def process_csv(embeddings_csv, metadata_csv, bag_size, balance_enforce, pooling
     all_bags_df = pd.DataFrame(all_bags)
     output_file = "all_bags.csv"
     all_bags_df.to_csv(output_file, index=False)
-
-def check_csv_and_columns(csv_file, required_columns):
-    """Helper function to check if CSV file exists and contains required columns."""
-    if not os.path.exists(csv_file):
-        raise FileNotFoundError(f"The file {csv_file} does not exist.")
-
-    # Read the CSV file to check its columns
-    df = pd.read_csv(csv_file)
-
-    for column in required_columns:
-        if column not in df.columns:
-            raise ValueError(f"The column '{column}' is missing from {csv_file}.")
-
-    return df
-
-
-def check_bag_size(bag_size):
-    """Helper function to check if the bag_size is a valid integer or range."""
-    if '-' in bag_size:
-        start, end = bag_size.split('-')
-        if not (start.isdigit() and end.isdigit()):
-            raise ValueError(f"Invalid bag_size range: {bag_size}. Both start and end must be integers.")
-    elif not bag_size.isdigit():
-        raise ValueError(f"Invalid bag_size: {bag_size}. It must be an integer or range (e.g., '1-3').")
-
-
-def check_split_proportions(split_proportions):
-    """Helper function to validate split proportions."""
-    if split_proportions:
-        proportions = [float(x) for x in split_proportions.split(",")]
-        if len(proportions) != 3 or sum(proportions) != 1.0:
-            raise ValueError("Split proportions must sum to 1.0 and must have exactly 3 values.")
 
 
 if __name__ == "__main__":
@@ -269,8 +221,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--balance_enforce",
-        default="True",
-        choices=["True", "False"],
+        action="store_true",
         help="Enforce class balance in the bags."
     )
     parser.add_argument(
@@ -294,25 +245,14 @@ if __name__ == "__main__":
         default='0.7,0.1,0.2',
         help="Comma-separated proportions for train, validation, and test splits (e.g., '0.7,0.2,0.1'). If not provided, use metadata CSV."
     )
+    parser.add_argument(
+        "--dataleak",
+        action="store_true",
+        help="Prevents dataleak when spliting the data"
+    )
 
     # Parse arguments
     args = parser.parse_args()
-
-    # Step 1: Check embeddings CSV
-    embeddings_df = check_csv_and_columns(args.embeddings_csv, ["sample_name"])
-
-    # Step 2: Check metadata CSV
-    metadata_df = check_csv_and_columns(args.metadata_csv, ["sample_name", "label"])
-
-    # If split_proportions is provided, check if there's no split column in metadata
-    if args.split_proportions and "split" in metadata_df.columns:
-        raise ValueError("The metadata CSV contains a 'split' column, but '--split_proportions' is also provided. Please choose one.")
-
-    # Step 3: Check bag_size
-    check_bag_size(args.bag_size)
-
-    # Step 4: Check split_proportions if provided
-    check_split_proportions(args.split_proportions)
 
     # Call the process_csv function with parsed arguments
     process_csv(
@@ -321,5 +261,6 @@ if __name__ == "__main__":
         bag_size=args.bag_size,
         balance_enforce=args.balance_enforce,
         pooling_method=args.pooling_method,
-        split_proportions=args.split_proportions
+        split_proportions=args.split_proportions,
+        dataleak=args.dataleak,
     )
