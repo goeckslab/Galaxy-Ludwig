@@ -32,8 +32,8 @@
     </configfiles>
     <inputs>
         <param name="input_zip" type="data" format="zip" label="Input Zip File (Images)" help="Provide a zip file containing images to process." />
-        <param name="output_name" type="data" format="csv" label="Output csv File name (embedding)" help="Csv file containing embeddings, first column is the sample name, followed by vector(n) columns"
-        <param name="model_name" type="select" label="Model for Embedding Extraction" help="Select the model to use for embedding extraction.">
+        <param name="output_name" type="data" format="csv" label="Output csv File name (embedding)" help="Csv file containing embeddings, first column is the sample name, followed by vector(n) columns" />
+        <param name="model_name" type="select" label="Model for Embedding Extraction" help="Select the model to use for embedding extraction." >
             <option value="alexnet">AlexNet</option>
             <option value="convnext_tiny">ConvNeXt-Tiny</option>
             <option value="convnext_small">ConvNeXt-Small</option>
