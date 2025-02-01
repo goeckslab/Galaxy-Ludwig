@@ -111,7 +111,6 @@ def extract_embeddings(model_name, apply_normalization, output_dir, file_list):
     use_model = load_model(model_name, device)
     model_settings = MODEL_DEFAULTS.get(model_name, MODEL_DEFAULTS["default"])
     resize = model_settings["resize"]
-
     if apply_normalization:
         normalize = model_settings.get("normalize")
         transform = transforms.Compose([
@@ -124,7 +123,6 @@ def extract_embeddings(model_name, apply_normalization, output_dir, file_list):
             transforms.Resize(resize),
             transforms.ToTensor(),
         ])
-
     list_embeddings = []
     with torch.no_grad():
         for file in file_list:
@@ -134,7 +132,6 @@ def extract_embeddings(model_name, apply_normalization, output_dir, file_list):
                 continue
             embedding = use_model(input_tensor).squeeze().cpu().numpy()
             list_embeddings.append([os.path.basename(file)] + embedding.tolist())
-
     return list_embeddings 
 
 def main(zip_file, output_csv, model_name, apply_normalization=False):
