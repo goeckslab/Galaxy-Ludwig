@@ -1,23 +1,37 @@
 import os
-import zipfile
 import argparse
-import shutil
-import pandas as pd
+import logging
+import inspect
+import zipfile
+import csv
 import torch
 import torchvision.models as models
 from torchvision import transforms
 from PIL import Image
+from inspect import signature
+
+# Configure logging
+logging.basicConfig(
+    filename="/tmp/ludwig_embeddings.log",  # Galaxy tools usually don't have stdout, so write to a file
+    filemode="a",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    level=logging.DEBUG
+)
+# Only include the model constructors that are actual models in torchvision
+AVAILABLE_MODELS = {
+    name: getattr(models, name)
+    for name in dir(models)
+    if callable(getattr(models, name)) and "weights" in signature(getattr(models, name)).parameters
+}
 
 # Define the default resize and normalization settings for models
-
 MODEL_DEFAULTS = {
     # Default normalization (ImageNet)
     "default": {"resize": (224, 224), "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])},
 
     # Models using (224, 224) resize and ImageNet normalization
     "efficientnet_b1": {"resize": (240, 240)},
-    "efficientnet_b2": {"resize": (260, 260)},
-    "efficientnet_b3": {"resize": (300, 300)},
+    "efficientnet_b2": {"resize": (260, 260)}, "efficientnet_b3": {"resize": (300, 300)},
     "efficientnet_b4": {"resize": (380, 380)},
     "efficientnet_b5": {"resize": (456, 456)},
     "efficientnet_b6": {"resize": (528, 528)},
@@ -35,16 +49,17 @@ for model in MODEL_DEFAULTS:
     if "normalize" not in MODEL_DEFAULTS[model]:
         MODEL_DEFAULTS[model]["normalize"] = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
-# Get all model names from torchvision.models
-AVAILABLE_MODELS = {name: getattr(models, name) for name in dir(models) if callable(getattr(models, name))}
-
-def extract_zip(zip_file, output_dir):
+def extract_zip(zip_file):
     """Extracts a ZIP file into a given directory."""
+    output_dir = os.path.splitext(zip_file)[0]
     os.makedirs(output_dir, exist_ok=True)
     try:
+        file_list = []
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
             zip_ref.extractall(output_dir)
-        print(f"Extracted ZIP to {output_dir}")
+            file_list = zip_ref.namelist()
+        logging.info("zip extracted")
+        return output_dir, file_list
     except zipfile.BadZipFile:
         raise RuntimeError("Invalid ZIP file.")
     except Exception as e:
@@ -54,9 +69,11 @@ def load_model(model_name, device):
     """Loads a specified torchvision model and modifies it for feature extraction."""
     if model_name not in AVAILABLE_MODELS:
         raise ValueError(f"Unsupported model: {model_name}. Available models: {list(AVAILABLE_MODELS.keys())}")
-
-    model = AVAILABLE_MODELS[model_name](weights="DEFAULT").to(device)
-
+    if "weights" in inspect.signature(AVAILABLE_MODELS[model_name]).parameters:
+        model = AVAILABLE_MODELS[model_name](weights="DEFAULT").to(device)
+    else:
+        model = AVAILABLE_MODELS[model_name]().to(device)
+    logging.info("model loaded")
     # Remove classification head dynamically
     if hasattr(model, 'fc'):  # ResNet, EfficientNet, etc.
         model.fc = torch.nn.Identity()
@@ -74,80 +91,68 @@ def process_image(image_path, transform, device):
         image = Image.open(image_path).convert("RGB")
         return transform(image).unsqueeze(0).to(device)
     except Exception as e:
-        print(f"Skipping {image_path}: {e}")
+        logging.warning(f"Skipping {image_path}: {e}")
         return None
 
-def extract_embeddings(image_dir, model_name, output_csv, apply_normalization):
-    """Extracts embeddings from images using a specified model."""
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = load_model(model_name, device)
+def write_csv(output_csv, list_embeddings):
+    with open(output_csv, mode="w", newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        if list_embeddings:
+            header = ["sample_name"] + [f"vector{i+1}" for i in range(len(list_embeddings[0]) - 1)]
+            csv_writer.writerow(header)
+            csv_writer.writerows(list_embeddings)
+            logging.info("csv created")
+        else:
+            csv_writer.writerow(["sample_name"])
+            print("No valid images found. Empty CSV created.")
 
-    # Retrieve the resize and normalize values for the selected model
+def extract_embeddings(model_name, apply_normalization, output_dir, file_list):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    use_model = load_model(model_name, device)
     model_settings = MODEL_DEFAULTS.get(model_name, MODEL_DEFAULTS["default"])
     resize = model_settings["resize"]
 
-    # Apply normalization if required by the user
     if apply_normalization:
         normalize = model_settings.get("normalize")
-        print(f"Resize = {resize}")
-        print(f"Normalize = {normalize}")
         transform = transforms.Compose([
-            transforms.Resize(resize),  # Dynamic size based on model
+            transforms.Resize(resize),
             transforms.ToTensor(),
             transforms.Normalize(mean=normalize[0], std=normalize[1])
         ])
     else:
-        print(f"Resize = {resize}")
         transform = transforms.Compose([
-            transforms.Resize(resize),  # Dynamic size based on model
+            transforms.Resize(resize),
             transforms.ToTensor(),
         ])
 
-    results = []
-    image_files = [
-        os.path.join(root, file)
-        for root, _, files in os.walk(image_dir)
-        for file in files if file.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".tiff"))
-    ]
-
-    print(f"Processing {len(image_files)} images...")
-
+    list_embeddings = []
     with torch.no_grad():
-        for image_path in image_files:
-            input_tensor = process_image(image_path, transform, device)
+        for file in file_list:
+            file = os.path.join(output_dir, file)
+            input_tensor = process_image(file, transform, device)
             if input_tensor is None:
-                continue  # Skip failed images
-            embedding = model(input_tensor).squeeze().cpu().numpy()
-            results.append([os.path.basename(image_path)] + embedding.tolist())
+                continue
+            embedding = use_model(input_tensor).squeeze().cpu().numpy()
+            list_embeddings.append([os.path.basename(file)] + embedding.tolist())
 
-    # Save results to CSV
-    if results:
-        num_features = len(results[0]) - 1  # Subtract 1 for the filename
-        header = ["sample_name"] + [f"vector{i+1}" for i in range(num_features)]
-        df = pd.DataFrame(results, columns=header)
-        df.to_csv(output_csv, index=False)
-        print(f"Saved embeddings to {output_csv}")
-    else:
-        print("No valid images found. CSV not saved.")
+    return list_embeddings 
 
-def cleanup_directory(directory):
-    """Removes a directory and its contents."""
-    try:
-        shutil.rmtree(directory)
-        print(f"Cleaned up temporary directory: {directory}")
-    except Exception as e:
-        print(f"Error cleaning up directory {directory}: {e}")
+def main(zip_file, output_csv, model_name, apply_normalization=False):
+    output_dir, file_list = extract_zip(zip_file)
+    logging.info("zip extracted")
+
+    list_embeddings = extract_embeddings(model_name, apply_normalization, output_dir, file_list)
+    logging.info("embedding extracted")
+
+    write_csv(output_csv, list_embeddings)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract image embeddings using a torchvision model.")
-    parser.add_argument("--zip_file", required=True, help="Path to the ZIP file containing images.")
-    parser.add_argument("--model_name", required=True, choices=AVAILABLE_MODELS.keys(), help="Model for embedding extraction.")
-    parser.add_argument("--output_csv", required=True, help="Path to save extracted embeddings.")
-    parser.add_argument("--normalize", action="store_true", help="Whether to apply normalization.")
+
+    parser.add_argument('--zip_file', required=True, help="Path to the ZIP file containing images.")
+    parser.add_argument('--model_name', required=True, choices=AVAILABLE_MODELS.keys(), help="Model for embedding extraction.")
+    parser.add_argument('--normalize', action="store_true", help="Whether to apply normalization.")
+    parser.add_argument("--output_csv", required=True, help="Path to the output CSV file")
+
     args = parser.parse_args()
-
-    temp_dir = "temp_images"
-    extract_zip(args.zip_file, temp_dir)
-    extract_embeddings(temp_dir, args.model_name, args.output_csv, args.normalize)
-    cleanup_directory(temp_dir)
-
+    main(args.zip_file, args.output_csv, args.model_name, args.normalize)

@@ -1,39 +1,27 @@
-<tool id="embedding_extraction" name="Image Embedding Extraction" version="@VERSION@" profile="@PROFILE@">
+<tool id="extract_embeddings" name="Image Embedding Extraction" version="@VERSION@" profile="@PROFILE@">
     <description>Extract image embeddings using a deep learning model</description>
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements_gpu" />
+    <expand macro="python_requirements" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
-    <command>
-        <![CDATA[
-            mkdir -p outputs &&
 
-            # Sanitize input file name
-            #if $input_zip
-            sanitized_zip=$(basename "$input_zip" | sed 's/[^a-zA-Z0-9._-]/_/g') &&
-            ln -sf "$input_zip" "./$sanitized_zip" &&
-            unzip -o -q "./$sanitized_zip" -d ./extracted_images/;
-            #end if
-            #if $normalize
-
-            sanitized_output=$(basename "embeddings.csv" | sed 's/[^a-zA-Z0-9._-]/_/g') &&
-
-            python '$__tool_directory__/embedding_extraction.py'
-                --zip_file './extracted_images'
-                --model_name '$model_name'
-                --output_csv "./outputs/$sanitized_output" &&
-            echo "Embedding extraction is complete!"
-        ]]>
-    </command>
+    <command><![CDATA[
+        python $__tool_directory__/test.py 
+        --zip_file '$input_zip' 
+        --output_csv '$output_csv'
+        --model_name '$model_name'
+        #if $apply_normalization
+            --normalize
+        #end if
+    ]]></command>
     <configfiles>
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <param name="input_zip" type="data" format="zip" label="Input Zip File (Images)" help="Provide a zip file containing images to process." />
-        <param name="output_name" type="data" format="csv" label="Output csv File name (embedding)" help="Csv file containing embeddings, first column is the sample name, followed by vector(n) columns"
-        <param name="model_name" type="select" label="Model for Embedding Extraction" help="Select the model to use for embedding extraction.">
+        <param argument="input_zip" type="data" format="zip" label="Input Zip File (Images)" help="Provide a zip file containing images to process." />
+        <param argument="model_name" type="select" label="Model for Embedding Extraction" help="Select the model to use for embedding extraction.">
             <option value="alexnet">AlexNet</option>
             <option value="convnext_tiny">ConvNeXt-Tiny</option>
             <option value="convnext_small">ConvNeXt-Small</option>
@@ -43,7 +31,7 @@
             <option value="densenet161">DenseNet161</option>
             <option value="densenet169">DenseNet169</option>
             <option value="densenet201">DenseNet201</option>
-            <option value="efficientnet_b0" selected="true">EfficientNet-B0</option>
+            <option value="efficientnet_b0" >EfficientNet-B0</option>
             <option value="efficientnet_b1">EfficientNet-B1</option>
             <option value="efficientnet_b2">EfficientNet-B2</option>
             <option value="efficientnet_b3">EfficientNet-B3</option>
@@ -51,6 +39,9 @@
             <option value="efficientnet_b5">EfficientNet-B5</option>
             <option value="efficientnet_b6">EfficientNet-B6</option>
             <option value="efficientnet_b7">EfficientNet-B7</option>
+            <option value="efficientnet_v2_s">EfficientNetV2-S</option>
+            <option value="efficientnet_v2_m">EfficientNetV2-M</option>
+            <option value="efficientnet_v2_l">EfficientNetV2-L</option>
             <option value="googlenet">GoogLeNet</option>
             <option value="inception_v3">Inception-V3</option>
             <option value="mnasnet0_5">MNASNet-0.5</option>
@@ -67,7 +58,7 @@
             <option value="regnet_x_8gf">RegNet-X-8GF</option>
             <option value="resnet18">ResNet-18</option>
             <option value="resnet34">ResNet-34</option>
-            <option value="resnet50">ResNet-50</option>
+            <option value="resnet50" selected="true">ResNet-50</option>
             <option value="resnet101">ResNet-101</option>
             <option value="resnet152">ResNet-152</option>
             <option value="resnext50_32x4d">ResNeXt-50-32x4d</option>
@@ -88,33 +79,35 @@
             <option value="wide_resnet50_2">Wide-ResNet50-2</option>
             <option value="wide_resnet101_2">Wide-ResNet101-2</option>
         </param>
-        <param name="apply_normalization" type="boolean" label="Apply Normalization" help="Enable or disable normalization of embeddings." />
+        <param argument="apply_normalization" type="boolean" label="Apply Normalization" help="Enable or disable normalization of embeddings." checked="true"/>
     </inputs>
     <outputs>
-        <data name="output_csv" format="csv" label="Extracted Embeddings" from_work_dir="outputs/embeddings.csv" />
+        <data name="output_csv" format="csv" label="Extracted Embeddings" />
     </outputs>
+
     <tests>
         <test>
             <param name="input_zip" value="example_images.zip" ftype="zip" />
             <param name="model_name" value="resnet50" />
             <param name="apply_normalization" value="true" />
-            <output name="output_csv" file="expected_embeddings.csv" />
+            <output name="embeddings_csv" file="expected_embeddings.csv" />
         </test>
     </tests>
+
     <help>
         <![CDATA[
-            **What it does**
-            This tool extracts image embeddings using a selected deep learning model.
+        **What it does**
+        This tool extracts image embeddings using a selected deep learning model.
 
-            **Inputs**
-            - A zip file containing images to process.
-            - A model selection for embedding extraction.
-            - An option to apply normalization to the extracted embeddings.
+        **Inputs**
+        - A zip file containing images to process.
+        - A model selection for embedding extraction.
+        - An option to apply normalization to the extracted embeddings.
 
-            **Outputs**
-            - A CSV file containing embeddings. Each row corresponds to an image, with the file name in the first column and embedding vectors in the subsequent columns.
+        **Outputs**
+        - A CSV file containing embeddings. Each row corresponds to an image, with the file name in the first column and embedding vectors in the subsequent columns.
         ]]>
     </help>
+    
     <expand macro="macro_citations" />
 </tool>
-
