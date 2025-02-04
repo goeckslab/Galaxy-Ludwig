@@ -50,6 +50,15 @@ def split_data(metadata, split_proportions, dataleak=False):
 
     return metadata
 
+def create_bags_from_split(metadata, seed=42):
+    bags = []
+    bag_set = set()
+ 
+    for split in shuffled_metadata['split'].unique():
+        split_metada = metadata[metadata['split'] == split]
+
+
+
 def aggregate_max_pooling(embeddings):
     return np.max(embeddings, axis=0)
 
@@ -62,16 +71,6 @@ def aggregate_sum_pooling(embeddings):
 def convert_embedding_to_string(embedding):
     return ",".join(map(str, embedding))
 
-def create_bags_from_split(split_data, split, repeats, bag_size, balance_enforce, pooling_method):
-    bags = []
-    bag_set = set()
-
-    pooling_functions = {
-        'maxpool': aggregate_max_pooling,
-        'meanpool': aggregate_mean_pooling,
-        'sum': aggregate_sum_pooling
-    }
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process CSV files to create bags of embeddings")
@@ -80,6 +79,7 @@ if __name__ == "__main__":
     parser.add_argument("--metadata_csv", type=str, required=True, help="The metadata in CSV file (Must contain 'sample_name' column and 'label' column.")
     parser.add_argument("--split_proportions", type=str, default='0.7,0.1,0.2', help="Proportions for train, validation, and test splits.")
     parser.add_argument("--dataleak", action="store_true", help="Prevents dataleak when splitting the data.")
+    #parser.add_argument("--output_csv", required=True, help="Path to the output CSV file")
 
     args = parser.parse_args()
 
@@ -88,8 +88,12 @@ if __name__ == "__main__":
 
     if "split" not in metadata_csv:
         metadata_csv = split_data(
-            metadata_csv, 
+            metadata_csv,
             split_proportions = args.split_proportions, 
             dataleak = args.dataleak
         )
+
+
+
+
     print(metadata_csv)
