@@ -69,72 +69,145 @@ def aggregate_embeddings(embeddings, pooling_method):
     if pooling_method == "sum_pooling":
         return np.sum(embeddings, axis=0)
 
+    if pooling_method == "min_pooling":
+        return np.min(embeddings, axis=0)
+
 def convert_embedding_to_string(embedding):
     return ",".join(map(str, embedding))
 
-def bag_turns(df_embeddings, bag_sizes, pooling_method):
-    embeddings_0 = df_embeddings.loc[df_embeddings["label"] == 0].values.tolist()
-    embeddings_1 = df_embeddings.loc[df_embeddings["label"] == 1].values.tolist()
+def bag_turns(df_embeddings, bag_sizes, pooling_method, repeats):
+    all_bags = []
+    for _ in range(repeats):
+        embeddings_0 = df_embeddings.loc[df_embeddings["label"] == 0].values.tolist()
+        embeddings_1 = df_embeddings.loc[df_embeddings["label"] == 1].values.tolist()
 
-    np.random.shuffle(embeddings_0)
-    np.random.shuffle(embeddings_1)
+        np.random.shuffle(embeddings_0)
+        np.random.shuffle(embeddings_1)
+        bag_size_range = parse_bag_size(bag_sizes)
+
+        make_bag_1 = True  # Alternate between making bags starting with class 1
+        bags = []
+        bag_set = set()
+
+        while embeddings_0 or embeddings_1:
+            bag_size = np.random.randint(bag_size_range[0], bag_size_range[1] + 1)  # Inclusive upper bound
+
+            if make_bag_1 and embeddings_1:
+                num_1_samples = min(np.random.randint(1, bag_size + 1), len(embeddings_1))
+            else:
+                num_1_samples = 0  # If not making bag 1, no samples from embeddings_1
+
+            selected_embeddings_1 = embeddings_1[:num_1_samples]
+            embeddings_1 = embeddings_1[num_1_samples:]
+
+            num_0_samples = min(bag_size - num_1_samples, len(embeddings_0))
+            selected_embeddings_0 = embeddings_0[:num_0_samples]
+            embeddings_0 = embeddings_0[num_0_samples:]
+
+            # Combine to form the final bag
+            bag_embeddings = selected_embeddings_0 + selected_embeddings_1
+
+            # If bag is still not full, fill with remaining class 1 embeddings
+            if len(bag_embeddings) < bag_size and embeddings_1:
+                num_extra = min(bag_size - len(bag_embeddings), len(embeddings_1))
+                extra_embeddings = embeddings_1[:num_extra]
+                embeddings_1 = embeddings_1[num_extra:]
+                bag_embeddings += extra_embeddings
+
+            # Toggle bag type for next iteration
+            make_bag_1 = not make_bag_1
+
+            if len(bag_embeddings) > 0:
+                sample_names = [x[0] for x in bag_embeddings]
+                sample_labels = [x[1] for x in bag_embeddings]
+                sample_split = [x[2] for x in bag_embeddings]
+                only_embeddings = [row[3:] for row in bag_embeddings]
+
+                aggregated_embedding = aggregate_embeddings(only_embeddings, pooling_method)
+
+                bag_label = int(any(np.array(sample_labels) == 1))
+                bag_embeddings_tuple = tuple(map(tuple, only_embeddings))
+                bag_samples_tuple = tuple(sample_names)
+                bag_key = (bag_embeddings_tuple, len(bag_embeddings), bag_samples_tuple)
+
+                if bag_key not in bag_set:
+                    bag_set.add(bag_key)
+
+                    bags.append({
+                        "bag_label": bag_label,
+                        "split": sample_split[0],
+                        "bag_size": len(bag_embeddings),
+                        "bag_samples": sample_names,
+                        "embedding": aggregated_embedding
+                    })
+                else:
+                    print("A bag was created twice", flush=True)
+        print(bags)
+        all_bags.extend(bags)
+    return all_bags
+
+def bag_random(df_embeddings, bag_sizes, pooling_method, repeats):
+    all_bags = []
     bag_size_range = parse_bag_size(bag_sizes)
 
-    make_bag_1 = True  # Alternate between making bags starting with class 1
+    for _ in range(repeats):
+        available_embeddings = df_embeddings.values.tolist()
+        np.random.shuffle(available_embeddings)
+        bag_set = set()
+        bags = []
 
-    while embeddings_0 or embeddings_1:
-        bag_size = np.random.randint(bag_size_range[0], bag_size_range[1] + 1)  # Inclusive upper bound
+        while len(available_embeddings) > 0:
+            bag_size = np.random.randint(bag_size_range[0], bag_size_range[1] + 1)
 
-        if make_bag_1 and embeddings_1:
-            num_1_samples = min(np.random.randint(1, bag_size + 1), len(embeddings_1))
-        else:
-            num_1_samples = 0  # If not making bag 1, no samples from embeddings_1
+            bag_embeddings = available_embeddings[:bag_size]
+            available_embeddings = available_embeddings[bag_size:]
 
-        selected_embeddings_1 = embeddings_1[:num_1_samples]
-        embeddings_1 = embeddings_1[num_1_samples:]
+            sample_names = []
+            sample_labels = []
+            sample_split = []
+            only_embeddings = []
+            if len(bag_embeddings) > 0:
+                for x in bag_embeddings:
+                    sample_names.append(x[0])
+                    sample_labels.append(x[1])
+                    sample_split.append(x[2])
+                    only_embeddings.append(x[3:])
 
-        num_0_samples = min(bag_size - num_1_samples, len(embeddings_0))
-        selected_embeddings_0 = embeddings_0[:num_0_samples]
-        embeddings_0 = embeddings_0[num_0_samples:]
+                aggregated_embedding = aggregate_embeddings(only_embeddings, pooling_method)
 
-        # Combine to form the final bag
-        bag_embeddings = selected_embeddings_0 + selected_embeddings_1
+                bag_label = int(any(np.array(sample_labels) == 1))
+                bag_embeddings_tuple = tuple(map(tuple, only_embeddings))
+                bag_samples_tuple = tuple(sample_names)
+                bag_key = (bag_embeddings_tuple, len(bag_embeddings), bag_samples_tuple)
 
-        # If bag is still not full, fill with remaining class 1 embeddings
-        if len(bag_embeddings) < bag_size and embeddings_1:
-            num_extra = min(bag_size - len(bag_embeddings), len(embeddings_1))
-            extra_embeddings = embeddings_1[:num_extra]
-            embeddings_1 = embeddings_1[num_extra:]
-            bag_embeddings += extra_embeddings
+                bag_label = int(any(np.array(sample_labels) == 1))
+
+                if bag_key not in bag_set:
+                    bag_set.add(bag_key)
+
+                    bags.append({
+                        "bag_label": bag_label,
+                        "split": sample_split[0],
+                        "bag_size": len(bag_embeddings),
+                        "bag_samples": sample_names,
+                        "embedding": aggregated_embedding 
+                    })
+                else:
+                    print("A bag was created twice", flush=True)
+        print(bags)
+        all_bags.extend(bags)
+
+    return all_bags
 
 
-        # Toggle bag type for next iteration
-        make_bag_1 = not make_bag_1#        if len(bag_embeddings) > 0:
-        sample_names = [x[0] for x in bag_embeddings]
-        sample_labels = [x[1] for x in bag_embeddings]
-        sample_split = [x[2] for x in bag_embeddings]
-
-        only_embeddings = [row[3:] for row in bag_embeddings]
-
-        aggregated_embedding = aggregate_embeddings(only_embeddings, pooling_method)
-
-        print(aggregated_embedding)
-
-def bag_random():
-    pass
-
-def bag_processing(embeddings, metadata, pooling_method, balance_enforced=False, bag_sizes=[3,5], seed=42):
-    bags = []
-    bag_set = set()
-    bags_sizes = parse_bag_size(bag_sizes)
-
+def bag_processing(embeddings, metadata, pooling_method, balance_enforced=False, bag_sizes=[3,5], seed=42, repeats=1):
     for split in metadata['split'].unique():
         split_metadata = metadata[metadata['split'] == split]
         split_embeddings = pd.merge(split_metadata, embeddings, on='sample_name')
         if balance_enforced:
-            bag_turns(split_embeddings, bag_sizes, pooling_method)
-        #else:
-            #bag_ramdom()
+            bag_data = bag_turns(split_embeddings, bag_sizes, pooling_method,repeats)
+        else:
+            bag_data = bag_random(split_embeddings, bag_sizes, pooling_method, repeats)
 
 
 if __name__ == "__main__":
@@ -145,9 +218,10 @@ if __name__ == "__main__":
     parser.add_argument("--split_proportions", type=str, default='0.7,0.1,0.2', help="Proportions for train, validation, and test splits.")
     parser.add_argument("--dataleak", action="store_true", help="Prevents dataleak when splitting the data.")
     parser.add_argument("--balance_enforced", action="store_true", help="Create bags in turns, reducing probability of large imbalacend bags")
-    parser.add_argument("--bag_size", type=str, required=True, help="Bag size as a single number (e.g., 4) or a range (e.g., 3-5).")    
+    parser.add_argument("--bag_size", type=str, required=True, help="Bag size as a single number (e.g., 4) or a range (e.g., 3-5).")
     parser.add_argument("--seed", type=int, help="seed number")
     parser.add_argument("--pooling_method", type=str, required=True, help="The method for pooling the embeddings")
+    parser.add_argument("--repeats", type=int, default=1, help="Number of times the entire dataset can be used to generate bags")
     #parser.add_argument("--output_csv", required=True, help="Path to the output CSV file")
 
     args = parser.parse_args()
@@ -158,8 +232,8 @@ if __name__ == "__main__":
     if "split" not in metadata_csv:
         metadata_csv = split_data(
             metadata_csv,
-            split_proportions = args.split_proportions, 
+            split_proportions = args.split_proportions,
             dataleak = args.dataleak
         )
-    bag_processing(embeddings_data, metadata_csv, args.pooling_method, args.balance_enforced, args.bag_size, args.seed)
+    bag_processing(embeddings_data, metadata_csv, args.pooling_method, args.balance_enforced, args.bag_size, args.seed, args.repeats)
 
