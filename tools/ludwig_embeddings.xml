@@ -3,18 +3,19 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="ludwig-embeddings" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
 
     <command><![CDATA[
-        python $__tool_directory__/test.py 
+        python $__tool_directory__/ludwig_embeddings.py 
         --zip_file '$input_zip' 
         --output_csv '$output_csv'
         --model_name '$model_name'
         #if $apply_normalization
             --normalize
         #end if
+        --transform_type '$transform_type'
     ]]></command>
     <configfiles>
         <inputs name="inputs" />
@@ -80,7 +81,13 @@
             <option value="wide_resnet101_2">Wide-ResNet101-2</option>
         </param>
         <param argument="apply_normalization" type="boolean" label="Apply Normalization" help="Enable or disable normalization of embeddings." checked="true"/>
-    </inputs>
+        <param argument="transform_type" type="select" label="Image Transformation Type" help="Choose the transformation type to apply before extraction.">
+            <option value="RGB" selected="true">RGB</option>
+            <option value="grayscale">Grayscale</option>
+            <option value="rgba_to_rgb">RGBA to RGB</option>
+            <option value="clahe">CLAHE (Contrast Limited Adaptive Histogram Equalization)</option>
+            <option value="edges">Edge Detection</option>
+        </param>    </inputs>
     <outputs>
         <data name="output_csv" format="csv" label="Extracted Embeddings" />
     </outputs>
@@ -90,10 +97,10 @@
             <param name="input_zip" value="example_images.zip" ftype="zip" />
             <param name="model_name" value="resnet50" />
             <param name="apply_normalization" value="true" />
+            <param name="transform_type" value="RGB" />
             <output name="embeddings_csv" file="expected_embeddings.csv" />
         </test>
     </tests>
-
     <help>
         <![CDATA[
         **What it does**
@@ -103,11 +110,13 @@
         - A zip file containing images to process.
         - A model selection for embedding extraction.
         - An option to apply normalization to the extracted embeddings.
+        - A choice of image transformation type before processing.
 
         **Outputs**
         - A CSV file containing embeddings. Each row corresponds to an image, with the file name in the first column and embedding vectors in the subsequent columns.
         ]]>
     </help>
-    
+
     <expand macro="macro_citations" />
+
 </tool>
