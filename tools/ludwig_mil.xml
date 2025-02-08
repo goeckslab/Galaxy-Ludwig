@@ -1,0 +1,89 @@
+<tool id="bagging_tool" name="Bagging Embeddings Processor" version="@VERSION@" profile="@PROFILE@">
+    <description>Process CSV files to create bags of embeddings for machine learning</description>
+    <macros>
+        <import>ludwig_macros.xml</import>
+    </macros>
+    <expand macro="python_requirements" />
+    <expand macro="macro_stdio" />
+    <version_command>echo "@VERSION@"</version_command>
+    <command>
+        python "$__tool_directory__/ludwig_mil.py"
+        --embeddings_csv "$embeddings_csv"
+        --metadata_csv "$metadata_csv"
+        --split_proportions "$split_proportions"
+        #if $bag_size
+        --bag_size "$bag_size"
+        #end if
+        --pooling_method "$pooling_method"
+        --repeats "$repeats"
+        --output_csv "$output_csv"
+        #if $dataleak
+        --dataleak
+        #end if
+        #if $balance_enforced
+        --balance_enforced
+        #end if
+        #if $ludwig_format
+        --ludwig_format
+        #end if
+    </command>
+
+    <inputs>
+        <param name="embeddings_csv" type="data" format="csv" label="Embeddings CSV File"/>
+        <param name="metadata_csv" type="data" format="csv" label="Metadata CSV File"/>
+        <param name="split_proportions" type="text" value="0.7,0.1,0.2" label="Split Proportions (train,val,test)"/>
+        <param name="bag_size" type="text" value="3-5" label="Bag Size (single number or range, e.g., 3-5)"/>
+        <param name="pooling_method" type="select" label="Pooling Method">
+            <option value="max_pooling">Max Pooling</option>
+            <option value="mean_pooling">Mean Pooling</option>
+            <option value="sum_pooling">Sum Pooling</option>
+            <option value="min_pooling">Min Pooling</option>
+            <option value="median_pooling">Median Pooling</option>
+            <option value="l2_norm_pooling">L2 Norm Pooling</option>
+            <option value="geometric_mean_pooling">Geometric Mean Pooling</option>
+            <option value="first_embedding">First Embedding</option>
+            <option value="last_embedding">Last Embedding</option>
+        </param>
+        <param name="repeats" type="integer" value="1" label="Number of Repeats"/>
+        <param name="dataleak" type="boolean" optional="true" label="Prevent Data Leak?"/>
+        <param name="balance_enforced" type="boolean" optional="true" label="Enforce Balanced Bags?"/>
+        <param name="ludwig_format" type="boolean" optional="true" label="Convert to Ludwig Format?"/>
+    </inputs>
+
+    <outputs>
+        <data name="output_csv" format="csv" label="Processed Bags CSV"/>
+    </outputs>
+
+    <tests>
+        <test>
+            <param name="embeddings_csv" value="example_embeddings.csv" />
+            <param name="metadata_csv" value="example_metadata.csv" />
+            <param name="split_proportions" value="0.7,0.2,0.1" />
+            <param name="bag_size" value="3-5" />
+            <param name="pooling_method" value="mean_pooling" />
+            <param name="repeats" value="1" />
+            <param name="dataleak" value="true" />
+            <param name="balance_enforced" value="false" />
+            <param name="ludwig_format" value="true" />
+            <output name="embeddings_csv_out" file="expected_output.csv" />
+        </test>
+    </tests>
+
+    <help>
+        <![CDATA[
+        **What it does**
+        This tool processes embedding and metadata CSV files to create bags of samples with specified sizes and pooling methods.
+
+        **Inputs**
+        - A CSV file containing embeddings with a `sample_name` column.
+        - A CSV file with metadata containing `sample_name` and `label` columns.
+        - Parameters for bag size, splitting proportions, and pooling methods.
+
+        **Outputs**
+        - A CSV file with bags of embeddings, including labels, split information, and processed embedding vectors.
+        ]]>
+    </help>
+
+    <expand macro="macro_citations" />
+
+</tool>
