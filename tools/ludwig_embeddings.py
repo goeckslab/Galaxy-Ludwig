@@ -21,8 +21,8 @@ such as resizing, normalization, and conversion.
 
 import argparse
 import inspect
-import os
 import csv
+import os
 import logging
 import zipfile
 from inspect import signature

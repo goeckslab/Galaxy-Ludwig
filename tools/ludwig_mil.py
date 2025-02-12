@@ -285,9 +285,9 @@ def convert_embedding_to_string(embedding_array):
 def transform_bags_for_ludwig(bags):
     trans_bags = []
     for bag in bags:
-        trans_bags = bag.copy()
-        trans_bags["embedding"] = convert_embedding_to_string(bag["embedding"])
-        trans_bags.append(trans_bags)
+        trans_bag = bag.copy()
+        trans_bag["embedding"] = convert_embedding_to_string(bag["embedding"])
+        trans_bags.append(trans_bag)
 
     return trans_bags
 
