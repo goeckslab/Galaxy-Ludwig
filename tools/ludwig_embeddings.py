@@ -20,16 +20,19 @@ such as resizing, normalization, and conversion.
 """
 
 import argparse
-import os
 import inspect
-import logging
+import os
 import csv
+import logging
 import zipfile
 from inspect import signature
 
 from PIL import Image
+
 import cv2
+
 import torch
+
 import torchvision.models as models
 from torchvision import transforms
 
@@ -113,6 +116,7 @@ def extract_zip(zip_file):
         raise RuntimeError("Invalid ZIP file.") from exc
     except Exception as exc:
         raise RuntimeError("Error extracting ZIP file.") from exc
+
 
 def load_model(model_name, device):
     """Loads a specified torchvision model and

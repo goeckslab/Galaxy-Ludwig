@@ -50,6 +50,7 @@ import argparse
 import csv
 
 import numpy as np
+
 import pandas as pd
 
 
@@ -332,9 +333,9 @@ def write_csv(output_csv, list_embeddings):
 
         elif isinstance(first_item["embedding"], np.ndarray):
             # Case 2: Embedding is a NumPy array
-            vector_columns = [f"vector{i+1}"
-                for i in range(len(first_item["embedding"]))]
-            headers.extend(vector_columns)
+            vec_col = [f"vector{i+1}"
+                       for i in range(len(first_item["embedding"]))]
+            headers.extend(vec_col)
             csv_writer.writerow(headers)
 
             for bag in list_embeddings:
