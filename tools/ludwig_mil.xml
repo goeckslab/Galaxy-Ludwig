@@ -65,7 +65,7 @@
             <param name="dataleak" value="true" />
             <param name="balance_enforced" value="false" />
             <param name="ludwig_format" value="true" />
-            <output name="output_csv" file="output_csv" >
+            <output name="output_csv">
                 <assert_contents>
                     <has_text text="bag_samples" />
                     <has_n_columns min="1" />

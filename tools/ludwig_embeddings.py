@@ -24,6 +24,7 @@ import csv
 import inspect
 import logging
 import os
+import tempfile
 import zipfile
 from inspect import signature
 
@@ -102,16 +103,20 @@ for model, settings in MODEL_DEFAULTS.items():
 
 
 def extract_zip(zip_file):
-    """Extracts a ZIP file into a given directory."""
-    output_dir = os.path.splitext(zip_file)[0]
-    os.makedirs(output_dir, exist_ok=True)
+    """Extracts a ZIP file into a writable directory."""
+
+    # Use a writable temp directory
+    output_dir = tempfile.mkdtemp(prefix="extracted_zip_")
+
     try:
         file_list = []
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
             zip_ref.extractall(output_dir)
             file_list = zip_ref.namelist()
-        logging.info("ZIP extracted")
+
+        logging.info(f"ZIP extracted to: {output_dir}")
         return output_dir, file_list
+
     except zipfile.BadZipFile as exc:
         raise RuntimeError("Invalid ZIP file.") from exc
     except Exception as exc:
