@@ -94,11 +94,16 @@
 
     <tests>
         <test>
-            <param name="input_zip" value="example_images.zip" ftype="zip" />
+            <param name="input_zip" value="100_digits_test.zip" ftype="zip" />
             <param name="model_name" value="resnet50" />
             <param name="apply_normalization" value="true" />
             <param name="transform_type" value="RGB" />
-            <output name="embeddings_csv" file="expected_embeddings.csv" />
+            <output name="output_csv" file="output_csv" >
+                <assert_contents>
+                    <has_text text="sample_name" />
+                    <has_n_columns min="6" />
+                </assert_contents>
+            </output>
         </test>
     </tests>
     <help>

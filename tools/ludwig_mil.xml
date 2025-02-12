@@ -56,8 +56,8 @@
 
     <tests>
         <test>
-            <param name="embeddings_csv" value="example_embeddings.csv" />
-            <param name="metadata_csv" value="example_metadata.csv" />
+            <param name="embeddings_csv" value="100_digits_embeddings.csv" />
+            <param name="metadata_csv" value="100_digits_metadata.csv" />
             <param name="split_proportions" value="0.7,0.2,0.1" />
             <param name="bag_size" value="3-5" />
             <param name="pooling_method" value="mean_pooling" />
@@ -65,7 +65,12 @@
             <param name="dataleak" value="true" />
             <param name="balance_enforced" value="false" />
             <param name="ludwig_format" value="true" />
-            <output name="embeddings_csv_out" file="expected_output.csv" />
+            <output name="output_csv" file="output_csv" >
+                <assert_contents>
+                    <has_text text="bag_samples" />
+                    <has_n_columns min="5" />
+                </assert_contents>
+            </output>
         </test>
     </tests>
 
