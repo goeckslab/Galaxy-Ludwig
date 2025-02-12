@@ -2,32 +2,39 @@ import argparse
 import csv
 import pandas as pd
 import numpy as np
-import random 
+import random
 import os
+
 
 def parse_bag_size(value):
     """Parses bag_size argument to handle both single integers and ranges."""
     if "-" in value:
         min_val, max_val = map(int, value.split("-"))
         if min_val > max_val:
-            raise argparse.ArgumentTypeError("Invalid range: min value cannot be greater than max value.")
+            raise argparse.ArgumentTypeError(
+                "Invalid range: min value cannot be greater than max value."
+            )
         return [min_val, max_val]
     return [int(value), int(value)]
+
 
 def load_csv(file_path):
     return pd.read_csv(file_path)
 
+
 def str_array_split(split_proportions):
     split_array = [float(p) for p in split_proportions.split(",")]
     if len(split_array) == 2:
-        split_array.insert(1,0.0)
+        split_array.insert(1, 0.0)
     return split_array
+
 
 def split_sizes(num_samples, proportions):
     train_size = int(proportions[0] * num_samples)
     val_size = int(proportions[1] * num_samples) if proportions[1] > 0 else 0
     test_size = int(proportions[2] * num_samples)
     return train_size, val_size, test_size
+
 
 def split_data(metadata, split_proportions, dataleak=False):
     proportions = str_array_split(split_proportions)
@@ -60,6 +67,7 @@ def split_data(metadata, split_proportions, dataleak=False):
 
     return metadata
 
+
 def aggregate_embeddings(embeddings, pooling_method):
     if pooling_method == "max_pooling":
         return np.max(embeddings, axis=0)
@@ -88,6 +96,7 @@ def aggregate_embeddings(embeddings, pooling_method):
     if pooling_method == "last_embedding":
         return embeddings[-1]
     raise ValueError(f"Unknown pooling method: {pooling_method}")
+
 
 def bag_turns(df_embeddings, bag_sizes, pooling_method, repeats):
     all_bags = []
@@ -159,6 +168,7 @@ def bag_turns(df_embeddings, bag_sizes, pooling_method, repeats):
         all_bags.extend(bags)
     return all_bags
 
+
 def bag_random(df_embeddings, bag_sizes, pooling_method, repeats):
     all_bags = []
     bag_size_range = parse_bag_size(bag_sizes)
@@ -202,15 +212,17 @@ def bag_random(df_embeddings, bag_sizes, pooling_method, repeats):
                         "split": sample_split[0],
                         "bag_size": len(bag_embeddings),
                         "bag_samples": sample_names,
-                        "embedding": aggregated_embedding 
+                        "embedding": aggregated_embedding
                     })
                 else:
                     print("A bag was created twice", flush=True)
         all_bags.extend(bags)
     return all_bags
 
+
 def convert_embedding_to_string(embedding_array):
     return ",".join(map(str, embedding_array))
+
 
 def transform_bags_for_ludwig(all_bags):
     transformed_bags = []
@@ -221,6 +233,7 @@ def transform_bags_for_ludwig(all_bags):
 
     return transformed_bags
 
+
 def write_csv(output_csv, list_embeddings):
     if not list_embeddings:
         with open(output_csv, mode="w", newline='') as csv_file:
@@ -228,16 +241,16 @@ def write_csv(output_csv, list_embeddings):
             csv_writer.writerow(["bag_samples", "bag_size", "bag_label", "split", "embeddings"])
             print("No valid data found. Empty CSV created.")
         return
-    
+
     # Determine the format based on the first item's "embedding" field
     first_item = list_embeddings[0]
-    
+
     with open(output_csv, mode="w", newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
 
         # Extract common headers
         headers = ["bag_samples", "bag_size", "bag_label", "split"]
-        
+
         if isinstance(first_item["embedding"], str):
             # Case 1: Embedding is a string
             headers.append("embedding")
@@ -246,9 +259,9 @@ def write_csv(output_csv, list_embeddings):
             for bag in list_embeddings:
                 row = [
                     ",".join(map(str, bag["bag_samples"])),  # Convert list to comma-separated string
-                    bag["bag_size"], 
-                    bag["bag_label"], 
-                    bag["split"], 
+                    bag["bag_size"],
+                    bag["bag_label"],
+                    bag["split"],
                     bag["embedding"]
                 ]
                 csv_writer.writerow(row)
@@ -262,8 +275,8 @@ def write_csv(output_csv, list_embeddings):
             for bag in list_embeddings:
                 row = [
                     ",".join(map(str, bag["bag_samples"])),  # Convert list to comma-separated string
-                    bag["bag_size"], 
-                    bag["bag_label"], 
+                    bag["bag_size"],
+                    bag["bag_label"],
                     bag["split"]
                 ] + bag["embedding"].tolist()
                 csv_writer.writerow(row)
@@ -271,7 +284,8 @@ def write_csv(output_csv, list_embeddings):
         else:
             raise ValueError("Unknown embedding format. Expected string or NumPy array.")
 
-def bag_processing(embeddings, metadata, pooling_method, balance_enforced=False, bag_sizes=[3,5], seed=42, repeats=1, ludwig_format=False):
+
+def bag_processing(embeddings, metadata, pooling_method, balance_enforced=False, bag_sizes=[3, 5], seed=42, repeats=1, ludwig_format=False):
     all_bags = []  # Collect all bag data here
     for split in metadata['split'].unique():
         split_metadata = metadata[metadata['split'] == split]
@@ -287,6 +301,7 @@ def bag_processing(embeddings, metadata, pooling_method, balance_enforced=False,
 
     return all_bags
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process CSV files to create bags of embeddings")
 
@@ -294,7 +309,7 @@ if __name__ == "__main__":
     parser.add_argument("--metadata_csv", type=str, required=True, help="The metadata in CSV file (Must contain 'sample_name' column and 'label' column.")
     parser.add_argument("--split_proportions", type=str, default='0.7,0.1,0.2', help="Proportions for train, validation, and test splits.")
     parser.add_argument("--dataleak", action="store_true", help="Prevents dataleak when splitting the data.")
-    parser.add_argument("--balance_enforced", action="store_true", help="Create bags in turns, reducing probability of large imbalacend bags")
+    parser.add_argument("--balance_enforced", action="store_true", help="Create bags in turns, reducing probability of large imbalanced bags")
     parser.add_argument("--bag_size", type=str, required=True, help="Bag size as a single number (e.g., 4) or a range (e.g., 3-5).")
     parser.add_argument("--seed", type=int, help="seed number")
     parser.add_argument("--pooling_method", type=str, required=True, help="The method for pooling the embeddings")
@@ -310,10 +325,20 @@ if __name__ == "__main__":
     if "split" not in metadata_csv:
         metadata_csv = split_data(
             metadata_csv,
-            split_proportions = args.split_proportions,
-            dataleak = args.dataleak
+            split_proportions=args.split_proportions,
+            dataleak=args.dataleak
         )
-    processed_embeddings = bag_processing(embeddings_data, metadata_csv, args.pooling_method, args.balance_enforced, args.bag_size, args.seed, args.repeats, args.ludwig_format)
+    processed_embeddings = bag_processing(
+        embeddings_data,
+        metadata_csv,
+        args.pooling_method,
+        args.balance_enforced,
+        args.bag_size,
+        args.seed,
+        args.repeats,
+        args.ludwig_format
+    )
 
     print(processed_embeddings)
     write_csv(args.output_csv, processed_embeddings)
+
