@@ -1,3 +1,24 @@
+"""
+This module provides functionality to extract
+image embeddings using a specified
+pretrained model from the torchvision library.
+
+It includes functions to:
+- Load and process images from a ZIP file.
+- Apply model-specific preprocessing and transformations.
+- Extract embeddings using various models.
+- Save the resulting embeddings into a CSV file.
+
+Modules required:
+- argparse: For command-line argument parsing.
+- os, csv, zipfile: For file handling (ZIP file extraction, CSV writing).
+- inspect: For inspecting function signatures and models.
+- torch, torchvision: For loading and
+using pretrained models to extract embeddings.
+- PIL, cv2: For image processing tasks
+such as resizing, normalization, and conversion.
+"""
+
 import argparse
 import os
 import inspect
@@ -6,15 +27,15 @@ import csv
 import zipfile
 from inspect import signature
 
-import cv2
 from PIL import Image
+import cv2
 import torch
 import torchvision.models as models
 from torchvision import transforms
 
 # Configure logging
 logging.basicConfig(
-    filename="/tmp/ludwig_embeddings.log",  # Galaxy tools usually don't have stdout,
+    filename="/tmp/ludwig_embeddings.log",
     # so write to a file
     filemode="a",
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -25,7 +46,8 @@ logging.basicConfig(
 AVAILABLE_MODELS = {
     name: getattr(models, name)
     for name in dir(models)
-    if callable(getattr(models, name)) and "weights" in signature(getattr(models, name)).parameters
+    if callable(getattr(models, name)) and
+    "weights" in signature(getattr(models, name)).parameters
 }
 
 # Define the default resize and normalization settings for models
@@ -68,9 +90,9 @@ MODEL_DEFAULTS = {
 }
 
 # Ensure all models have normalization applied (if not defined)
-for model in MODEL_DEFAULTS:
-    if "normalize" not in MODEL_DEFAULTS[model]:
-        MODEL_DEFAULTS[model]["normalize"] = (
+for model, settings in MODEL_DEFAULTS.items():
+    if "normalize" not in settings:
+        settings["normalize"] = (
             [0.485, 0.456, 0.406],
             [0.229, 0.224, 0.225]
         )
@@ -87,14 +109,14 @@ def extract_zip(zip_file):
             file_list = zip_ref.namelist()
         logging.info("ZIP extracted")
         return output_dir, file_list
-    except zipfile.BadZipFile:
-        raise RuntimeError("Invalid ZIP file.")
-    except Exception as e:
-        raise RuntimeError(f"Error extracting ZIP file: {e}")
-
+    except zipfile.BadZipFile as exc:
+        raise RuntimeError("Invalid ZIP file.") from exc
+    except Exception as exc:
+        raise RuntimeError("Error extracting ZIP file.") from exc
 
 def load_model(model_name, device):
-    """Loads a specified torchvision model and modifies it for feature extraction."""
+    """Loads a specified torchvision model and
+    modifies it for feature extraction."""
     if model_name not in AVAILABLE_MODELS:
         raise ValueError(
             f"Unsupported model: {model_name}. Available models: "
@@ -131,25 +153,25 @@ def process_image(image_path, transform, device, transform_type="rgb"):
             background = Image.new("RGBA", image.size, (255, 255, 255, 255))
             image = Image.alpha_composite(background, image).convert("RGB")
         elif transform_type == "clahe":
-            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)  # Load as grayscale
+            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
             clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
             image = clahe.apply(image)  # Apply CLAHE
             image = Image.fromarray(image).convert("RGB")
         elif transform_type == "edges":
             image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-            edges = cv2.Canny(image, threshold1=100, threshold2=200)  # Edge detection
+            edges = cv2.Canny(image, threshold1=100, threshold2=200)
             image = Image.fromarray(edges).convert("RGB")
         else:
             image = image.convert("RGB")  # Default is RGB conversion
         return transform(image).unsqueeze(0).to(device)
     except Exception as e:
-        logging.warning(f"Skipping {image_path}: {e}")
+        logging.warning("Skipping %s: %s", image_path, e)
         return None
 
 
 def write_csv(output_csv, list_embeddings):
     """Writes embeddings to a CSV file."""
-    with open(output_csv, mode="w", newline='') as csv_file:
+    with open(output_csv, mode="w", encoding='utf-8', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
         if list_embeddings:
             header = ["sample_name"] + [
@@ -163,7 +185,11 @@ def write_csv(output_csv, list_embeddings):
             print("No valid images found. Empty CSV created.")
 
 
-def extract_embeddings(model_name, apply_normalization, output_dir, file_list, transform_type="rgb"):
+def extract_embeddings(model_name,
+                       apply_normalization,
+                       output_dir,
+                       file_list,
+                       transform_type="rgb"):
     """Extracts embeddings from images using the specified model."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     use_model = load_model(model_name, device)
@@ -188,16 +214,24 @@ def extract_embeddings(model_name, apply_normalization, output_dir, file_list, t
     with torch.no_grad():
         for file in file_list:
             file = os.path.join(output_dir, file)
-            input_tensor = process_image(file, transform, device, transform_type)
+            input_tensor = process_image(file,
+                                         transform,
+                                         device,
+                                         transform_type)
             if input_tensor is None:
                 continue
             embedding = use_model(input_tensor).squeeze().cpu().numpy()
-            list_embeddings.append([os.path.basename(file)] + embedding.tolist())
+            list_embeddings.append([os.path.basename(file)]+embedding.tolist())
     return list_embeddings
 
 
-def main(zip_file, output_csv, model_name, apply_normalization=False, transform_type="rgb"):
-    """Main entry point for processing the zip file and extracting embeddings."""
+def main(zip_file,
+         output_csv,
+         model_name,
+         apply_normalization=False,
+         transform_type="rgb"):
+    """Main entry point for processing
+    the zip file and extracting embeddings."""
     output_dir, file_list = extract_zip(zip_file)
     logging.info("ZIP extracted")
 
@@ -210,15 +244,28 @@ def main(zip_file, output_csv, model_name, apply_normalization=False, transform_
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Extract image embeddings using a torchvision model.")
+    parser = argparse.ArgumentParser(description="Extract image embeddings.")
 
-    parser.add_argument('--zip_file', required=True, help="Path to the ZIP file containing images.")
-    parser.add_argument('--model_name', required=True, choices=AVAILABLE_MODELS.keys(),
+    parser.add_argument('--zip_file',
+                        required=True,
+                        help="Path to the ZIP file containing images.")
+    parser.add_argument('--model_name',
+                        required=True,
+                        choices=AVAILABLE_MODELS.keys(),
                         help="Model for embedding extraction.")
-    parser.add_argument('--normalize', action="store_true", help="Whether to apply normalization.")
-    parser.add_argument('--transform_type', required=True, help="Image transformation type.")
-    parser.add_argument("--output_csv", required=True, help="Path to the output CSV file")
+    parser.add_argument('--normalize',
+                        action="store_true",
+                        help="Whether to apply normalization.")
+    parser.add_argument('--transform_type',
+                        required=True,
+                        help="Image transformation type.")
+    parser.add_argument("--output_csv",
+                        required=True,
+                        help="Path to the output CSV file")
 
     args = parser.parse_args()
-    main(args.zip_file, args.output_csv, args.model_name, args.normalize, args.transform_type)
-
+    main(args.zip_file,
+         args.output_csv,
+         args.model_name,
+         args.normalize,
+         args.transform_type)
