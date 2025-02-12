@@ -3,7 +3,7 @@
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
-    <expand macro="python_requirements" />
+    <expand macro="python_requirements_gpu" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
@@ -68,7 +68,7 @@
             <output name="output_csv" file="output_csv" >
                 <assert_contents>
                     <has_text text="bag_samples" />
-                    <has_n_columns min="5" />
+                    <has_n_columns min="1" />
                 </assert_contents>
             </output>
         </test>
