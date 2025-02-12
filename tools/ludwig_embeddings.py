@@ -20,11 +20,11 @@ such as resizing, normalization, and conversion.
 """
 
 import argparse
-import inspect
 import csv
-import os
 import logging
+import os
 import zipfile
+import inspect
 from inspect import signature
 
 from PIL import Image
