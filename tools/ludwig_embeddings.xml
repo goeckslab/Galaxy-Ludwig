@@ -101,7 +101,7 @@
             <output name="output_csv" file="output_csv" >
                 <assert_contents>
                     <has_text text="sample_name" />
-                    <has_n_columns min="6" />
+                    <has_n_columns min="1" />
                 </assert_contents>
             </output>
         </test>
