@@ -53,6 +53,11 @@ import numpy as np
 
 import pandas as pd
 
+import numpy as np
+
+import torch
+
+import torch.nn as nn
 
 def parse_bag_size(value):
     """Parses bag_size argument to handle both single integers and ranges."""
@@ -86,7 +91,6 @@ def split_sizes(num_samples, proportions):
 
 def split_data(metadata, split_proportions, dataleak=False):
     proportions = str_array_split(split_proportions)
-
     if dataleak:
         list_samples = metadata["sample_name"].unique()
     else:
@@ -99,52 +103,99 @@ def split_data(metadata, split_proportions, dataleak=False):
     shuffled_samples = np.random.permutation(list_samples)
 
     train_samples = shuffled_samples[:train_size]
+    print(train_samples)
     if val_size > 0:
         val_samples = shuffled_samples[train_size:train_size + val_size]
         test_samples = shuffled_samples[train_size + val_size:]
     else:
         val_samples = []  # No validation set
         test_samples = shuffled_samples[train_size:]
-
+    print(val_samples)
+    print(test_samples)
     split_column = {sample: 0 for sample in train_samples}
     if val_size > 0:
         split_column.update({sample: 1 for sample in val_samples})
     split_column.update({sample: 2 for sample in test_samples})
 
     metadata["split"] = metadata["sample_name"].map(split_column)
-
     return metadata
+
+
+def attention_pooling(embeddings):
+    """Applies attention-based pooling to the embeddings."""
+    embeddings_tensor = torch.tensor(embeddings, dtype=torch.float32)
+    attention_weights = nn.Softmax(dim=0)(nn.Linear(embeddings_tensor.shape[1], 1)(embeddings_tensor))
+    pooled_embedding = torch.sum(attention_weights * embeddings_tensor, dim=0)
+    return pooled_embedding.detach().numpy()
+
+
+def gated_pooling(embeddings):
+    """Applies gated pooling to the embeddings."""
+    embeddings_tensor = torch.tensor(embeddings, dtype=torch.float32)
+    gate = nn.Sigmoid()(nn.Linear(embeddings_tensor.shape[1], embeddings_tensor.shape[1])(embeddings_tensor))
+    pooled_embedding = torch.sum(gate * embeddings_tensor, dim=0)
+    return pooled_embedding.detach().numpy()
 
 
 def aggregate_embeddings(embeddings, pooling_method):
     if pooling_method == "max_pooling":
         return np.max(embeddings, axis=0)
-
     if pooling_method == "mean_pooling":
         return np.mean(embeddings, axis=0)
-
     if pooling_method == "sum_pooling":
         return np.sum(embeddings, axis=0)
-
     if pooling_method == "min_pooling":
         return np.min(embeddings, axis=0)
-
     if pooling_method == "median_pooling":
         return np.median(embeddings, axis=0)
-
     if pooling_method == "l2_norm_pooling":
         return np.linalg.norm(embeddings, axis=0)
-
     if pooling_method == "geometric_mean_pooling":
-        return np.exp(np.mean(np.log(np.clip(
-            embeddings, 1e-10, None)), axis=0))
-
+        return np.exp(np.mean(np.log(np.clip(embeddings, 1e-10, None)), axis=0))
     if pooling_method == "first_embedding":
         return embeddings[0]
-
     if pooling_method == "last_embedding":
         return embeddings[-1]
+    if pooling_method == "attention_pooling":
+        return attention_pooling(embeddings)
+    if pooling_method == "gated_pooling":
+        return gated_pooling(embeddings)
     raise ValueError(f"Unknown pooling method: {pooling_method}")
+
+
+def bag_by_sample(df, pooling_method, bag_size):
+    all_bags = []
+
+    for _, group in df.groupby("sample_name"):
+        embeddings = group.iloc[:, 3:].values
+        sample_names = group["sample_name"].values
+        labels = group["label"].values
+        split = group["split"].iloc[0]
+
+        num_instances = len(group)
+        random_bag_size = np.random.randint(bag_size[0], bag_size[1] + 1)  # Pick random bag size
+        num_bags = (num_instances + random_bag_size - 1) // random_bag_size  # Ensure all images are included
+
+        for i in range(num_bags):
+            start_idx = i * random_bag_size
+            end_idx = min(start_idx + random_bag_size, num_instances)
+
+            bag_embeddings = embeddings[start_idx:end_idx]
+            bag_sample_names = sample_names[start_idx:end_idx]
+            bag_labels = labels[start_idx:end_idx]
+
+            aggregated_embeddings = aggregate_embeddings(bag_embeddings, pooling_method)
+            bag_label = int(any(bag_labels == 1))  # Assign positive label if any instance is positive
+
+            all_bags.append({
+                "bag_label": bag_label,
+                "split": split,
+                "bag_size": len(bag_sample_names),
+                "bag_samples": list(bag_sample_names),
+                "embedding": aggregated_embeddings
+            })
+
+    return all_bags
 
 
 def bag_turns(df, bag_sizes, pooling_method, repeats):
@@ -155,15 +206,15 @@ def bag_turns(df, bag_sizes, pooling_method, repeats):
 
         np.random.shuffle(embeddings_0)
         np.random.shuffle(embeddings_1)
-        bag_size_range = parse_bag_size(bag_sizes)
+
 
         make_bag_1 = True
         bags = []
         bag_set = set()
 
         while embeddings_0 or embeddings_1:
-            bag_size = np.random.randint(bag_size_range[0],
-                                         bag_size_range[1]+1)
+            bag_size = np.random.randint(bag_size[0],
+                                         bag_size[1]+1)
 
             if make_bag_1 and embeddings_1:
                 num_1_samples = min(np.random.randint(1, bag_size + 1),
@@ -225,7 +276,6 @@ def bag_turns(df, bag_sizes, pooling_method, repeats):
 
 def bag_random(df_embeddings, bag_sizes, pooling_method, repeats):
     all_bags = []
-    bag_size_range = parse_bag_size(bag_sizes)
 
     for _ in range(repeats):
         available_embeddings = df_embeddings.values.tolist()
@@ -233,8 +283,8 @@ def bag_random(df_embeddings, bag_sizes, pooling_method, repeats):
         bag_set = set()
         bags = []
         while len(available_embeddings) > 0:
-            bag_size = np.random.randint(bag_size_range[0],
-                                         bag_size_range[1] + 1)
+            bag_size = np.random.randint(bag_size[0],
+                                         bag_size[1] + 1)
 
             bag_embeddings = available_embeddings[:bag_size]
             available_embeddings = available_embeddings[bag_size:]
@@ -357,24 +407,41 @@ def bag_processing(embeddings,
                    pooling_method,
                    balance_enforced=False,
                    bag_sizes=[3, 5],
-                   seed=42,
                    repeats=1,
-                   ludwig_format=False):
+                   ludwig_format=False,
+                   by_sample=False):
     all_bags = []  # Collect all bag data here
+    bag_sizes = parse_bag_size(bag_sizes)
+
     for split in metadata['split'].unique():
-        split_metadata = metadata[metadata['split'] == split]
-        split_embeddings = pd.merge(split_metadata,
-                                    embeddings, on='sample_name')
-        if balance_enforced:
-            bags = bag_turns(split_embeddings,
-                             bag_sizes,
-                             pooling_method,
-                             repeats)
+        if by_sample:
+            embeddings["instance_idx"] = embeddings.groupby("sample_name").cumcount()
+            metadata["instance_idx"] = metadata.groupby("sample_name").cumcount()
+
+            split_embeddings = pd.merge(metadata, embeddings,
+                                 on=["sample_name", "instance_idx"],
+                                 suffixes=("_meta", "_embed"))
+
+            split_embeddings.drop(columns=["instance_idx"], inplace=True)
+            split_embeddings = split_embeddings[split_embeddings["split"] == split]
+
+            bags =  bag_by_sample(split_embeddings,
+                                  pooling_method,
+                                  bag_sizes)
         else:
-            bags = bag_random(split_embeddings,
-                              bag_sizes,
-                              pooling_method,
-                              repeats)
+            split_metadata = metadata[metadata['split'] == split]
+            split_embeddings = pd.merge(split_metadata,
+                                        embeddings, on='sample_name')
+            if balance_enforced:
+                bags = bag_turns(split_embeddings,
+                                 bag_sizes,
+                                 pooling_method,
+                                 repeats)
+            else:
+                bags = bag_random(split_embeddings,
+                                  bag_sizes,
+                                  pooling_method,
+                                  repeats)
         all_bags.extend(bags)  # Accumulate across splits
 
     if ludwig_format:
@@ -411,11 +478,12 @@ if __name__ == "__main__":
                         required=True,
                         help="Bag size as a single number (e.g., 4) or \
                         a range (e.g., 3-5).")
-    parser.add_argument("--seed", type=int, help="seed number")
     parser.add_argument("--pooling_method",
                         type=str,
                         required=True,
                         help="The method for pooling the embeddings")
+    parser.add_argument("--by_sample", action="store_true",
+                        help="Create bags using all instances of the same sample")
     parser.add_argument("--repeats",
                         type=int,
                         default=1,
@@ -445,10 +513,9 @@ if __name__ == "__main__":
         args.pooling_method,
         args.balance_enforced,
         args.bag_size,
-        args.seed,
         args.repeats,
-        args.ludwig_format
+        args.ludwig_format,
+        args.by_sample
     )
 
-    print(processed_embeddings)
     write_csv(args.output_csv, processed_embeddings)

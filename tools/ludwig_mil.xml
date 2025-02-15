@@ -26,6 +26,9 @@
         #if $ludwig_format
         --ludwig_format
         #end if
+        #if $by_sample
+        --by_sample
+        #end if
     </command>
 
     <inputs>
@@ -41,13 +44,16 @@
             <option value="median_pooling">Median Pooling</option>
             <option value="l2_norm_pooling">L2 Norm Pooling</option>
             <option value="geometric_mean_pooling">Geometric Mean Pooling</option>
+            <option value="attention_pooling">Attention Pooling</option>
+            <option value="gated_pooling">Gated Pooling</option>
             <option value="first_embedding">First Embedding</option>
             <option value="last_embedding">Last Embedding</option>
         </param>
-        <param name="repeats" type="integer" value="1" label="Number of Repeats"/>
+        <param name="repeats" type="integer" value="1" label="Number of times to run through the dataset to create bags."/>
         <param name="dataleak" type="boolean" optional="true" label="Prevent Data Leak?"/>
         <param name="balance_enforced" type="boolean" optional="true" label="Enforce Balanced Bags?"/>
         <param name="ludwig_format" type="boolean" optional="true" label="Convert to Ludwig Format?"/>
+        <param name="by_sample" type="boolean" optional="true" label="Create bags per sample, grouping all its instances together."/>
     </inputs>
 
     <outputs>
