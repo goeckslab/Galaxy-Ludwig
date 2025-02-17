@@ -191,7 +191,7 @@ def write_csv(output_csv, list_embeddings):
             logging.info("CSV created")
         else:
             csv_writer.writerow(["sample_name"])
-            print("No valid images found. Empty CSV created.")
+            logging.info("No valid images found. Empty CSV created.")
 
 
 def extract_embeddings(model_name,

@@ -48,6 +48,7 @@ bags by alternating between classes.
 """
 import argparse
 import csv
+import logging
 
 import numpy as np
 
@@ -55,6 +56,16 @@ import pandas as pd
 
 import torch
 import torch.nn as nn
+
+
+# Configure logging
+logging.basicConfig(
+    filename="/tmp/ludwig_embeddings.log",
+    # so write to a file
+    filemode="a",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    level=logging.DEBUG
+)
 
 
 def parse_bag_size(value):
@@ -101,15 +112,15 @@ def split_data(metadata, split_proportions, dataleak=False):
     shuffled_samples = np.random.permutation(list_samples)
 
     train_samples = shuffled_samples[:train_size]
-    print(train_samples)
+    logging.info(train_samples)
     if val_size > 0:
         val_samples = shuffled_samples[train_size:train_size + val_size]
         test_samples = shuffled_samples[train_size + val_size:]
     else:
         val_samples = []  # No validation set
         test_samples = shuffled_samples[train_size:]
-    print(val_samples)
-    print(test_samples)
+    logging.info(val_samples)
+    logging.info(test_samples)
     split_column = {sample: 0 for sample in train_samples}
     if val_size > 0:
         split_column.update({sample: 1 for sample in val_samples})
@@ -267,7 +278,7 @@ def bag_turns(df, bag_sizes, pooling_method, repeats):
                         "embedding": aggregated_embedding
                     })
                 else:
-                    print("A bag was created twice", flush=True)
+                    logging.info("A bag was created twice")
         all_bags.extend(bags)
     return all_bags
 
@@ -321,7 +332,7 @@ def bag_random(df_embeddings, bag_sizes, pooling_method, repeats):
                         "embedding": aggregated_embedding
                     })
                 else:
-                    print("A bag was created twice", flush=True)
+                    logging.info("A bag was created twice")
         all_bags.extend(bags)
     return all_bags
 
@@ -352,7 +363,7 @@ def write_csv(output_csv, list_embeddings):
                                  "bag_label",
                                  "split",
                                  "embeddings"])
-            print("No valid data found. Empty CSV created.")
+            logging.info("No valid data found. Empty CSV created.")
         return
 
     # Determine the format based on the first item's "embedding" field
