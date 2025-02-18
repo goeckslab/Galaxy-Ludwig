@@ -26,6 +26,7 @@ import logging
 import os
 import tempfile
 import zipfile
+import re
 from inspect import signature
 
 from PIL import Image
@@ -103,24 +104,37 @@ for model, settings in MODEL_DEFAULTS.items():
 
 
 def extract_zip(zip_file):
-    """Extracts a ZIP file into a writable directory."""
+    """Extracts a ZIP file while preserving the folder structure, only for image files."""
+    # Define known image extensions
+    image_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.svs',
+                        'tif', 'tiff')
 
-    # Use a writable temp directory
     output_dir = tempfile.mkdtemp(prefix="extracted_zip_")
-
     try:
+        sample_name = []
         file_list = []
+        zip_filename = os.path.splitext(os.path.basename(zip_file))[0]
+
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
             zip_ref.extractall(output_dir)
-            file_list = zip_ref.namelist()
-
+            for file in zip_ref.namelist():
+                if not file.endswith('/') and file.lower().endswith(image_extensions):
+                    try:
+                        pattern = re.escape(zip_filename) + r"/(.*)"
+                        match = re.search(pattern, file)
+                        if match:
+                            file_path = match.group(1)
+                            file_list.append(file)
+                            sample_name.append(file_path)
+                        else:
+                            raise ValueError(f"File path does not match the expected format: {file}")
+                    except (re.error, ValueError) as match_error:
+                        # Handle the error if the regex fails or the match is not found
+                        logging.error(f"Error processing file '{file}': {match_error}")
         logging.info(f"ZIP extracted to: {output_dir}")
-        return output_dir, file_list
-
+        return output_dir, file_list, sample_name
     except zipfile.BadZipFile as exc:
         raise RuntimeError("Invalid ZIP file.") from exc
-    except Exception as exc:
-        raise RuntimeError("Error extracting ZIP file.") from exc
 
 
 def load_model(model_name, device):
@@ -178,18 +192,21 @@ def process_image(image_path, transform, device, transform_type="rgb"):
         return None
 
 
-def write_csv(output_csv, list_embeddings):
-    """Writes embeddings to a CSV file."""
+def write_csv(output_csv, list_embeddings, sample_names):
+    """Writes embeddings and sample names to a CSV file."""
     with open(output_csv, mode="w", encoding='utf-8', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
         if list_embeddings:
-            header = ["sample_name"] + [
-                f"vector{i + 1}" for i in range(len(list_embeddings[0]) - 1)
-            ]
+            header = ["sample_name"] + [f"vector{i + 1}" for i in range(len(list_embeddings[0]))]
             csv_writer.writerow(header)
-            csv_writer.writerows(list_embeddings)
+
+            # Write the rows, combining sample names and embeddings
+            for sample_name, embedding in zip(sample_names, list_embeddings):
+                row = [sample_name] + embedding
+                csv_writer.writerow(row)
             logging.info("CSV created")
         else:
+            # If no embeddings, create an empty CSV with only sample names
             csv_writer.writerow(["sample_name"])
             logging.info("No valid images found. Empty CSV created.")
 
@@ -230,7 +247,7 @@ def extract_embeddings(model_name,
             if input_tensor is None:
                 continue
             embedding = use_model(input_tensor).squeeze().cpu().numpy()
-            list_embeddings.append([os.path.basename(file)]+embedding.tolist())
+            list_embeddings.append(embedding.tolist())
     return list_embeddings
 
 
@@ -241,15 +258,15 @@ def main(zip_file,
          transform_type="rgb"):
     """Main entry point for processing
     the zip file and extracting embeddings."""
-    output_dir, file_list = extract_zip(zip_file)
+    output_dir, file_list, sample_names = extract_zip(zip_file)
     logging.info("ZIP extracted")
 
     list_embeddings = extract_embeddings(
-        model_name, apply_normalization, output_dir, file_list, transform_type
-    )
+        model_name, apply_normalization, output_dir, 
+        file_list, transform_type)
     logging.info("Embedding extracted")
 
-    write_csv(output_csv, list_embeddings)
+    write_csv(output_csv, list_embeddings, sample_names)
 
 
 if __name__ == "__main__":
