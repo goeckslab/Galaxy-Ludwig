@@ -15,6 +15,9 @@
         #if $apply_normalization
             --normalize
         #end if
+        #if $ludwig_format
+        --ludwig_format
+        #end if
         --transform_type '$transform_type'
     ]]></command>
     <configfiles>
@@ -87,7 +90,9 @@
             <option value="rgba_to_rgb">RGBA to RGB</option>
             <option value="clahe">CLAHE (Contrast Limited Adaptive Histogram Equalization)</option>
             <option value="edges">Edge Detection</option>
-        </param>    </inputs>
+        </param>
+        <param name="ludwig_format" type="boolean" optional="true" label="Convert vectors (stored as columns) into a single string column (Ludwig Format)?"/>
+        </inputs>
     <outputs>
         <data name="output_csv" format="csv" label="Extracted Embeddings" />
     </outputs>

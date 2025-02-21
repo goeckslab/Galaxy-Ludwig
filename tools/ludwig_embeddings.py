@@ -35,10 +35,10 @@ import torch
 import torchvision.models as models
 from torchvision import transforms
 
+
 # Configure logging
 logging.basicConfig(
     filename="/tmp/ludwig_embeddings.log",
-    # so write to a file
     filemode="a",
     format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.DEBUG
@@ -54,13 +54,10 @@ AVAILABLE_MODELS = {
 
 # Define the default resize and normalization settings for models
 MODEL_DEFAULTS = {
-    # Default normalization (ImageNet)
     "default": {
         "resize": (224, 224),
         "normalize": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     },
-
-    # Models using (224, 224) resize and ImageNet normalization
     "efficientnet_b1": {"resize": (240, 240)},
     "efficientnet_b2": {"resize": (260, 260)},
     "efficientnet_b3": {"resize": (300, 300)},
@@ -102,8 +99,6 @@ for model, settings in MODEL_DEFAULTS.items():
 
 def extract_zip(zip_file):
     """Extracts a ZIP file into a writable directory."""
-
-    # Use a writable temp directory
     output_dir = tempfile.mkdtemp(prefix="extracted_zip_")
     try:
         file_list = []
@@ -119,8 +114,7 @@ def extract_zip(zip_file):
 
 
 def load_model(model_name, device):
-    """Loads a specified torchvision model and
-    modifies it for feature extraction."""
+    """Loads a specified torchvision model and modifies it for feature extraction."""
     if model_name not in AVAILABLE_MODELS:
         raise ValueError(
             f"Unsupported model: {model_name}. Available models: "
@@ -148,10 +142,8 @@ def process_image(image_path, transform, device, transform_type="rgb"):
     """Loads and transforms an image with different preprocessing options."""
     try:
         image = Image.open(image_path)
-
-        # Apply the selected transformation type
         if transform_type == "grayscale":
-            image = image.convert("L")  # Convert to grayscale
+            image = image.convert("L")
         elif transform_type == "rgba_to_rgb":
             image = image.convert("RGBA")
             background = Image.new("RGBA", image.size, (255, 255, 255, 255))
@@ -159,33 +151,49 @@ def process_image(image_path, transform, device, transform_type="rgb"):
         elif transform_type == "clahe":
             image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
             clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-            image = clahe.apply(image)  # Apply CLAHE
+            image = clahe.apply(image)
             image = Image.fromarray(image).convert("RGB")
         elif transform_type == "edges":
             image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
             edges = cv2.Canny(image, threshold1=100, threshold2=200)
             image = Image.fromarray(edges).convert("RGB")
         else:
-            image = image.convert("RGB")  # Default is RGB conversion
+            image = image.convert("RGB")
         return transform(image).unsqueeze(0).to(device)
     except Exception as e:
         logging.warning("Skipping %s: %s", image_path, e)
         return None
 
 
-def write_csv(output_csv, list_embeddings):
-    """Writes embeddings to a CSV file."""
+def write_csv(output_csv, list_embeddings, ludwig_format=False):
+    """Writes embeddings to a CSV file, optionally in Ludwig format."""
     with open(output_csv, mode="w", encoding='utf-8', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
         if list_embeddings:
-            header = ["sample_name"] + [
-                f"vector{i + 1}" for i in range(len(list_embeddings[0]) - 1)
-            ]
-            csv_writer.writerow(header)
-            csv_writer.writerows(list_embeddings)
-            logging.info("CSV created")
+            if ludwig_format:
+                # Ludwig format: convert vectors to a single string column
+                header = ["sample_name", "embedding"]
+                formatted_embeddings = []
+                for embedding in list_embeddings:
+                    sample_name = embedding[0]
+                    vector = embedding[1:]  # All elements except the sample_name
+                    # Convert vector to space-separated string
+                    embedding_str = " ".join(map(str, vector))
+                    formatted_embeddings.append([sample_name, embedding_str])
+                csv_writer.writerow(header)
+                csv_writer.writerows(formatted_embeddings)
+                logging.info("CSV created in Ludwig format")
+            else:
+                # Original format: separate columns for each vector element
+                header = ["sample_name"] + [
+                    f"vector{i + 1}" for i in range(len(list_embeddings[0]) - 1)
+                ]
+                csv_writer.writerow(header)
+                csv_writer.writerows(list_embeddings)
+                logging.info("CSV created")
         else:
-            csv_writer.writerow(["sample_name"])
+            # Handle empty case
+            csv_writer.writerow(["sample_name"] if not ludwig_format else ["sample_name", "embedding"])
             logging.info("No valid images found. Empty CSV created.")
 
 
@@ -200,7 +208,6 @@ def extract_embeddings(model_name,
     model_settings = MODEL_DEFAULTS.get(model_name, MODEL_DEFAULTS["default"])
     resize = model_settings["resize"]
 
-    # Define the transformation pipeline
     if apply_normalization:
         normalize = model_settings.get("normalize")
         transform = transforms.Compose([
@@ -219,13 +226,13 @@ def extract_embeddings(model_name,
         for file in file_list:
             file = os.path.join(output_dir, file)
             input_tensor = process_image(file,
-                                         transform,
-                                         device,
-                                         transform_type)
+                                        transform,
+                                        device,
+                                        transform_type)
             if input_tensor is None:
                 continue
             embedding = use_model(input_tensor).squeeze().cpu().numpy()
-            list_embeddings.append([os.path.basename(file)]+embedding.tolist())
+            list_embeddings.append([os.path.basename(file)] + embedding.tolist())
     return list_embeddings
 
 
@@ -233,9 +240,9 @@ def main(zip_file,
          output_csv,
          model_name,
          apply_normalization=False,
-         transform_type="rgb"):
-    """Main entry point for processing
-    the zip file and extracting embeddings."""
+         transform_type="rgb",
+         ludwig_format=False):
+    """Main entry point for processing the zip file and extracting embeddings."""
     output_dir, file_list = extract_zip(zip_file)
     logging.info("ZIP extracted")
 
@@ -244,12 +251,11 @@ def main(zip_file,
     )
     logging.info("Embedding extracted")
 
-    write_csv(output_csv, list_embeddings)
+    write_csv(output_csv, list_embeddings, ludwig_format)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract image embeddings.")
-
     parser.add_argument('--zip_file',
                         required=True,
                         help="Path to the ZIP file containing images.")
@@ -266,10 +272,14 @@ if __name__ == "__main__":
     parser.add_argument("--output_csv",
                         required=True,
                         help="Path to the output CSV file")
+    parser.add_argument("--ludwig_format",
+                        action="store_true",
+                        help="Prepare CSV file in Ludwig input format")
 
     args = parser.parse_args()
     main(args.zip_file,
          args.output_csv,
          args.model_name,
          args.normalize,
-         args.transform_type)
+         args.transform_type,
+         args.ludwig_format)

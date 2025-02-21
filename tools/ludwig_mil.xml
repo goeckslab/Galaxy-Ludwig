@@ -52,7 +52,7 @@
         <param name="repeats" type="integer" value="1" label="Number of times to run through the dataset to create bags."/>
         <param name="dataleak" type="boolean" optional="true" label="Prevent Data Leak?"/>
         <param name="balance_enforced" type="boolean" optional="true" label="Enforce Balanced Bags?"/>
-        <param name="ludwig_format" type="boolean" optional="true" label="Convert to Ludwig Format?"/>
+        <param name="ludwig_format" type="boolean" optional="true" label="Convert vectors (stored as columns) into a single string column (Ludwig Format)?"/>
         <param name="by_sample" type="boolean" optional="true" label="Create bags per sample, grouping all its instances together."/>
     </inputs>
 
