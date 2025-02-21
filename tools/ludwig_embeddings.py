@@ -235,7 +235,8 @@ def extract_embeddings(model_name,
             if input_tensor is None:
                 continue
             embedding = use_model(input_tensor).squeeze().cpu().numpy()
-            list_embeddings.append([os.path.basename(file)] + embedding.tolist())
+            list_embeddings.append([os.path.basename(file)] +
+                                   embedding.tolist())
     return list_embeddings
 
 
