@@ -114,7 +114,8 @@ def extract_zip(zip_file):
 
 
 def load_model(model_name, device):
-    """Loads a specified torchvision model and modifies it for feature extraction."""
+    """Loads a specified torchvision model and
+    modifies it for feature extraction."""
     if model_name not in AVAILABLE_MODELS:
         raise ValueError(
             f"Unsupported model: {model_name}. Available models: "
@@ -176,7 +177,7 @@ def write_csv(output_csv, list_embeddings, ludwig_format=False):
                 formatted_embeddings = []
                 for embedding in list_embeddings:
                     sample_name = embedding[0]
-                    vector = embedding[1:]  # All elements except the sample_name
+                    vector = embedding[1:]
                     # Convert vector to space-separated string
                     embedding_str = " ".join(map(str, vector))
                     formatted_embeddings.append([sample_name, embedding_str])
@@ -186,14 +187,16 @@ def write_csv(output_csv, list_embeddings, ludwig_format=False):
             else:
                 # Original format: separate columns for each vector element
                 header = ["sample_name"] + [
-                    f"vector{i + 1}" for i in range(len(list_embeddings[0]) - 1)
+                    f"vector{i + 1}" for i in range(len(
+                        list_embeddings[0]) - 1)
                 ]
                 csv_writer.writerow(header)
                 csv_writer.writerows(list_embeddings)
                 logging.info("CSV created")
         else:
             # Handle empty case
-            csv_writer.writerow(["sample_name"] if not ludwig_format else ["sample_name", "embedding"])
+            csv_writer.writerow(["sample_name"] if not ludwig_format
+                                else ["sample_name", "embedding"])
             logging.info("No valid images found. Empty CSV created.")
 
 
@@ -226,9 +229,9 @@ def extract_embeddings(model_name,
         for file in file_list:
             file = os.path.join(output_dir, file)
             input_tensor = process_image(file,
-                                        transform,
-                                        device,
-                                        transform_type)
+                                         transform,
+                                         device,
+                                         transform_type)
             if input_tensor is None:
                 continue
             embedding = use_model(input_tensor).squeeze().cpu().numpy()
@@ -242,7 +245,8 @@ def main(zip_file,
          apply_normalization=False,
          transform_type="rgb",
          ludwig_format=False):
-    """Main entry point for processing the zip file and extracting embeddings."""
+    """Main entry point for processing
+    the zip file and extracting embeddings."""
     output_dir, file_list = extract_zip(zip_file)
     logging.info("ZIP extracted")
 
