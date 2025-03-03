@@ -1,5 +1,5 @@
 <tool id="ludwig_render_config" name="Ludwig Render Config" version="@VERSION@" profile="@PROFILE@">
-    <description>renders thefull config based on user input</description>
+    <description>renders the full config based on user input</description>
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
