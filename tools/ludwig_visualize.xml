@@ -354,7 +354,6 @@
             <conditional name="visualization_selector">
                 <param name="visualization" value="hyperopt_report" />
                 <param name="hyperopt_stats_path" value="temperature_hyperopt_statistics.json" ftype="json" />
-                <param name="file_type" value="pdf" />
             </conditional>
             <output_collection name="output" type="list">
                 <element name="hyperopt_trainer.learning_rate" file="temp_hyperopt_training.learning_rate.pdf" ftype="pdf" />
