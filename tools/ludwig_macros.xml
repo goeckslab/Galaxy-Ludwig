@@ -26,6 +26,13 @@
         </stdio>
     </xml>
 
+    <xml name="required_files">
+        <required_files>
+            <include path="ludwig_experiment.py" />
+            <include path="utils.py" />
+        </required_files>
+    </xml>
+
     <xml name="macro_citations">
         <citations>
             <citation type="bibtex">
