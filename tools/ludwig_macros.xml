@@ -9,7 +9,7 @@
 
     <xml name="python_requirements_gpu">
         <requirements>
-            <container type="docker">quay.io/goeckslab/galaxy-ludwig-gpu:latest</container>
+            <container type="docker">quay.io/goeckslab/galaxy-ludwig-gpu:0.10.1</container>
         </requirements>
     </xml>
 
