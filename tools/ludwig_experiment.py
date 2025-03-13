@@ -4,8 +4,6 @@ import os
 import pickle
 import sys
 
-from jinja_report import generate_report
-
 from ludwig.experiment import cli
 from ludwig.globals import (
     DESCRIPTION_FILE_NAME,
@@ -25,8 +23,6 @@ from utils import (
     get_html_closing,
     get_html_template
 )
-
-import yaml
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -148,46 +144,6 @@ def make_visualizations(ludwig_output_directory_name):
             LOG.info(f"Error: {e}")
 
 
-# report
-def render_report(
-    title: str,
-    ludwig_output_directory_name: str,
-    show_visualization: bool = True
-):
-    ludwig_output_directory = os.path.join(
-        output_directory,
-        ludwig_output_directory_name,
-    )
-    report_config = {
-        "title": title,
-    }
-    if show_visualization:
-        report_config["visualizations"] = [
-            {
-                "src": f"visualizations/{fl}",
-                "type": "image" if fl[fl.rindex(".") + 1:] == "png" else
-                        fl[fl.rindex(".") + 1:],
-            } for fl in sorted(os.listdir(viz_output_directory))
-        ]
-    report_config["raw outputs"] = [
-        {
-            "src": f"{fl}",
-            "type": "json" if fl.endswith(".json") else "unclassified",
-        } for fl in sorted(os.listdir(ludwig_output_directory))
-        if fl.endswith((".json", ".parquet"))
-    ]
-
-    with open(os.path.join(output_directory, "report_config.yml"), 'w') as fh:
-        yaml.safe_dump(report_config, fh)
-
-    report_path = os.path.join(output_directory, "smart_report.html")
-    generate_report.main(
-        report_config,
-        schema={"html_height": 800},
-        outfile=report_path,
-    )
-
-
 def convert_parquet_to_csv(ludwig_output_directory_name):
     """Convert the predictions Parquet file to CSV."""
     ludwig_output_directory = os.path.join(
@@ -263,7 +219,5 @@ if __name__ == "__main__":
     ludwig_output_directory_name = "experiment_run"
 
     make_visualizations(ludwig_output_directory_name)
-    # title = "Ludwig Experiment"
-    # render_report(title, ludwig_output_directory_name)
     convert_parquet_to_csv(ludwig_output_directory_name)
     generate_html_report("Ludwig Experiment", ludwig_output_directory_name)
