@@ -1,5 +1,5 @@
-<tool id="ludwig_config_generator" name="Ludwig Config Generator" version="@VERSION@" profile="@PROFILE@">
-    <description>Auto-generate a config file from a dataset for Ludwig training.</description>
+<tool id="ludwig_config_generator" name="Ludwig Config Creator" version="@VERSION@" profile="@PROFILE@">
+    <description>builds a Ludwig machine learning configuration file for a dataset</description>
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
@@ -30,7 +30,7 @@
 
         </param>
         <param name="output_feature" multiple="false" type="data_column" use_header_names="true" data_ref="input_file" label="Select target column(s):" />
-    <param name="renderconfig" type="boolean" checked="true" label="Rendered config?"
+    <param name="renderconfig" type="boolean" checked="false" label="Render full configuration with all setting included?"
             truevalue="--renderconfig" falsevalue="" />
     </inputs>
 

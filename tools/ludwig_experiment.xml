@@ -92,14 +92,14 @@
         <inputs name="inputs" />
     </configfiles>
     <inputs>
-        <param argument="config" type="data" format="yaml" label="Select the dataset containing model configuration" />
-        <param argument="model_load_path" type="data" format="ludwig_model" optional="true" label="Load a pretrained model as initialization" help="Optional." />
-        <param argument="model_resume_path" type="data" format="ludwig_model" optional="true" label="Load a pretained model to resume training" help="Optional." />
-        <param argument="dataset" type="data" format="tabular,csv,h5,json,txt" optional="true" label="Input dataset" />
-        <param argument="training_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input traning dataset" />
-        <param argument="validation_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input validation dataset" />
-        <param argument="test_set" type="data" format="tabular,csv,h5,json" optional="true" label="Input test dataset" />
-        <param argument="training_set_metadata" type="data" format="json" optional="true" label="Training set metadata" />
+        <param argument="config" type="data" format="yaml" label="Experiment configuration" />
+        <param argument="model_load_path" type="data" format="ludwig_model" optional="true" label="Pretrained model for initialization" help="Optional." />
+        <param argument="model_resume_path" type="data" format="ludwig_model" optional="true" label="Pretained model resuming training" help="Optional." />
+        <param argument="dataset" type="data" format="tabular,csv,h5,json,txt" optional="true" label="Experiment dataset" />
+        <param argument="training_set" type="data" format="tabular,csv,h5,json" optional="true" label="Experiment training dataset" />
+        <param argument="validation_set" type="data" format="tabular,csv,h5,json" optional="true" label="Experiment validation dataset" />
+        <param argument="test_set" type="data" format="tabular,csv,h5,json" optional="true" label="Experiment test dataset" />
+        <param argument="training_set_metadata" type="data" format="json" optional="true" label="Metadata for training dataset" />
         <param argument="data_format" type="select" label="Data format">
             <option value="auto" selected="true">auto</option>
             <option value="tsv">tsv</option>
@@ -107,17 +107,17 @@
             <option value="h5">h5</option>
             <option value="json">json</option>
         </param>
-        <param argument="eval_split" type="select" label="Select the split portion for evaluation">
+        <param argument="eval_split" type="select" label="Dataset split to use for evaluation">
             <option value="training">training</option>
             <option value="validation">validation</option>
             <option value="test" selected="true">test</option>
             <option value="full">full</option>
         </param>
-        <param argument="k_fold" type="integer" value="" optional="true" label="number of folds for a k-fold cross validation run" min="2" max="10"/>
-        <param argument="random_seed" type="integer" value="42" label="Randomness seed" min="0" max="999999"/>
-        <param argument="disable_parallel_threads" type="boolean" checked="false" label="Whether to disable parallel threads for reproducibility?" />
+        <param argument="k_fold" type="integer" value="" optional="true" label="Number of folds for a k-fold cross validation run" min="2" max="10"/>
+        <param argument="random_seed" type="integer" value="42" label="Random seed (set for reproducibility)" min="0" max="999999"/>
+        <param argument="disable_parallel_threads" type="boolean" checked="false" label="Disable parallel threads for reproducibility?" />
         <!-- <param argument="skip_save_predictions" type="boolean" checked="false" label="Whether to skip saving predictions?" /> -->
-        <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Optional. Needed for images."/>
+        <param name="raw_data" type="data" format="zip" optional="true" label="Raw data" help="Needed when using unstructured data (e.g., images) not included in experiment dataset file."/>
     </inputs>       
     <outputs>
         <data format="ludwig_model" name="output_model" label="${tool.name} trained model on ${on_string}" />
