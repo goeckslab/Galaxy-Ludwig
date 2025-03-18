@@ -4,7 +4,11 @@
         <import>ludwig_macros.xml</import>
     </macros>
     <expand macro="python_requirements_gpu" />
-    <expand macro="required_files" />
+    <required_files>
+        <include path="utils.py" />
+        <include path="ludwig_experiment.py" />
+        <include path="ludwig_predict.py" />
+    </required_files>
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
