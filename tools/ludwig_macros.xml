@@ -9,7 +9,7 @@
 
     <xml name="python_requirements_gpu">
         <requirements>
-            <container type="docker">quay.io/goeckslab/galaxy-ludwig-gpu:latest</container>
+            <container type="docker">quay.io/goeckslab/galaxy-ludwig-gpu:0.10.1</container>
         </requirements>
     </xml>
 
@@ -24,6 +24,13 @@
             <exit_code range="137" level="fatal_oom" description="Out of Memory" />
             <exit_code range="1:" level="fatal" description="Error occurred. Please check Tool Standard Error" />
         </stdio>
+    </xml>
+
+    <xml name="required_files">
+        <required_files>
+            <include path="ludwig_experiment.py" />
+            <include path="utils.py" />
+        </required_files>
     </xml>
 
     <xml name="macro_citations">
