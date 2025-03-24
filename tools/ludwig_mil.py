@@ -59,7 +59,6 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
-
 # Configure logging
 logging.basicConfig(
     filename="/tmp/ludwig_embeddings.log",
@@ -67,7 +66,6 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.DEBUG
 )
-
 
 def parse_bag_size(value):
     """Parses bag_size argument to handle both single integers and ranges."""
@@ -84,16 +82,15 @@ def parse_bag_size(value):
 def parse_by_sample(value):
     """Parses by_sample argument to handle comma-separated list of splits."""
     try:
-        # Convert value to string in case it's passed as an integer (e.g., 2)
         value = str(value)
         splits = [int(x) for x in value.split(",")]
         valid_splits = {0, 1, 2}
         if not all(x in valid_splits for x in splits):
-            logging.warning(f"Invalid splits in by_sample: {splits}. Must be in {valid_splits}. Defaulting to random/balanced bagging for all splits.")
+            logging.warning(f"Invalid splits in by_sample: {splits}. Must be in {valid_splits}. Defaulting to random/balanced bagging.")
             return None
         return splits
     except (ValueError, AttributeError):
-        logging.warning(f"Could not parse by_sample value: {value}. Defaulting to random/balanced bagging for all splits.")
+        logging.warning(f"Could not parse by_sample value: {value}. Defaulting to random/balanced bagging.")
         return None
 
 
@@ -123,21 +120,21 @@ def split_data(metadata, split_proportions, dataleak=False):
         list_samples = metadata["sample_name"]
 
     num_samples = len(list_samples)
-
     train_size, val_size, _ = split_sizes(num_samples, proportions)
 
     shuffled_samples = np.random.permutation(list_samples)
 
     train_samples = shuffled_samples[:train_size]
-    logging.info(train_samples)
+    logging.info(f"Train samples: {train_samples}")
     if val_size > 0:
         val_samples = shuffled_samples[train_size:train_size + val_size]
         test_samples = shuffled_samples[train_size + val_size:]
     else:
-        val_samples = []  # No validation set
+        val_samples = []
         test_samples = shuffled_samples[train_size:]
-    logging.info(val_samples)
-    logging.info(test_samples)
+    logging.info(f"Val samples: {val_samples}")
+    logging.info(f"Test samples: {test_samples}")
+
     split_column = {sample: 0 for sample in train_samples}
     if val_size > 0:
         split_column.update({sample: 1 for sample in val_samples})
@@ -148,7 +145,6 @@ def split_data(metadata, split_proportions, dataleak=False):
 
 
 def attention_pooling(embeddings):
-    """Applies attention-based pooling to the embeddings."""
     tensor = torch.tensor(embeddings, dtype=torch.float32)
     weights = nn.Softmax(dim=0)(nn.Linear(tensor.shape[1], 1)(tensor))
     pooled_embedding = torch.sum(weights * tensor, dim=0)
@@ -156,7 +152,6 @@ def attention_pooling(embeddings):
 
 
 def gated_pooling(embeddings):
-    """Applies gated pooling to the embeddings."""
     tensor = torch.tensor(embeddings, dtype=torch.float32)
     gate = nn.Sigmoid()(nn.Linear(tensor.shape[1], tensor.shape[1])(tensor))
     pooled_embedding = torch.sum(gate * tensor, dim=0)
@@ -177,8 +172,7 @@ def aggregate_embeddings(embeddings, pooling_method):
     if pooling_method == "l2_norm_pooling":
         return np.linalg.norm(embeddings, axis=0)
     if pooling_method == "geometric_mean_pooling":
-        return np.exp(np.mean(np.log(np.clip(embeddings,
-                                             1e-10, None)), axis=0))
+        return np.exp(np.mean(np.log(np.clip(embeddings, 1e-10, None)), axis=0))
     if pooling_method == "first_embedding":
         return embeddings[0]
     if pooling_method == "last_embedding":
@@ -192,9 +186,11 @@ def aggregate_embeddings(embeddings, pooling_method):
 
 def bag_by_sample(df, pooling_method, bag_size):
     all_bags = []
+    non_embedding_cols = {"sample_name", "label", "split"}
 
     for _, group in df.groupby("sample_name"):
-        embeddings = group.iloc[:, 3:].values
+        embedding_cols = [col for col in group.columns if col not in non_embedding_cols]
+        embeddings = group[embedding_cols].values
         sample_names = group["sample_name"].values
         labels = group["label"].values
         split = group["split"].iloc[0]
@@ -211,8 +207,7 @@ def bag_by_sample(df, pooling_method, bag_size):
             bag_sample_names = sample_names[start_idx:end_idx]
             bag_labels = labels[start_idx:end_idx]
 
-            aggregated_embeddings = aggregate_embeddings(bag_embeddings,
-                                                         pooling_method)
+            aggregated_embeddings = aggregate_embeddings(bag_embeddings, pooling_method)
             bag_label = int(any(bag_labels == 1))
             all_bags.append({
                 "bag_label": bag_label,
@@ -227,9 +222,12 @@ def bag_by_sample(df, pooling_method, bag_size):
 
 def bag_turns(df, bag_sizes, pooling_method, repeats):
     all_bags = []
+    non_embedding_cols = {"sample_name", "label", "split"}
+    embedding_cols = [col for col in df.columns if col not in non_embedding_cols]
+
     for _ in range(repeats):
-        embeddings_0 = df.loc[df["label"] == 0].values.tolist()
-        embeddings_1 = df.loc[df["label"] == 1].values.tolist()
+        embeddings_0 = df.loc[df["label"] == 0][["sample_name", "label", "split"] + embedding_cols].values.tolist()
+        embeddings_1 = df.loc[df["label"] == 1][["sample_name", "label", "split"] + embedding_cols].values.tolist()
 
         np.random.shuffle(embeddings_0)
         np.random.shuffle(embeddings_1)
@@ -239,12 +237,10 @@ def bag_turns(df, bag_sizes, pooling_method, repeats):
         bag_set = set()
 
         while embeddings_0 or embeddings_1:
-            bag_size = np.random.randint(bag_sizes[0],
-                                         bag_sizes[1]+1)
+            bag_size = np.random.randint(bag_sizes[0], bag_sizes[1] + 1)
 
             if make_bag_1 and embeddings_1:
-                num_1_samples = min(np.random.randint(1, bag_size + 1),
-                                    len(embeddings_1))
+                num_1_samples = min(np.random.randint(1, bag_size + 1), len(embeddings_1))
             else:
                 num_1_samples = 0
 
@@ -255,38 +251,31 @@ def bag_turns(df, bag_sizes, pooling_method, repeats):
             selected_embeddings_0 = embeddings_0[:num_0_samples]
             embeddings_0 = embeddings_0[num_0_samples:]
 
-            # Combine to form the final bag
             bag_embeddings = selected_embeddings_0 + selected_embeddings_1
 
-            # If bag is still not full, fill with remaining class 1 embeddings
             if len(bag_embeddings) < bag_size and embeddings_1:
-                num_extra = min(bag_size - len(bag_embeddings),
-                                len(embeddings_1))
+                num_extra = min(bag_size - len(bag_embeddings), len(embeddings_1))
                 extra_embeddings = embeddings_1[:num_extra]
                 embeddings_1 = embeddings_1[num_extra:]
                 bag_embeddings += extra_embeddings
 
-            # Toggle bag type for next iteration
             make_bag_1 = not make_bag_1
 
             if len(bag_embeddings) > 0:
                 sample_names = [x[0] for x in bag_embeddings]
                 sample_labels = [x[1] for x in bag_embeddings]
                 sample_split = [x[2] for x in bag_embeddings]
-                only_embeddings = [row[3:] for row in bag_embeddings]
+                only_embeddings = [x[3:] for x in bag_embeddings]
 
-                aggregated_embedding = aggregate_embeddings(only_embeddings,
-                                                            pooling_method)
+                aggregated_embedding = aggregate_embeddings(only_embeddings, pooling_method)
 
                 bag_label = int(any(np.array(sample_labels) == 1))
                 bag_embeddings_tuple = tuple(map(tuple, only_embeddings))
                 bag_samples_tuple = tuple(sample_names)
-                bag_key = (bag_embeddings_tuple, len(bag_embeddings),
-                           bag_samples_tuple)
+                bag_key = (bag_embeddings_tuple, len(bag_embeddings), bag_samples_tuple)
 
                 if bag_key not in bag_set:
                     bag_set.add(bag_key)
-
                     bags.append({
                         "bag_label": bag_label,
                         "split": sample_split[0],
@@ -302,45 +291,36 @@ def bag_turns(df, bag_sizes, pooling_method, repeats):
 
 def bag_random(df_embeddings, bag_sizes, pooling_method, repeats):
     all_bags = []
+    non_embedding_cols = {"sample_name", "label", "split"}
+    embedding_cols = [col for col in df_embeddings.columns if col not in non_embedding_cols]
 
     for _ in range(repeats):
-        available_embeddings = df_embeddings.values.tolist()
+        available_embeddings = df_embeddings[["sample_name", "label", "split"] + embedding_cols].values.tolist()
         np.random.shuffle(available_embeddings)
         bag_set = set()
         bags = []
+
         while len(available_embeddings) > 0:
-            bag_size = np.random.randint(bag_sizes[0],
-                                         bag_sizes[1] + 1)
+            bag_size = np.random.randint(bag_sizes[0], bag_sizes[1] + 1)
 
             bag_embeddings = available_embeddings[:bag_size]
             available_embeddings = available_embeddings[bag_size:]
 
-            sample_names = []
-            sample_labels = []
-            sample_split = []
-            only_embeddings = []
             if len(bag_embeddings) > 0:
-                for x in bag_embeddings:
-                    sample_names.append(x[0])
-                    sample_labels.append(x[1])
-                    sample_split.append(x[2])
-                    only_embeddings.append(x[3:])
+                sample_names = [x[0] for x in bag_embeddings]
+                sample_labels = [x[1] for x in bag_embeddings]
+                sample_split = [x[2] for x in bag_embeddings]
+                only_embeddings = [x[3:] for x in bag_embeddings]
 
-                aggregated_embedding = aggregate_embeddings(only_embeddings,
-                                                            pooling_method)
+                aggregated_embedding = aggregate_embeddings(only_embeddings, pooling_method)
 
                 bag_label = int(any(np.array(sample_labels) == 1))
                 bag_embeddings_tuple = tuple(map(tuple, only_embeddings))
                 bag_samples_tuple = tuple(sample_names)
-                bag_key = (bag_embeddings_tuple,
-                           len(bag_embeddings),
-                           bag_samples_tuple)
-
-                bag_label = int(any(np.array(sample_labels) == 1))
+                bag_key = (bag_embeddings_tuple, len(bag_embeddings), bag_samples_tuple)
 
                 if bag_key not in bag_set:
                     bag_set.add(bag_key)
-
                     bags.append({
                         "bag_label": bag_label,
                         "split": sample_split[0],
@@ -362,44 +342,27 @@ def transform_bags_for_ludwig(bags):
     trans_bags = []
     for bag in bags:
         trans_bag = bag.copy()
-        trans_bag["embedding"] = (
-                convert_embedding_to_string(bag["embedding"])
-                .replace(",", " ")
-        )
+        trans_bag["embedding"] = convert_embedding_to_string(bag["embedding"]).replace(",", " ")
         trans_bags.append(trans_bag)
-
     return trans_bags
 
 
 def write_csv(output_csv, list_embeddings):
     if not list_embeddings:
-        with open(output_csv,
-                  mode="w",
-                  encoding='utf-8',
-                  newline='') as csv_file:
+        with open(output_csv, mode="w", encoding='utf-8', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
-            csv_writer.writerow(["bag_samples",
-                                 "bag_size",
-                                 "bag_label",
-                                 "split",
-                                 "embeddings"])
+            csv_writer.writerow(["bag_samples", "bag_size", "bag_label", "split"])
             logging.info("No valid data found. Empty CSV created.")
         return
 
-    # Determine the format based on the first item's "embedding" field
     first_item = list_embeddings[0]
-
     with open(output_csv, mode="w", encoding='utf-8', newline='') as csv_file:
-        csv_writer = csv.writer(csv_file)
-
-        # Extract common headers
+        csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_MINIMAL)
         headers = ["bag_samples", "bag_size", "bag_label", "split"]
 
         if isinstance(first_item["embedding"], str):
-            # Case 1: Embedding is a string
             headers.append("embedding")
             csv_writer.writerow(headers)
-
             for bag in list_embeddings:
                 row = [
                     ",".join(map(str, bag["bag_samples"])),
@@ -409,49 +372,46 @@ def write_csv(output_csv, list_embeddings):
                     bag["embedding"]
                 ]
                 csv_writer.writerow(row)
-
         elif isinstance(first_item["embedding"], np.ndarray):
-            # Case 2: Embedding is a NumPy array
-            vec_col = [f"vector{i+1}"
-                       for i in range(len(first_item["embedding"]))]
+            embedding_size = len(first_item["embedding"])
+            vec_col = [f"vector{i+1}" for i in range(embedding_size)]
             headers.extend(vec_col)
             csv_writer.writerow(headers)
-
             for bag in list_embeddings:
-                row = [
-                    ",".join(map(str, bag["bag_samples"])),
-                    bag["bag_size"],
-                    bag["bag_label"],
-                    bag["split"]
-                ] + bag["embedding"].tolist()
+                if len(bag["embedding"]) != embedding_size:
+                    logging.warning(f"Embedding size mismatch: expected {embedding_size}, got {len(bag['embedding'])}. Adjusting.")
+                    embedding = bag["embedding"][:embedding_size] if len(bag["embedding"]) > embedding_size else np.pad(
+                        bag["embedding"], (0, embedding_size - len(bag["embedding"])), 'constant', constant_values=0
+                    )
+                else:
+                    embedding = bag["embedding"]
+                row = [",".join(map(str, bag["bag_samples"])), bag["bag_size"], bag["bag_label"], bag["split"]] + embedding.tolist()
                 csv_writer.writerow(row)
-
         else:
-            raise ValueError("Unknown embedding format. \
-                Expected string or NumPy array.")
+            raise ValueError("Unknown embedding format. Expected string or NumPy array.")
 
 
-def bag_processing(embeddings,
-                   metadata,
-                   pooling_method,
-                   balance_enforced=False,
-                   bag_sizes=[3, 5],
-                   repeats=1,
-                   ludwig_format=False,
-                   by_sample=None):
-    all_bags = []  # Collect all bag data here
+def bag_processing(embeddings, metadata, pooling_method, balance_enforced=False, bag_sizes=[3, 5], repeats=1, ludwig_format=False, by_sample=None):
+    all_bags = []
     bag_sizes = parse_bag_size(bag_sizes)
+
+    # Ensure metadata has required columns
+    required_cols = {"sample_name", "label"}
+    if not required_cols.issubset(metadata.columns):
+        missing = required_cols - set(metadata.columns)
+        raise ValueError(f"Metadata CSV missing required columns: {missing}")
+
+    # Ensure embeddings has sample_name
+    if "sample_name" not in embeddings.columns:
+        raise ValueError("Embeddings CSV must contain 'sample_name' column")
 
     for split in metadata['split'].unique():
         split_metadata = metadata[metadata['split'] == split]
         split_embeddings = pd.merge(split_metadata, embeddings, on='sample_name')
 
-        # Only use bag_by_sample if by_sample is a valid list and split is in it
         if by_sample is not None and split in by_sample:
-            split_embeddings["instance_idx"] = split_embeddings.groupby("sample_name").cumcount()
             bags = bag_by_sample(split_embeddings, pooling_method, bag_sizes)
         else:
-            # Default to random or balanced bagging for all splits if by_sample is None or invalid
             if balance_enforced:
                 bags = bag_turns(split_embeddings, bag_sizes, pooling_method, repeats)
             else:
@@ -460,53 +420,22 @@ def bag_processing(embeddings,
 
     if ludwig_format:
         return transform_bags_for_ludwig(all_bags)
-
     return all_bags
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create bags")
-
-    parser.add_argument("--embeddings_csv",
-                        type=str,
-                        required=True,
-                        help="The embeddings (Must have 'sample_name' column)")
-    parser.add_argument("--metadata_csv",
-                        type=str,
-                        required=True,
-                        help="The metadata (Must contain 'sample_name' and 'label' columns)")
-    parser.add_argument("--split_proportions",
-                        type=str,
-                        default='0.7,0.1,0.2',
-                        help="Proportions for train, validation, and test splits")
-    parser.add_argument("--dataleak",
-                        action="store_true",
-                        help="Prevents dataleak when splitting the data")
-    parser.add_argument("--balance_enforced",
-                        action="store_true",
-                        help="Create bags in turns (balanced bags)")
-    parser.add_argument("--bag_size",
-                        type=str,
-                        required=True,
-                        help="Bag size as a single number (e.g., 4) or a range (e.g., 3-5)")
-    parser.add_argument("--pooling_method",
-                        type=str,
-                        required=True,
-                        help="The method for pooling the embeddings")
-    parser.add_argument("--by_sample",
-                        type=parse_by_sample,
-                        default=None,
-                        help="Optional comma-separated list of splits (0, 1, 2) to create bags within samples (e.g., '0,1' or '2')")
-    parser.add_argument("--repeats",
-                        type=int,
-                        default=1,
-                        help="Number of times the entire dataset can be used to generate bags")
-    parser.add_argument("--ludwig_format",
-                        action="store_true",
-                        help="Prepare CSV file to Ludwig input format")
-    parser.add_argument("--output_csv",
-                        required=True,
-                        help="Path to the output CSV file")
+    parser.add_argument("--embeddings_csv", type=str, required=True, help="The embeddings (Must have 'sample_name' column)")
+    parser.add_argument("--metadata_csv", type=str, required=True, help="The metadata (Must contain 'sample_name' and 'label' columns)")
+    parser.add_argument("--split_proportions", type=str, default='0.7,0.1,0.2', help="Proportions for train, validation, and test splits")
+    parser.add_argument("--dataleak", action="store_true", help="Prevents dataleak when splitting the data")
+    parser.add_argument("--balance_enforced", action="store_true", help="Create bags in turns (balanced bags)")
+    parser.add_argument("--bag_size", type=str, required=True, help="Bag size as a single number (e.g., 4) or a range (e.g., 3-5)")
+    parser.add_argument("--pooling_method", type=str, required=True, help="The method for pooling the embeddings")
+    parser.add_argument("--by_sample", type=parse_by_sample, default=None, help="Optional comma-separated list of splits (0, 1, 2) to create bags within samples")
+    parser.add_argument("--repeats", type=int, default=1, help="Number of times the entire dataset can be used to generate bags")
+    parser.add_argument("--ludwig_format", action="store_true", help="Prepare CSV file to Ludwig input format")
+    parser.add_argument("--output_csv", required=True, help="Path to the output CSV file")
 
     args = parser.parse_args()
 
@@ -514,11 +443,8 @@ if __name__ == "__main__":
     metadata_csv = load_csv(args.metadata_csv)
 
     if "split" not in metadata_csv:
-        metadata_csv = split_data(
-            metadata_csv,
-            split_proportions=args.split_proportions,
-            dataleak=args.dataleak
-        )
+        metadata_csv = split_data(metadata_csv, split_proportions=args.split_proportions, dataleak=args.dataleak)
+
     processed_embeddings = bag_processing(
         embeddings_data,
         metadata_csv,
