@@ -11,9 +11,7 @@
         --embeddings_csv "$embeddings_csv"
         --metadata_csv "$metadata_csv"
         --split_proportions "$split_proportions"
-        #if $bag_size
         --bag_size "$bag_size"
-        #end if
         --pooling_method "$pooling_method"
         --repeats "$repeats"
         --output_csv "$output_csv"
@@ -29,14 +27,17 @@
         #if $by_sample != ""
         --by_sample "$by_sample"
         #end if
+        #if $random_seed != ""
+        --random_seed "$random_seed"
+        #end if
     </command>
 
     <inputs>
-        <param name="embeddings_csv" type="data" format="csv" label="Embeddings CSV File"/>
-        <param name="metadata_csv" type="data" format="csv" label="Metadata CSV File"/>
-        <param name="split_proportions" type="text" value="0.7,0.1,0.2" label="Split Proportions (train,val,test)"/>
-        <param name="bag_size" type="text" value="3-5" label="Bag Size (single number or range, e.g., 3-5)"/>
-        <param name="pooling_method" type="select" label="Pooling Method">
+        <param name="embeddings_csv" type="data" format="csv" label="Embeddings CSV File" help="CSV file containing embeddings with a 'sample_name' column."/>
+        <param name="metadata_csv" type="data" format="csv" label="Metadata CSV File" help="CSV file with metadata containing 'sample_name' and 'label' columns."/>
+        <param name="split_proportions" type="text" value="0.7,0.1,0.2" label="Split Proportions (train,val,test)" help="Comma-separated proportions (e.g., '0.7,0.1,0.2') for train, validation, and test splits."/>
+        <param name="bag_size" type="text" value="3-5" label="Bag Size" help="Single number (e.g., '4') or range (e.g., '3-5') for bag sizes."/>
+        <param name="pooling_method" type="select" label="Pooling Method" help="Method to aggregate embeddings into bags.">
             <option value="max_pooling">Max Pooling</option>
             <option value="mean_pooling">Mean Pooling</option>
             <option value="sum_pooling">Sum Pooling</option>
@@ -49,11 +50,12 @@
             <option value="first_embedding">First Embedding</option>
             <option value="last_embedding">Last Embedding</option>
         </param>
-        <param name="repeats" type="integer" value="1" label="Number of times to run through the dataset to create bags."/>
-        <param name="dataleak" type="boolean" optional="true" label="Prevent Data Leak?"/>
-        <param name="balance_enforced" type="boolean" optional="true" label="Enforce Balanced Bags?"/>
-        <param name="ludwig_format" type="boolean" optional="true" label="Convert vectors (stored as columns) into a single string column (Ludwig Format)?"/>
-        <param name="by_sample" type="text" value="" optional="true" label="Splits for Within-Sample Bagging" help="Optional comma-separated list of splits (0, 1, 2) to create bags within samples (e.g., '0,1' or '2'). If not provided, uses random or balanced bagging."/>
+        <param name="repeats" type="integer" value="1" min="1" label="Number of Repeats" help="Number of times to repeat the bagging process."/>
+        <param name="dataleak" type="boolean" truevalue="--dataleak" falsevalue="" checked="false" label="Prevent Data Leakage?" help="If checked, prevents data leakage by splitting on unique sample names."/>
+        <param name="balance_enforced" type="boolean" truevalue="--balance_enforced" falsevalue="" checked="false" label="Enforce Balanced Bags?" help="If checked, alternates between classes to create balanced bags."/>
+        <param name="ludwig_format" type="boolean" truevalue="--ludwig_format" falsevalue="" checked="false" label="Ludwig Format?" help="If checked, outputs embeddings as a single string column for Ludwig compatibility."/>
+        <param name="by_sample" type="text" value="" optional="true" label="Splits for Within-Sample Bagging" help="Optional comma-separated list of splits (0=train, 1=val, 2=test) to bag within samples (e.g., '0,1'). Defaults to random or balanced bagging if empty."/>
+        <param name="random_seed" type="integer" value="" optional="true" label="Random Seed" help="Optional integer seed for reproducibility (e.g., 42). Leave blank for random behavior."/>
     </inputs>
 
     <outputs>
@@ -72,6 +74,7 @@
             <param name="balance_enforced" value="false" />
             <param name="ludwig_format" value="true" />
             <param name="by_sample" value="" />
+            <param name="random_seed" value="42" />
             <output name="output_csv">
                 <assert_contents>
                     <has_text text="bag_samples" />
@@ -90,6 +93,7 @@
             <param name="balance_enforced" value="false" />
             <param name="ludwig_format" value="true" />
             <param name="by_sample" value="2" />
+            <param name="random_seed" value="123" />
             <output name="output_csv">
                 <assert_contents>
                     <has_text text="bag_samples" />
@@ -105,10 +109,17 @@
         This tool processes embedding and metadata CSV files to create bags of samples with specified sizes and pooling methods.
 
         **Inputs**
-        - A CSV file containing embeddings with a `sample_name` column.
-        - A CSV file with metadata containing `sample_name` and `label` columns.
-        - Parameters for bag size, splitting proportions, and pooling methods.
-        - Optional `Splits for Within-Sample Bagging`: Specify splits (0=train, 1=val, 2=test) to create bags within samples instead of random or balanced bagging.
+        - **Embeddings CSV File**: A CSV file containing embeddings with a `sample_name` column.
+        - **Metadata CSV File**: A CSV file with metadata containing `sample_name` and `label` columns.
+        - **Split Proportions**: Define train, validation, and test split ratios (e.g., '0.7,0.1,0.2').
+        - **Bag Size**: Set a fixed number (e.g., '4') or range (e.g., '3-5') for bag sizes.
+        - **Pooling Method**: Choose how embeddings are aggregated into bags.
+        - **Number of Repeats**: Specify how many times to repeat bagging.
+        - **Prevent Data Leakage**: Avoid leakage by splitting on unique sample names.
+        - **Enforce Balanced Bags**: Alternate classes for balanced bagging.
+        - **Ludwig Format**: Convert embeddings to a single string column for Ludwig.
+        - **Splits for Within-Sample Bagging**: Optional splits (0, 1, 2) to bag within samples (e.g., '0,1').
+        - **Random Seed**: Optional seed for reproducible results.
 
         **Outputs**
         - A CSV file with bags of embeddings, including labels, split information, and processed embedding vectors.
