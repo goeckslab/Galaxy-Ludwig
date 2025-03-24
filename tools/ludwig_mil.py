@@ -45,7 +45,7 @@ bags by alternating between classes.
 - `--ludwig_format`: Flag to prepare data for Ludwig input format \
 (embedding as a string).
 - `--by_sample`: Optional comma-separated list of splits (0, 1, 2) to create \
-bags within samples (e.g., '0,1' or '2'); if not provided, uses random or balanced bagging.
+bags within samples (e.g., '0,1' or '2'); if not provided or invalid, uses random or balanced bagging.
 - `--output_csv`: Path to save the resulting CSV file.
 """
 import argparse
@@ -84,15 +84,17 @@ def parse_bag_size(value):
 def parse_by_sample(value):
     """Parses by_sample argument to handle comma-separated list of splits."""
     try:
+        # Convert value to string in case it's passed as an integer (e.g., 2)
+        value = str(value)
         splits = [int(x) for x in value.split(",")]
         valid_splits = {0, 1, 2}
         if not all(x in valid_splits for x in splits):
-            raise ValueError
+            logging.warning(f"Invalid splits in by_sample: {splits}. Must be in {valid_splits}. Defaulting to random/balanced bagging for all splits.")
+            return None
         return splits
-    except ValueError:
-        raise argparse.ArgumentTypeError(
-            "by_sample must be a comma-separated list of integers (0, 1, 2), e.g., '0,1' or '2'"
-        )
+    except (ValueError, AttributeError):
+        logging.warning(f"Could not parse by_sample value: {value}. Defaulting to random/balanced bagging for all splits.")
+        return None
 
 
 def load_csv(file_path):
@@ -444,12 +446,12 @@ def bag_processing(embeddings,
         split_metadata = metadata[metadata['split'] == split]
         split_embeddings = pd.merge(split_metadata, embeddings, on='sample_name')
 
+        # Only use bag_by_sample if by_sample is a valid list and split is in it
         if by_sample is not None and split in by_sample:
-            # Create bags within samples only if by_sample is provided and split is in the list
             split_embeddings["instance_idx"] = split_embeddings.groupby("sample_name").cumcount()
             bags = bag_by_sample(split_embeddings, pooling_method, bag_sizes)
         else:
-            # Default to random or balanced bagging if by_sample is not provided or split is not in by_sample
+            # Default to random or balanced bagging for all splits if by_sample is None or invalid
             if balance_enforced:
                 bags = bag_turns(split_embeddings, bag_sizes, pooling_method, repeats)
             else:
