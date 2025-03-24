@@ -4,7 +4,6 @@ import os
 import pickle
 import sys
 
-
 from ludwig.experiment import cli
 from ludwig.globals import (
     DESCRIPTION_FILE_NAME,

@@ -1,9 +1,10 @@
 <tool id="ludwig_render_config" name="Ludwig Render Config" version="@VERSION@" profile="@PROFILE@">
-    <description>renders thefull config based on user input</description>
+    <description>renders the full config based on user input</description>
     <macros>
         <import>ludwig_macros.xml</import>
     </macros>
     <expand macro="python_requirements_gpu" />
+    <expand macro="required_files" />
     <expand macro="macro_stdio" />
     <version_command>echo "@VERSION@"</version_command>
     <command>
