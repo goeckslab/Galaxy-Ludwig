@@ -44,6 +44,8 @@ bags by alternating between classes.
 - `--repeats`: The number of times to repeat the process of generating bags.
 - `--ludwig_format`: Flag to prepare data for Ludwig input format \
 (embedding as a string).
+- `--by_sample`: Optional comma-separated list of splits (0, 1, 2) to create \
+bags within samples (e.g., '0,1' or '2'); if not provided, uses random or balanced bagging.
 - `--output_csv`: Path to save the resulting CSV file.
 """
 import argparse
@@ -61,7 +63,6 @@ import torch.nn as nn
 # Configure logging
 logging.basicConfig(
     filename="/tmp/ludwig_embeddings.log",
-    # so write to a file
     filemode="a",
     format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.DEBUG
@@ -78,6 +79,20 @@ def parse_bag_size(value):
             )
         return [min_val, max_val]
     return [int(value), int(value)]
+
+
+def parse_by_sample(value):
+    """Parses by_sample argument to handle comma-separated list of splits."""
+    try:
+        splits = [int(x) for x in value.split(",")]
+        valid_splits = {0, 1, 2}
+        if not all(x in valid_splits for x in splits):
+            raise ValueError
+        return splits
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            "by_sample must be a comma-separated list of integers (0, 1, 2), e.g., '0,1' or '2'"
+        )
 
 
 def load_csv(file_path):
@@ -421,43 +436,24 @@ def bag_processing(embeddings,
                    bag_sizes=[3, 5],
                    repeats=1,
                    ludwig_format=False,
-                   by_sample=False):
+                   by_sample=None):
     all_bags = []  # Collect all bag data here
     bag_sizes = parse_bag_size(bag_sizes)
 
     for split in metadata['split'].unique():
-        if by_sample:
-            embeddings["instance_idx"] = embeddings.groupby("sample_name") \
-                                                   .cumcount()
-            metadata["instance_idx"] = metadata.groupby("sample_name") \
-                                               .cumcount()
+        split_metadata = metadata[metadata['split'] == split]
+        split_embeddings = pd.merge(split_metadata, embeddings, on='sample_name')
 
-            split_embeddings = pd.merge(metadata, embeddings,
-                                        on=["sample_name", "instance_idx"],
-                                        suffixes=("_meta", "_embed"))
-
-            split_embeddings.drop(columns=["instance_idx"], inplace=True)
-            split_embeddings = split_embeddings[
-                               split_embeddings["split"] == split
-                               ]
-
-            bags = bag_by_sample(split_embeddings,
-                                 pooling_method,
-                                 bag_sizes)
+        if by_sample is not None and split in by_sample:
+            # Create bags within samples only if by_sample is provided and split is in the list
+            split_embeddings["instance_idx"] = split_embeddings.groupby("sample_name").cumcount()
+            bags = bag_by_sample(split_embeddings, pooling_method, bag_sizes)
         else:
-            split_metadata = metadata[metadata['split'] == split]
-            split_embeddings = pd.merge(split_metadata,
-                                        embeddings, on='sample_name')
+            # Default to random or balanced bagging if by_sample is not provided or split is not in by_sample
             if balance_enforced:
-                bags = bag_turns(split_embeddings,
-                                 bag_sizes,
-                                 pooling_method,
-                                 repeats)
+                bags = bag_turns(split_embeddings, bag_sizes, pooling_method, repeats)
             else:
-                bags = bag_random(split_embeddings,
-                                  bag_sizes,
-                                  pooling_method,
-                                  repeats)
+                bags = bag_random(split_embeddings, bag_sizes, pooling_method, repeats)
         all_bags.extend(bags)
 
     if ludwig_format:
@@ -472,39 +468,37 @@ if __name__ == "__main__":
     parser.add_argument("--embeddings_csv",
                         type=str,
                         required=True,
-                        help="The embeddings(Must have 'sample_name' column)")
+                        help="The embeddings (Must have 'sample_name' column)")
     parser.add_argument("--metadata_csv",
                         type=str,
                         required=True,
-                        help="The metadata(Must contain \
-                            'sample_name' and 'label' columns.")
+                        help="The metadata (Must contain 'sample_name' and 'label' columns)")
     parser.add_argument("--split_proportions",
                         type=str,
                         default='0.7,0.1,0.2',
-                        help="Proportions for train, validation,\
-                            and test splits.")
+                        help="Proportions for train, validation, and test splits")
     parser.add_argument("--dataleak",
                         action="store_true",
-                        help="Prevents dataleak when splitting the data.")
+                        help="Prevents dataleak when splitting the data")
     parser.add_argument("--balance_enforced",
                         action="store_true",
-                        help="Create bags in turns (balanced bags")
+                        help="Create bags in turns (balanced bags)")
     parser.add_argument("--bag_size",
                         type=str,
                         required=True,
-                        help="Bag size as a single number (e.g., 4) or \
-                        a range (e.g., 3-5).")
+                        help="Bag size as a single number (e.g., 4) or a range (e.g., 3-5)")
     parser.add_argument("--pooling_method",
                         type=str,
                         required=True,
                         help="The method for pooling the embeddings")
-    parser.add_argument("--by_sample", action="store_true",
-                        help="Create bags using instances of the same sample")
+    parser.add_argument("--by_sample",
+                        type=parse_by_sample,
+                        default=None,
+                        help="Optional comma-separated list of splits (0, 1, 2) to create bags within samples (e.g., '0,1' or '2')")
     parser.add_argument("--repeats",
                         type=int,
                         default=1,
-                        help="Number of times the entire dataset \
-                        can be used to generate bags")
+                        help="Number of times the entire dataset can be used to generate bags")
     parser.add_argument("--ludwig_format",
                         action="store_true",
                         help="Prepare CSV file to Ludwig input format")
