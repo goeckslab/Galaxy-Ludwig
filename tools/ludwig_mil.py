@@ -261,7 +261,7 @@ def bag_turns(df, bag_sizes, pooling_method, repeats, use_gpu=False):
                 selected_indices_1 = indices_1[:num_1_samples]
                 indices_1 = indices_1[num_1_samples:]
             else:
-                selected_indices_1 = []
+                selected_indices_1 = np.array([], dtype=int)
 
             num_0_samples = min(bag_size - len(selected_indices_1),
                                 len(indices_0))
