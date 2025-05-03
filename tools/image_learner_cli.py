@@ -119,6 +119,105 @@ logging.basicConfig(
 logger = logging.getLogger("ImageLearner")
 
 
+def format_config_table_html(
+        config: dict,
+        split_info: Optional[str] = None,
+        training_progress: dict = None
+    ) -> str:
+    display_keys = [
+        "model_name",
+        "epochs",
+        "batch_size",
+        "fine_tune",
+        "use_pretrained",
+        "learning_rate",
+        "random_seed"
+        "early_stop",
+    ]
+
+    rows = []
+
+    for key in display_keys:
+        val = config.get(key, "N/A")
+        if key == "batch_size":
+            if val is not None:
+                val = int(val)
+            else:
+                if training_progress:
+                    val = "Auto-selected batch size by Ludwig:<br>"
+                    resolved_val = training_progress.get("batch_size")
+                    val += (
+                        f"<span style='font-size: 0.85em;'>{resolved_val}</span><br>"
+                    )
+                else:
+                    val = "auto"
+        if key == "learning_rate":
+            resolved_val = None
+            if val is None or val == "auto":
+                if training_progress:
+                    resolved_val = training_progress.get("learning_rate")
+                    val = (
+                        "Auto-selected learning rate by Ludwig:<br>"
+                        f"<span style='font-size: 0.85em;'>{resolved_val if resolved_val else val}</span><br>"
+                        "<span style='font-size: 0.85em;'>"
+                        "Based on model architecture and training setup (e.g., fine-tuning).<br>"
+                        "See <a href='https://ludwig.ai/latest/configuration/trainer/#trainer-parameters' "
+                        "target='_blank'>Ludwig Trainer Parameters</a> for details."
+                        "</span>"
+                    )
+                else:
+                    val = (
+                        "Auto-selected by Ludwig<br>"
+                        "<span style='font-size: 0.85em;'>"
+                        "Automatically tuned based on architecture and dataset.<br>"
+                        "See <a href='https://ludwig.ai/latest/configuration/trainer/#trainer-parameters' "
+                        "target='_blank'>Ludwig Trainer Parameters</a> for details."
+                        "</span>"
+                    )
+            else:
+                val = f"{val:.6f}"
+        if key == "epochs":
+            if training_progress and "epoch" in training_progress and val > training_progress["epoch"]:
+                val = (f"Because of early stopping: the training"
+                f"stopped at epoch {training_progress['epoch']}"
+                )
+                
+
+        if val is None:
+            continue
+        rows.append(
+            f"<tr>"
+            f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: left;'>{key.replace('_', ' ').title()}</td>"
+            f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: center;'>{val}</td>"
+            f"</tr>"
+        )
+    
+    if split_info:
+        rows.append(
+            f"<tr>"
+            f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: left;'>Data Split</td>"
+            f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: center;'>{split_info}</td>"
+            f"</tr>"
+        )
+
+    return (
+        "<h2 style='text-align: center;'>Training Setup</h2>"
+        "<div style='display: flex; justify-content: center;'>"
+        "<table style='border-collapse: collapse; width: 60%; table-layout: auto;'>"
+        "<thead><tr>"
+        "<th style='padding: 10px; border: 1px solid #ccc; text-align: left;'>Parameter</th>"
+        "<th style='padding: 10px; border: 1px solid #ccc; text-align: center;'>Value</th>"
+        "</tr></thead><tbody>"
+        + "".join(rows) +
+        "</tbody></table></div><br>"
+        "<p style='text-align: center; font-size: 0.9em;'>"
+        "Model trained using Ludwig.<br>"
+        "If want to learn more about Ludwig default settings,"
+        "please check the their <a href='https://ludwig.ai' target='_blank'>website(ludwig.ai)</a>."
+        "</p><hr>"
+    )
+
+
 def format_stats_table_html(training_stats: dict, test_stats: dict) -> str:
     train_metrics = training_stats.get("training", {}).get("label", {})
     val_metrics   = training_stats.get("validation", {}).get("label", {})
@@ -207,7 +306,7 @@ def build_tabbed_html(metrics_html: str, train_viz_html: str, test_viz_html: str
 </style>
 
 <div class="tabs">
-  <div class="tab active" onclick="showTab('metrics')"> Metrics</div>
+  <div class="tab active" onclick="showTab('metrics')"> Config & Metrics</div>
   <div class="tab" onclick="showTab('trainval')"> Train/Validation Plots</div>
   <div class="tab" onclick="showTab('test')"> Test Plots</div>
 </div>
@@ -317,6 +416,7 @@ class Backend(Protocol):
         dataset_path: Path,
         config_path: Path,
         output_dir: Path,
+        random_seed: int,
     ) -> None:
         ...
     
@@ -355,6 +455,10 @@ class LudwigDirectBackend:
         epochs = config_params.get("epochs", 10)
         batch_size = config_params.get("batch_size")
         num_processes = config_params.get("preprocessing_num_processes", 1)
+        learning_rate = config_params.get("learning_rate")
+        learning_rate = "auto" if learning_rate is None else float(learning_rate)
+        random_seed = config_params.get("random_seed", 42)
+
 
         # Encoder setup
         raw_encoder = MODEL_ENCODER_TEMPLATES.get(model_name, model_name)
@@ -388,6 +492,7 @@ class LudwigDirectBackend:
                 "epochs": epochs,
                 "early_stop": 5,
                 "batch_size": batch_size_cfg,
+                "learning_rate": learning_rate,
             },
             "preprocessing": {
                 "split": split_config,
@@ -410,18 +515,13 @@ class LudwigDirectBackend:
         dataset_path: Path,
         config_path: Path,
         output_dir: Path,
+        random_seed: int = 42,
     ) -> None:
         """
         Invoke Ludwig's internal experiment_cli function to run the experiment.
         """
         logger.info("LudwigDirectBackend: Starting experiment execution.")
 
-        # if not dataset_path.is_file():
-        #     raise FileNotFoundError(f"Dataset not found: {dataset_path}")
-        # if not config_path.is_file():
-        #     raise FileNotFoundError(f"Config file not found: {config_path}")
-
-        # Dynamic import to avoid import errors if Ludwig is not needed
         try:
             from ludwig.experiment import experiment_cli
         except ImportError as e:
@@ -438,6 +538,7 @@ class LudwigDirectBackend:
                 dataset=str(dataset_path),
                 config=str(config_path),
                 output_directory=str(output_dir),
+                random_seed=random_seed,
             )
             logger.info(f"LudwigDirectBackend: Experiment completed. Results in {output_dir}")
         except TypeError as e:
@@ -452,6 +553,39 @@ class LudwigDirectBackend:
                 exc_info=True
             )
             raise
+
+    def get_training_process(self, output_dir) -> float:
+        """
+        Retrieve the learning rate used in the most recent Ludwig run.
+        Returns:
+            float: learning rate (or None if not found)
+        """
+        output_dir = Path(output_dir)
+        exp_dirs = sorted(
+            output_dir.glob("experiment_run*"),
+            key=lambda p: p.stat().st_mtime
+        )
+
+        if not exp_dirs:
+            logger.warning(f"No experiment run directories found in {output_dir}")
+            return None
+
+        progress_file = exp_dirs[-1] / "model" / "training_progress.json"
+        if not progress_file.exists():
+            logger.warning(f"No training_progress.json found in {progress_file}")
+            return None
+
+        try:
+            with progress_file.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+            return {
+                "learning_rate": data.get("learning_rate"),
+                "batch_size": data.get("batch_size"),
+                "epoch": data.get("epoch"),
+            }
+        except Exception as e:
+            self.logger.warning(f"Failed to read training progress info: {e}")
+            return {}
 
 
     def generate_plots(self, output_dir: Path) -> None:
@@ -566,7 +700,13 @@ class LudwigDirectBackend:
 
         logger.info(f"All visualizations written to {viz_dir}")
 
-    def generate_html_report(self, title: str, output_dir: str) -> Path:
+    def generate_html_report(
+            self,
+            title: str,
+            output_dir: str,
+            config: dict,
+            split_info: str
+        ) -> Path:
         """
         Assemble an HTML report from visualizations under train_val/ and test/ folders.
         """
@@ -604,6 +744,13 @@ class LudwigDirectBackend:
                     metrics_html += format_stats_table_html(train_stats, test_stats)
         except Exception as e:
             logger.warning(f"Could not load stats for HTML report: {e}")
+        
+        config_html = ""
+        training_progress = self.get_training_process(output_dir)
+        try:
+            config_html = format_config_table_html(config, split_info, training_progress)
+        except Exception as e:
+            logger.warning(f"Could not load config for HTML report: {e}")
 
         def render_img_section(title: str, dir_path: Path) -> str:
             if not dir_path.exists():
@@ -627,7 +774,7 @@ class LudwigDirectBackend:
 
         train_plots_html = render_img_section("Training & Validation Visualizations", train_viz_dir)
         test_plots_html = render_img_section("Test Visualizations", test_viz_dir)
-        html += build_tabbed_html(metrics_html, train_plots_html, test_plots_html)
+        html += build_tabbed_html(config_html + metrics_html, train_plots_html, test_plots_html)
         html += get_html_closing()
 
         try:
@@ -722,15 +869,18 @@ class WorkflowOrchestrator:
 
         # 4) Handle splits
         if SPLIT_COLUMN_NAME in df.columns:
-            df, split_config = self._process_fixed_split(df)
-            print("--------------------------")
-            print(df)
+            df, split_config, split_info = self._process_fixed_split(df)
         else:
             logger.info("No split column; using random split")
             split_config = {
                 "type": "random",
                 "probabilities": self.args.split_probabilities
             }
+            split_info = (
+                f"No split column in CSV. Used random split: "
+                f"{[int(p*100) for p in self.args.split_probabilities]}% for train/val/test."
+            )
+ 
 
         # 5) Write out prepared CSV
         final_csv = TEMP_CSV_FILENAME
@@ -741,7 +891,7 @@ class WorkflowOrchestrator:
             logger.error("Error saving prepared CSV", exc_info=True)
             raise
 
-        return final_csv, split_config
+        return final_csv, split_config, split_info
 
     def _process_fixed_split(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Process a fixed split column (0=train,1=val,2=test)."""
@@ -759,15 +909,24 @@ class WorkflowOrchestrator:
                 df = split_data_0_2(
                     df, SPLIT_COLUMN_NAME,
                     validation_size=self.args.validation_size,
-                    label_column=LABEL_COLUMN_NAME
+                    label_column=LABEL_COLUMN_NAME, 
+                    random_state=self.args.random_seed
                 )
+                split_info = (
+                    "Detected a split column (with values 0 and 2) in the input CSV. "
+                    f"Used this column as a base and"
+                    f"reassigned {self.args.validation_size * 100:.1f}% "
+                    "of the training set (originally labeled 0) to validation (labeled 1)."
+                )
+
                 logger.info("Applied custom 0/2 split.")
             elif unique.issubset({0, 1, 2}):
+                split_info = "Used user-defined split column from CSV."
                 logger.info("Using fixed split as-is.")
             else:
                 raise ValueError(f"Unexpected split values: {unique}")
 
-            return df, {"type": "fixed", "column": SPLIT_COLUMN_NAME}
+            return df, {"type": "fixed", "column": SPLIT_COLUMN_NAME}, split_info
 
         except Exception:
             logger.error("Error processing fixed split", exc_info=True)
@@ -789,7 +948,7 @@ class WorkflowOrchestrator:
         try:
             self._create_temp_dirs()
             self._extract_images()
-            csv_path, split_cfg = self._prepare_data()
+            csv_path, split_cfg, split_info = self._prepare_data()
 
             use_pretrained = False
             if self.args.use_pretrained:
@@ -805,6 +964,10 @@ class WorkflowOrchestrator:
                 "epochs": self.args.epochs,
                 "batch_size": self.args.batch_size,
                 "preprocessing_num_processes": self.args.preprocessing_num_processes,
+                "split_probabilities": self.args.split_probabilities,
+                "learning_rate": self.args.learning_rate,
+                "random_seed": self.args.random_seed,
+                "early_stop": 5,
             }
             yaml_str = self.backend.prepare_config(backend_args, split_cfg)
 
@@ -812,10 +975,20 @@ class WorkflowOrchestrator:
             config_file.write_text(yaml_str)
             logger.info(f"Wrote backend config: {config_file}")
 
-            self.backend.run_experiment(csv_path, config_file, self.args.output_dir)
+            self.backend.run_experiment(
+                csv_path,
+                config_file,
+                self.args.output_dir,
+                self.args.random_seed
+            )
             logger.info("Workflow completed successfully.")
             self.backend.generate_plots(self.args.output_dir)
-            report_file = self.backend.generate_html_report("Image Classification Results", self.args.output_dir) 
+            report_file = self.backend.generate_html_report(
+                "Image Classification Results",
+                self.args.output_dir,
+                backend_args, 
+                split_info
+            ) 
             logger.info(f"HTML report generated at: {report_file}")
         except Exception:
             logger.error("Workflow execution failed", exc_info=True)
@@ -823,6 +996,13 @@ class WorkflowOrchestrator:
 
         finally:
             self._cleanup_temp_dirs()
+
+
+def parse_learning_rate(s):
+    try:
+        return float(s)
+    except (TypeError, ValueError):
+        return None
 
 
 def main():
@@ -871,6 +1051,20 @@ def main():
         "--preprocessing-num-processes", type=int,
         default=max(1, os.cpu_count() // 2),
         help="CPU processes for data prep"
+    )
+    parser.add_argument(
+        "--split-probabilities", type=float, nargs=3,
+        metavar=("train", "val", "test"),
+        help="Random split proportions (e.g., 0.7 0.1 0.2). Only used if no split column is present."
+    )
+    parser.add_argument(
+        "--random-seed", type=int, default=42,
+        help="Random seed used for dataset splitting (default: 42)"
+    )
+
+    parser.add_argument(
+        "--learning-rate", type=parse_learning_rate, default=None,
+        help="Learning rate. If not provided, Ludwig will auto-select it."
     )
 
     args = parser.parse_args()
