@@ -118,6 +118,62 @@ logging.basicConfig(
 )
 logger = logging.getLogger("ImageLearner")
 
+
+def format_stats_table_html(training_stats: dict, test_stats: dict) -> str:
+    train_metrics = training_stats.get("training", {}).get("label", {})
+    val_metrics   = training_stats.get("validation", {}).get("label", {})
+    test_metrics  = test_stats.get("label", {})
+
+    all_metrics = set(train_metrics) | set(val_metrics) | set(test_metrics)
+
+    def get_last_value(stats, key):
+        val = stats.get(key)
+        if isinstance(val, list) and val:
+            return val[-1]
+        elif isinstance(val, (int, float)):
+            return val
+        return None
+
+    rows = []
+    for metric in sorted(all_metrics):
+        t = get_last_value(train_metrics, metric)
+        v = get_last_value(val_metrics, metric)
+        te = get_last_value(test_metrics, metric)
+        if all(x is not None for x in [t, v, te]):
+            row = (
+                f"<tr>"
+                f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: left;'>{metric}</td>"
+                f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: center;'>{t:.4f}</td>"
+                f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: center;'>{v:.4f}</td>"
+                f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: center;'>{te:.4f}</td>"
+                f"</tr>"
+            )
+            rows.append(row)
+
+    if not rows:
+        return "<p><em>No metric values found.</em></p>"
+
+    return (
+        "<h2 style='text-align: center;'>Model Performance Summary</h2>"
+        "<div style='display: flex; justify-content: center;'>"
+        "<table style='border-collapse: collapse; width: 80%; table-layout: fixed;'>"
+        "<colgroup>"
+        "<col style='width: 40%;'>"
+        "<col style='width: 20%;'>"
+        "<col style='width: 20%;'>"
+        "<col style='width: 20%;'>"
+        "</colgroup>"
+        "<thead><tr>"
+        "<th style='padding: 10px; border: 1px solid #ccc; text-align: left;'>Metric</th>"
+        "<th style='padding: 10px; border: 1px solid #ccc; text-align: center;'>Train</th>"
+        "<th style='padding: 10px; border: 1px solid #ccc; text-align: center;'>Validation</th>"
+        "<th style='padding: 10px; border: 1px solid #ccc; text-align: center;'>Test</th>"
+        "</tr></thead><tbody>" +
+        "".join(rows) +
+        "</tbody></table></div><br>"
+    )
+
+
 def split_data_0_2(
     df: pd.DataFrame,
     split_column: str,
@@ -126,65 +182,67 @@ def split_data_0_2(
     label_column: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Convert a DataFrame with split values {0, 2} into {0, 1, 2}, where
-    0 = train, 1 = validation, 2 = test.
+    Given a DataFrame whose split_column only contains {0,2}, re-assign
+    a portion of the 0s to become 1s (validation). Returns a fresh DataFrame.
     """
-    df_copy = df.copy()
-    train_mask = df_copy[split_column] == 0
-    train_df = df_copy[train_mask]
+    # Work on a copy
+    out = df.copy()
+    # Ensure split col is integer dtype
+    out[split_column] = pd.to_numeric(out[split_column], errors="coerce").astype(int)
 
-    if train_df.empty:
-        logger.info("No training data (split=0) found; skipping validation split.")
-        return df_copy
+    # Indices of original train and test
+    idx_train = out.index[out[split_column] == 0].tolist()
+    idx_test  = out.index[out[split_column] == 2].tolist()
 
-    # Determine if we can stratify by label
-    stratify = None
-    if label_column and label_column in train_df.columns:
-        unique_labels = train_df[label_column].nunique()
-        if unique_labels > 1:
-            min_count = train_df[label_column].value_counts().min()
-            if 0 < validation_size < 1 and min_count * validation_size >= 1 and min_count * (1 - validation_size) >= 1:
-                stratify = train_df[label_column]
-                logger.info(f"Stratifying train/validation split by '{label_column}'.")
-            else:
-                logger.warning(
-                    "Validation size or label distribution too small for stratification; proceeding without stratify."
-                )
+    if not idx_train:
+        logger.info("No rows with split=0; nothing to do.")
+        return out
 
-    # Handle edge validation_size cases
-    if validation_size >= 1:
-        df_copy.loc[train_mask, split_column] = 1
-        logger.info("All train data moved to validation (validation_size >= 1).")
-        return df_copy
+    # Determine stratify array if possible
+    stratify_arr = None
+    if label_column and label_column in out.columns:
+        # Only stratify if at least two classes and enough samples
+        label_counts = out.loc[idx_train, label_column].value_counts()
+        if label_counts.size > 1 and (label_counts.min() * validation_size) >= 1:
+            stratify_arr = out.loc[idx_train, label_column]
+        else:
+            logger.warning("Cannot stratify (too few labels); splitting without stratify.")
 
+    # Edge cases
     if validation_size <= 0:
-        logger.info("No validation split created (validation_size <= 0).")
-        return df_copy
+        logger.info("validation_size <= 0; keeping all as train.")
+        return out
+    if validation_size >= 1:
+        logger.info("validation_size >= 1; moving all train → validation.")
+        out.loc[idx_train, split_column] = 1
+        return out
 
-    # Perform train/validation split
+    # Do the split
     try:
         train_idx, val_idx = train_test_split(
-            train_df.index,
+            idx_train,
             test_size=validation_size,
             random_state=random_state,
-            stratify=stratify,
+            stratify=stratify_arr
         )
-        df_copy.loc[train_idx, split_column] = 0
-        df_copy.loc[val_idx, split_column] = 1
-        logger.info(f"Split train data into train and validation (size={validation_size}).")
     except ValueError as e:
         logger.warning(f"Stratified split failed ({e}); retrying without stratify.")
         train_idx, val_idx = train_test_split(
-            train_df.index,
+            idx_train,
             test_size=validation_size,
             random_state=random_state,
-            stratify=None,
+            stratify=None
         )
-        df_copy.loc[train_idx, split_column] = 0
-        df_copy.loc[val_idx, split_column] = 1
-        logger.info("Performed non-stratified train/validation split.")
 
-    return df_copy
+    # Assign new splits
+    out.loc[train_idx, split_column] = 0
+    out.loc[val_idx,   split_column] = 1
+    # idx_test stays at 2
+
+    # Cast back to a clean integer type
+    out[split_column] = out[split_column].astype(int)
+    # print(out)
+    return out
 
 
 class Backend(Protocol):
@@ -211,8 +269,9 @@ class Backend(Protocol):
     
     def generate_html_report(
         self,
-        title: str
-    ) -> None:
+        title: str,
+        output_dir: str
+    ) -> Path:
         ...
 
 
@@ -335,15 +394,41 @@ class LudwigDirectBackend:
             )
             raise
 
+
     def generate_plots(self, output_dir: Path) -> None:
         """
         Generate _all_ registered Ludwig visualizations for the latest experiment run.
         """
         logger.info("Generating all Ludwig visualizations…")
 
+        test_plots = {
+            'compare_performance',
+            'compare_classifiers_performance_from_prob',
+            'compare_classifiers_performance_from_pred',
+            'compare_classifiers_performance_changing_k',
+            'compare_classifiers_multiclass_multimetric',
+            'compare_classifiers_predictions',
+            'confidence_thresholding_2thresholds_2d',
+            'confidence_thresholding_2thresholds_3d',
+            'confidence_thresholding',
+            'confidence_thresholding_data_vs_acc',
+            'binary_threshold_vs_metric',
+            'roc_curves',
+            'roc_curves_from_test_statistics',
+            'calibration_1_vs_all',
+            'calibration_multiclass',
+            'confusion_matrix',
+            'frequency_vs_f1',
+        }
+        train_plots = {
+            'learning_curves',
+            'compare_classifiers_performance_subset',
+        }
+
         # 1) find the most recent experiment directory
+        output_dir = Path(output_dir)
         exp_dirs = sorted(
-            output_dir.glob("experiment*"),
+            output_dir.glob("experiment_run*"),
             key=lambda p: p.stat().st_mtime
         )
         if not exp_dirs:
@@ -354,6 +439,10 @@ class LudwigDirectBackend:
         # 2) ensure viz output subfolder exists
         viz_dir = exp_dir / "visualizations"
         viz_dir.mkdir(exist_ok=True)
+        train_viz = viz_dir / "train"
+        test_viz = viz_dir / "test"
+        train_viz.mkdir(parents=True, exist_ok=True)
+        test_viz.mkdir(parents=True, exist_ok=True)
 
         # 3) helper to check file existence
         def _check(p: Path) -> Optional[str]:
@@ -390,6 +479,12 @@ class LudwigDirectBackend:
         # 7) loop through every registered viz
         viz_registry = get_visualizations_registry()
         for viz_name, viz_func in viz_registry.items():
+            viz_dir_plot = None
+            if viz_name in train_plots:
+                viz_dir_plot = train_viz
+            elif viz_name in test_plots:
+                viz_dir_plot = test_viz
+
             try:
                 viz_func(
                     training_statistics=[training_stats] if training_stats else [],
@@ -402,7 +497,7 @@ class LudwigDirectBackend:
                     ground_truth_metadata=gt_metadata,
                     ground_truth=dataset_path,
                     split_file=split_file,
-                    output_directory=str(viz_dir),
+                    output_directory=str(viz_dir_plot),
                     normalize=False,
                     file_format="png",
                 )
@@ -412,54 +507,67 @@ class LudwigDirectBackend:
 
         logger.info(f"All visualizations written to {viz_dir}")
 
-    def generate_html_report(self, title: str) -> Path:
+    def generate_html_report(self, title: str, output_dir: str) -> Path:
         """
-        Assemble an HTML report of all plots under the last experiment's
-        visualizations/ folder, then write it to the current working directory
-        as '{title_lower}_report.html'.
-        Returns the Path to the generated report.
+        Assemble an HTML report from visualizations under train_val/ and test/ folders.
         """
         cwd = Path.cwd()
         report_name = title.lower().replace(" ", "_") + "_report.html"
         report_path = cwd / report_name
+        output_dir = Path(output_dir)
 
-        # 1) locate latest experiment run directory
-        exp_dirs = sorted(
-            report_path.parent.glob("experiment*"),
-            key=lambda p: p.stat().st_mtime
-        )
+        # Find latest experiment dir
+        exp_dirs = sorted(output_dir.glob("experiment_run*"), key=lambda p: p.stat().st_mtime)
         if not exp_dirs:
-            raise RuntimeError(f"No 'experiment*' dirs found in {report_path.parent}")
+            raise RuntimeError(f"No 'experiment*' dirs found in {output_dir}")
         exp_dir = exp_dirs[-1]
 
-        viz_dir = exp_dir / "visualizations"
+        base_viz_dir = exp_dir / "visualizations"
+        train_viz_dir = base_viz_dir / "train"
+        test_viz_dir = base_viz_dir / "test"
 
-        # 2) start building HTML
         html = get_html_template()
         html += f"<h1>{title}</h1>"
 
-        if viz_dir.exists() and viz_dir.is_dir():
-            pngs = sorted(viz_dir.glob("*.png"))
-            if pngs:
-                html += "<div>"
-                for img in pngs:
-                    b64 = encode_image_to_base64(str(img))
-                    html += (
-                        f'<div class="plot" style="margin-bottom:20px;text-align:center;">'
-                        f"<h3>{img.stem.replace('_',' ').title()}</h3>"
-                        f'<img src="data:image/png;base64,{b64}" '
-                        'style="max-width:90%;max-height:600px;border:1px solid #ddd;" />'
-                        "</div>"
-                    )
-                html += "</div>"
-            else:
-                html += "<p><em>No .png files found in visualizations/</em></p>"
-        else:
-            html += "<p><em>Visualization directory not found.</em></p>"
+        # Load and embed metrics table (training/val/test stats)
+        try:
+            train_stats_path = exp_dir / "training_statistics.json"
+            test_stats_path = exp_dir / TEST_STATISTICS_FILE_NAME
+            if train_stats_path.exists() and test_stats_path.exists():
+                with open(train_stats_path) as f:
+                    train_stats = json.load(f)
+                with open(test_stats_path) as f:
+                    test_stats = json.load(f)
+                output_feature = next(iter(train_stats.keys()), "")
+                if output_feature:
+                    html += format_stats_table_html(train_stats, test_stats)
+        except Exception as e:
+            logger.warning(f"Could not load stats for HTML report: {e}")
 
+        def render_img_section(title: str, dir_path: Path) -> str:
+            if not dir_path.exists():
+                return f"<h2>{title}</h2><p><em>Directory not found.</em></p>"
+            imgs = sorted(dir_path.glob("*.png"))
+            if not imgs:
+                return f"<h2>{title}</h2><p><em>No plots found.</em></p>"
+
+            section_html = f"<h2 style='text-align: center;'>{title}</h2><div>"
+            for img in imgs:
+                b64 = encode_image_to_base64(str(img))
+                section_html += (
+                    f'<div class="plot" style="margin-bottom:20px;text-align:center;">'
+                    f"<h3>{img.stem.replace('_',' ').title()}</h3>"
+                    f'<img src="data:image/png;base64,{b64}" '
+                    'style="max-width:90%;max-height:600px;border:1px solid #ddd;" />'
+                    "</div>"
+                )
+            section_html += "</div>"
+            return section_html
+
+        html += render_img_section("Training & Validation Visualizations", train_viz_dir)
+        html += render_img_section("Test Visualizations", test_viz_dir)
         html += get_html_closing()
 
-        # 3) write report into cwd
         try:
             with open(report_path, "w") as f:
                 f.write(html)
@@ -469,6 +577,7 @@ class LudwigDirectBackend:
             raise
 
         return report_path
+
 
 
 class WorkflowOrchestrator:
@@ -551,7 +660,9 @@ class WorkflowOrchestrator:
 
         # 4) Handle splits
         if SPLIT_COLUMN_NAME in df.columns:
-            split_config = self._process_fixed_split(df)
+            df, split_config = self._process_fixed_split(df)
+            print("--------------------------")
+            print(df)
         else:
             logger.info("No split column; using random split")
             split_config = {
@@ -594,7 +705,7 @@ class WorkflowOrchestrator:
             else:
                 raise ValueError(f"Unexpected split values: {unique}")
 
-            return {"type": "fixed", "column": SPLIT_COLUMN_NAME}
+            return df, {"type": "fixed", "column": SPLIT_COLUMN_NAME}
 
         except Exception:
             logger.error("Error processing fixed split", exc_info=True)
@@ -642,7 +753,7 @@ class WorkflowOrchestrator:
             self.backend.run_experiment(csv_path, config_file, self.args.output_dir)
             logger.info("Workflow completed successfully.")
             self.backend.generate_plots(self.args.output_dir)
-            report_file = self.backend.generate_plots("Image Classification Results") 
+            report_file = self.backend.generate_html_report("Image Classification Results", self.args.output_dir) 
             logger.info(f"HTML report generated at: {report_file}")
         except Exception:
             logger.error("Workflow execution failed", exc_info=True)
@@ -671,7 +782,7 @@ def main():
         help="Which model template to use"
     )
     parser.add_argument(
-        "use_pretrained", action="store_true",
+        "--use-pretrained", action="store_true",
         help="Use pretrained weights for the model"
     )
     parser.add_argument(
