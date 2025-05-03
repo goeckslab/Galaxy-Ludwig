@@ -173,6 +173,65 @@ def format_stats_table_html(training_stats: dict, test_stats: dict) -> str:
         "</tbody></table></div><br>"
     )
 
+def build_tabbed_html(metrics_html: str, train_viz_html: str, test_viz_html: str) -> str:
+    return f"""
+<style>
+.tabs {{
+  display: flex;
+  border-bottom: 2px solid #ccc;
+  margin-bottom: 1rem;
+}}
+.tab {{
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  background: #f9f9f9;
+  margin-right: 5px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}}
+.tab.active {{
+  background: white;
+  font-weight: bold;
+}}
+.tab-content {{
+  display: none;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-top: none;
+}}
+.tab-content.active {{
+  display: block;
+}}
+</style>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('metrics')"> Metrics</div>
+  <div class="tab" onclick="showTab('trainval')"> Train/Validation Plots</div>
+  <div class="tab" onclick="showTab('test')"> Test Plots</div>
+</div>
+
+<div id="metrics" class="tab-content active">
+  {metrics_html}
+</div>
+<div id="trainval" class="tab-content">
+  {train_viz_html}
+</div>
+<div id="test" class="tab-content">
+  {test_viz_html}
+</div>
+
+<script>
+function showTab(id) {{
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`.tab[onclick*="${{id}}"]`).classList.add('active');
+}}
+</script>
+"""
+
 
 def split_data_0_2(
     df: pd.DataFrame,
@@ -529,6 +588,8 @@ class LudwigDirectBackend:
         html = get_html_template()
         html += f"<h1>{title}</h1>"
 
+        metrics_html = ""
+
         # Load and embed metrics table (training/val/test stats)
         try:
             train_stats_path = exp_dir / "training_statistics.json"
@@ -540,7 +601,7 @@ class LudwigDirectBackend:
                     test_stats = json.load(f)
                 output_feature = next(iter(train_stats.keys()), "")
                 if output_feature:
-                    html += format_stats_table_html(train_stats, test_stats)
+                    metrics_html += format_stats_table_html(train_stats, test_stats)
         except Exception as e:
             logger.warning(f"Could not load stats for HTML report: {e}")
 
@@ -564,8 +625,9 @@ class LudwigDirectBackend:
             section_html += "</div>"
             return section_html
 
-        html += render_img_section("Training & Validation Visualizations", train_viz_dir)
-        html += render_img_section("Test Visualizations", test_viz_dir)
+        train_plots_html = render_img_section("Training & Validation Visualizations", train_viz_dir)
+        test_plots_html = render_img_section("Test Visualizations", test_viz_dir)
+        html += build_tabbed_html(metrics_html, train_plots_html, test_plots_html)
         html += get_html_closing()
 
         try:
