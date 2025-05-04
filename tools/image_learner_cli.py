@@ -335,7 +335,7 @@ function showTab(id) {{
 def split_data_0_2(
     df: pd.DataFrame,
     split_column: str,
-    validation_size: float = 0.25,
+    validation_size: float = 0.15,
     random_state: int = 42,
     label_column: Optional[str] = None,
 ) -> pd.DataFrame:
@@ -411,6 +411,8 @@ class Backend(Protocol):
         split_config: Dict[str, Any]
     ) -> str:
         ...
+
+
     def run_experiment(
         self,
         dataset_path: Path,
@@ -419,13 +421,15 @@ class Backend(Protocol):
         random_seed: int,
     ) -> None:
         ...
-    
+
+
     def generate_plots(
         self,
         output_dir: Path
     ) -> None:
         ...
-    
+
+
     def generate_html_report(
         self,
         title: str,
@@ -457,8 +461,11 @@ class LudwigDirectBackend:
         num_processes = config_params.get("preprocessing_num_processes", 1)
         learning_rate = config_params.get("learning_rate")
         learning_rate = "auto" if learning_rate is None else float(learning_rate)
-        random_seed = config_params.get("random_seed", 42)
-
+        trainable = fine_tune or (not use_pretrained)
+        if not use_pretrained and not trainable:
+            logger.warning("trainable=False; use_pretrained=False is ignored.")
+            logger.warning("Setting trainable=True to train the model from scratch.")
+            trainable = True
 
         # Encoder setup
         raw_encoder = MODEL_ENCODER_TEMPLATES.get(model_name, model_name)
@@ -466,7 +473,7 @@ class LudwigDirectBackend:
             encoder_config = {
                 **raw_encoder,
                 "use_pretrained": use_pretrained,
-                "trainable": fine_tune,
+                "trainable": trainable,
             }
         else:
             encoder_config = {"type": raw_encoder}
@@ -586,6 +593,27 @@ class LudwigDirectBackend:
         except Exception as e:
             self.logger.warning(f"Failed to read training progress info: {e}")
             return {}
+
+
+    def convert_parquet_to_csv(self, output_dir: Path):
+        """Convert the predictions Parquet file to CSV."""
+        output_dir = Path(output_dir)
+        exp_dirs = sorted(
+            output_dir.glob("experiment_run*"),
+            key=lambda p: p.stat().st_mtime
+        )
+        if not exp_dirs:
+            logger.warning(f"No experiment run dirs found in {output_dir}")
+            return
+        exp_dir = exp_dirs[-1]
+        parquet_path = exp_dir / PREDICTIONS_PARQUET_FILE_NAME
+        csv_path = exp_dir / "predictions.csv"
+        try:
+            df = pd.read_parquet(parquet_path)
+            df.to_csv(csv_path, index=False)
+            logger.info(f"Converted Parquet to CSV: {csv_path}")
+        except Exception as e:
+            logger.error(f"Error converting Parquet to CSV: {e}")
 
 
     def generate_plots(self, output_dir: Path) -> None:
@@ -950,12 +978,7 @@ class WorkflowOrchestrator:
             self._extract_images()
             csv_path, split_cfg, split_info = self._prepare_data()
 
-            use_pretrained = False
-            if self.args.use_pretrained:
-                use_pretrained = True
-            else:
-                if self.args.fine_tune:
-                    use_pretrained = True
+            use_pretrained = self.args.use_pretrained or self.args.fine_tune
 
             backend_args = {
                 "model_name": self.args.model_name,
@@ -990,6 +1013,8 @@ class WorkflowOrchestrator:
                 split_info
             ) 
             logger.info(f"HTML report generated at: {report_file}")
+            self.backend.convert_parquet_to_csv(self.args.output_dir)
+            logger.info("Converted Parquet to CSV.")
         except Exception:
             logger.error("Workflow execution failed", exc_info=True)
             raise
@@ -1004,6 +1029,18 @@ def parse_learning_rate(s):
     except (TypeError, ValueError):
         return None
 
+
+class SplitProbAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        # values is a list of three floats
+        train, val, test = values
+        total = train + val + test
+        if abs(total - 1.0) > 1e-6:
+            parser.error(
+                f"--split-probabilities must sum to 1.0; "
+                f"got {train:.3f} + {val:.3f} + {test:.3f} = {total:.3f}"
+            )
+        setattr(namespace, self.dest, values)
 
 def main():
 
@@ -1036,6 +1073,10 @@ def main():
         help="Number of training epochs"
     )
     parser.add_argument(
+        "--early-stop", type=int, default=5,
+        help="Early stopping patience"
+    )
+    parser.add_argument(
         "--batch-size", type=int,
         help="Batch size (None = auto)"
     )
@@ -1044,7 +1085,7 @@ def main():
         help="Where to write outputs"
     )
     parser.add_argument(
-        "--validation-size", type=float, default=0.25,
+        "--validation-size", type=float, default=0.15,
         help="Fraction for validation (0.0–1.0)"
     )
     parser.add_argument(
@@ -1055,13 +1096,14 @@ def main():
     parser.add_argument(
         "--split-probabilities", type=float, nargs=3,
         metavar=("train", "val", "test"),
+        action=SplitProbAction,
+        default=[0.7, 0.1, 0.2],
         help="Random split proportions (e.g., 0.7 0.1 0.2). Only used if no split column is present."
     )
     parser.add_argument(
         "--random-seed", type=int, default=42,
         help="Random seed used for dataset splitting (default: 42)"
     )
-
     parser.add_argument(
         "--learning-rate", type=parse_learning_rate, default=None,
         help="Learning rate. If not provided, Ludwig will auto-select it."
