@@ -43,9 +43,7 @@
                     #if $batch_size_define == "true"
                         --batch-size "$batch_size"
                     #end if
-                    #if $train_split && $val_split && $test_split
-                        --split-probabilities "$train_split" "$val_split" "$test_split"
-                    #end if
+                    --split-probabilities "$train_split" "$val_split" "$test_split"   
                 #end if
                 --random-seed "$random_seed" 
                 --output-dir "." &&
@@ -161,7 +159,7 @@
             <when value="true">
                 <param name="epochs" type="integer" value="10" min="1" max="99999" label="Epochs" help="Total number of full passes through the training dataset. Higher values may improve accuracy but increase training time. Default: 10." />
                 <param name="early_stop" type="integer" value="5" min="1" max="99999" label="Early Stop" help="Number of epochs with no improvement after which training will be stopped. Default: 5." />
-                <conditional name="learning_rate">
+                <conditional name="learning_rate_condition">
                     <param name="learning_rate_define" type="select" label="Define an initial learning rate?" help="Want to change the initial learning rate from default to a number? See ludwig.ai for more info. Default: No" >
                         <option value="false" selected="true" >No</option>
                         <option value="true">Yes</option>
@@ -173,7 +171,7 @@
                         <!-- No additional parameters to show if the user selects 'No' -->
                     </when>
                 </conditional>
-                <conditional name="batch_size">
+                <conditional name="batch_size_condition">
                     <param name="batch_size_define" type="select" label="Define your batch size?" help="Want to change the batch size from auto to a number? See ludwig.ai for more info. Default: No" >
                         <option value="false" selected="true" >No</option>
                         <option value="true">Yes</option>
@@ -205,7 +203,7 @@
     </inputs>       
     <outputs>
         <data format="ludwig_model" name="output_model" label="${tool.name} trained model on ${on_string}" />
-        <data format="html" name="output_report" from_work_dir="ludwig_experiment_report.html" label="${tool.name} report on ${on_string}" />
+        <data format="html" name="output_report" from_work_dir="image_classification_results_report.html" label="${tool.name} report on ${on_string}" />
         <collection type="list" name="output_pred_csv" label="${tool.name} predictions CSVs/experiment stats/plots on ${on_string}" >
             <discover_datasets pattern="(?P&lt;designation&gt;predictions\.csv)" format="csv" directory="experiment_run" />
             <discover_datasets pattern="(?P&lt;designation&gt;.+)\.json" format="json" directory="experiment_run" />
@@ -215,10 +213,10 @@
     </outputs>
     <tests>
         <test expect_num_outputs="3">
-            <param name="dataset" value="temperature_la.csv" ftype="csv" />
-            <param name="config" value="temperature_config.yml" ftype="yaml" />
-            <param name="data_format" value="csv" />
-            <output name="output_report" file="image_classification_results_report.html" compare="sim_size" delta="20000" >
+            <param name="input_csv" value="mnist_subset.csv" ftype="csv" />
+            <param name="image_zip" value="mnist_subset.zip" ftype="zip" />
+            <param name="model_name" value="resnet18" />
+            <output name="output_report" file="image_classification_results_report_mnist.html" compare="sim_size" delta="20000" >
                 <assert_contents>
                     <has_text text="Epochs" />
                 </assert_contents>
