@@ -491,8 +491,6 @@
     </outputs>
     <tests>
         <test expect_num_outputs="1">
-            <param name="input_features" value="inf1" />
-            <param name="output_features" value="ouf1" />
             <output name="output" file="render_config01.yml" />
         </test>
     </tests>
