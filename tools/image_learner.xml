@@ -59,81 +59,83 @@
         <param argument="input_csv" type="data" format="csv" optional="false" label="the metadata csv containing image_path column, label column and optional split column" />
         <param name="image_zip" type="data" format="zip" optional="false" label="Image zip" help="Image zip file containing your image data"/>
         <param name="model_name" type="select" optional="false" label="Select a model for your experiment" >
-            <option value="resnet18" label="Resnet18" selected="true" />
-            <option value="resnet34" label="Resnet34" />
-            <option value="resnet50" label="Resnet50" />
-            <option value="resnet101" label="Resnet101" />
-            <option value="resnet152" label="Resnet152" />
-            <option value="resnext50_32x4d" label="Resnext5032X4D" />
-            <option value="resnext101_32x8d" label="Resnext10132X8D" />
-            <option value="resnext101_64x4d" label="Resnext10164X4D" />
-            <option value="resnext152_32x8d" label="Resnext15232X8D" />
-            <option value="wide_resnet50_2" label="WideResnet502" />
-            <option value="wide_resnet101_2" label="WideResnet1012" />
-            <option value="wide_resnet103_2" label="WideResnet1032" />
-            <option value="efficientnet_b0" label="EfficientnetB0" />
-            <option value="efficientnet_b1" label="EfficientnetB1" />
-            <option value="efficientnet_b2" label="EfficientnetB2" />
-            <option value="efficientnet_b3" label="EfficientnetB3" />
-            <option value="efficientnet_b4" label="EfficientnetB4" />
-            <option value="efficientnet_b5" label="EfficientnetB5" />
-            <option value="efficientnet_b6" label="EfficientnetB6" />
-            <option value="efficientnet_b7" label="EfficientnetB7" />
-            <option value="efficientnet_v2_s" label="EfficientnetV2S" />
-            <option value="efficientnet_v2_m" label="EfficientnetV2M" />
-            <option value="efficientnet_v2_l" label="EfficientnetV2L" />
-            <option value="regnet_y_400mf" label="RegnetY400Mf" />
-            <option value="regnet_y_800mf" label="RegnetY800Mf" />
-            <option value="regnet_y_1_6gf" label="RegnetY16Gf" />
-            <option value="regnet_y_3_2gf" label="RegnetY32Gf" />
-            <option value="regnet_y_8gf" label="RegnetY8Gf" />
-            <option value="regnet_y_16gf" label="RegnetY16Gf" />
-            <option value="regnet_y_32gf" label="RegnetY32Gf" />
-            <option value="regnet_y_128gf" label="RegnetY128Gf" />
-            <option value="regnet_x_400mf" label="RegnetX400Mf" />
-            <option value="regnet_x_800mf" label="RegnetX800Mf" />
-            <option value="regnet_x_1_6gf" label="RegnetX16Gf" />
-            <option value="regnet_x_3_2gf" label="RegnetX32Gf" />
-            <option value="regnet_x_8gf" label="RegnetX8Gf" />
-            <option value="regnet_x_16gf" label="RegnetX16Gf" />
-            <option value="regnet_x_32gf" label="RegnetX32Gf" />
-            <option value="vgg11" label="Vgg11" />
-            <option value="vgg11_bn" label="Vgg11Bn" />
-            <option value="vgg13" label="Vgg13" />
-            <option value="vgg13_bn" label="Vgg13Bn" />
-            <option value="vgg16" label="Vgg16" />
-            <option value="vgg16_bn" label="Vgg16Bn" />
-            <option value="vgg19" label="Vgg19" />
-            <option value="vgg19_bn" label="Vgg19Bn" />
-            <option value="shufflenet_v2_x0_5" label="ShufflenetV2X05" />
-            <option value="shufflenet_v2_x1_0" label="ShufflenetV2X10" />
-            <option value="shufflenet_v2_x1_5" label="ShufflenetV2X15" />
-            <option value="shufflenet_v2_x2_0" label="ShufflenetV2X20" />
-            <option value="squeezenet1_0" label="Squeezenet10" />
-            <option value="squeezenet1_1" label="Squeezenet11" />
-            <option value="swin_t" label="SwinT" />
-            <option value="swin_s" label="SwinS" />
-            <option value="swin_b" label="SwinB" />
-            <option value="swin_v2_t" label="SwinV2T" />
-            <option value="swin_v2_s" label="SwinV2S" />
-            <option value="swin_v2_b" label="SwinV2B" />
-            <option value="vit_b_16" label="VitB16" />
-            <option value="vit_b_32" label="VitB32" />
-            <option value="vit_l_16" label="VitL16" />
-            <option value="vit_l_32" label="VitL32" />
-            <option value="vit_h_14" label="VitH14" />
-            <option value="convnext_tiny" label="ConvnextTiny" />
-            <option value="convnext_small" label="ConvnextSmall" />
-            <option value="convnext_base" label="ConvnextBase" />
-            <option value="convnext_large" label="ConvnextLarge" />
-            <option value="maxvit_t" label="MaxvitT" />
-            <option value="alexnet" label="Alexnet" />
-            <option value="googlenet" label="Googlenet" />
-            <option value="inception_v3" label="InceptionV3" />
-            <option value="mobilenet_v2" label="MobilenetV2" />
-            <option value="mobilenet_v3_large" label="MobilenetV3Large" />
-            <option value="mobilenet_v3_small" label="MobilenetV3Small" />
+           
+            <option value="resnet18">Resnet18</option>
+            <option value="resnet34">Resnet34</option>
+            <option value="resnet50">Resnet50</option>
+            <option value="resnet101">Resnet101</option>
+            <option value="resnet152">Resnet152</option>
+            <option value="resnext50_32x4d">Resnext50_32x4d</option>
+            <option value="resnext101_32x8d">Resnext101_32x8d</option>
+            <option value="resnext101_64x4d">Resnext101_64x4d</option>
+            <option value="resnext152_32x8d">Resnext152_32x8d</option>
+            <option value="wide_resnet50_2">Wide_resnet50_2</option>
+            <option value="wide_resnet101_2">Wide_resnet101_2</option>
+            <option value="wide_resnet103_2">Wide_resnet103_2</option>
+            <option value="efficientnet_b0">Efficientnet_b0</option>
+            <option value="efficientnet_b1">Efficientnet_b1</option>
+            <option value="efficientnet_b2">Efficientnet_b2</option>
+            <option value="efficientnet_b3">Efficientnet_b3</option>
+            <option value="efficientnet_b4">Efficientnet_b4</option>
+            <option value="efficientnet_b5">Efficientnet_b5</option>
+            <option value="efficientnet_b6">Efficientnet_b6</option>
+            <option value="efficientnet_b7">Efficientnet_b7</option>
+            <option value="efficientnet_v2_s">Efficientnet_v2_s</option>
+            <option value="efficientnet_v2_m">Efficientnet_v2_m</option>
+            <option value="efficientnet_v2_l">Efficientnet_v2_l</option>
+            <option value="regnet_y_400mf">Regnet_y_400mf</option>
+            <option value="regnet_y_800mf">Regnet_y_800mf</option>
+            <option value="regnet_y_1_6gf">Regnet_y_1_6gf</option>
+            <option value="regnet_y_3_2gf">Regnet_y_3_2gf</option>
+            <option value="regnet_y_8gf">Regnet_y_8gf</option>
+            <option value="regnet_y_16gf">Regnet_y_16gf</option>
+            <option value="regnet_y_32gf">Regnet_y_32gf</option>
+            <option value="regnet_y_128gf">Regnet_y_128gf</option>
+            <option value="regnet_x_400mf">Regnet_x_400mf</option>
+            <option value="regnet_x_800mf">Regnet_x_800mf</option>
+            <option value="regnet_x_1_6gf">Regnet_x_1_6gf</option>
+            <option value="regnet_x_3_2gf">Regnet_x_3_2gf</option>
+            <option value="regnet_x_8gf">Regnet_x_8gf</option>
+            <option value="regnet_x_16gf">Regnet_x_16gf</option>
+            <option value="regnet_x_32gf">Regnet_x_32gf</option>
+            <option value="vgg11">Vgg11</option>
+            <option value="vgg11_bn">Vgg11_bn</option>
+            <option value="vgg13">Vgg13</option>
+            <option value="vgg13_bn">Vgg13_bn</option>
+            <option value="vgg16">Vgg16</option>
+            <option value="vgg16_bn">Vgg16_bn</option>
+            <option value="vgg19">Vgg19</option>
+            <option value="vgg19_bn">Vgg19_bn</option>
+            <option value="shufflenet_v2_x0_5">Shufflenet_v2_x0_5</option>
+            <option value="shufflenet_v2_x1_0">Shufflenet_v2_x1_0</option>
+            <option value="shufflenet_v2_x1_5">Shufflenet_v2_x1_5</option>
+            <option value="shufflenet_v2_x2_0">Shufflenet_v2_x2_0</option>
+            <option value="squeezenet1_0">Squeezenet1_0</option>
+            <option value="squeezenet1_1">Squeezenet1_1</option>
+            <option value="swin_t">Swin_t</option>
+            <option value="swin_s">Swin_s</option>
+            <option value="swin_b">Swin_b</option>
+            <option value="swin_v2_t">Swin_v2_t</option>
+            <option value="swin_v2_s">Swin_v2_s</option>
+            <option value="swin_v2_b">Swin_v2_b</option>
+            <option value="vit_b_16">Vit_b_16</option>
+            <option value="vit_b_32">Vit_b_32</option>
+            <option value="vit_l_16">Vit_l_16</option>
+            <option value="vit_l_32">Vit_l_32</option>
+            <option value="vit_h_14">Vit_h_14</option>
+            <option value="convnext_tiny">Convnext_tiny</option>
+            <option value="convnext_small">Convnext_small</option>
+            <option value="convnext_base">Convnext_base</option>
+            <option value="convnext_large">Convnext_large</option>
+            <option value="maxvit_t">Maxvit_t</option>
+            <option value="alexnet">Alexnet</option>
+            <option value="googlenet">Googlenet</option>
+            <option value="inception_v3">Inception_v3</option>
+            <option value="mobilenet_v2">Mobilenet_v2</option>
+            <option value="mobilenet_v3_large">Mobilenet_v3_large</option>
+            <option value="mobilenet_v3_small">Mobilenet_v3_small</option>
         </param>
+
         <conditional name="scratch_fine_tune">
             <param name="use_pretrained" type="select"
                 label="Use pretrained weights?"
@@ -148,6 +150,9 @@
                     <option value="false" >No</option>
                     <option value="true" selected="true">Yes</option>
                 </param>
+            </when>
+            <when value="false">
+                <!-- No additional parameters to show if the user selects 'No' -->
             </when>
         </conditional>
         <param argument="random_seed" type="integer" value="42" optional="true" label="Random seed (set for reproducibility)" min="0" max="999999"/>
