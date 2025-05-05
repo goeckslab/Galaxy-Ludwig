@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
 import argparse
-import logging
-import tempfile
-import shutil
-from pathlib import Path
-import pandas as pd
-import numpy as np
-import zipfile
 import json
-import sys
+import logging
 import os
-# import subprocess # No longer needed for the backend
-import yaml
-from sklearn.model_selection import train_test_split
-import traceback
-from typing import Protocol, Dict, Any, Tuple, Optional, List
-from utils import encode_image_to_base64, get_html_closing, get_html_template
-from ludwig.visualize import get_visualizations_registry
+import shutil
+import sys
+import tempfile
+import zipfile
+from pathlib import Path
+from typing import Any, Dict, Optional, Protocol, Tuple
+
 from ludwig.globals import (
     DESCRIPTION_FILE_NAME,
     PREDICTIONS_PARQUET_FILE_NAME,
@@ -24,6 +17,16 @@ from ludwig.globals import (
     TRAIN_SET_METADATA_FILE_NAME,
 )
 from ludwig.utils.data_utils import get_split_path
+from ludwig.visualize import get_visualizations_registry
+
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+
+from utils import encode_image_to_base64, get_html_closing, get_html_template
+
+import yaml
+
 
 # --- Constants ---
 SPLIT_COLUMN_NAME = 'split'
@@ -32,7 +35,7 @@ IMAGE_PATH_COLUMN_NAME = 'image_path'
 DEFAULT_SPLIT_PROBABILITIES = [0.7, 0.1, 0.2]
 TEMP_CSV_FILENAME = "processed_data_for_ludwig.csv"
 TEMP_CONFIG_FILENAME = "ludwig_config.yaml"
-TEMP_DIR_PREFIX = "ludwig_api_work_" # Changed prefix slightly
+TEMP_DIR_PREFIX = "ludwig_api_work_"
 MODEL_ENCODER_TEMPLATES: Dict[str, Any] = {
     'stacked_cnn': 'stacked_cnn',
     'resnet18': {'type': 'resnet', 'model_variant': 18},
@@ -122,8 +125,7 @@ logger = logging.getLogger("ImageLearner")
 def format_config_table_html(
         config: dict,
         split_info: Optional[str] = None,
-        training_progress: dict = None
-    ) -> str:
+        training_progress: dict = None) -> str:
     display_keys = [
         "model_name",
         "epochs",
@@ -178,20 +180,21 @@ def format_config_table_html(
                 val = f"{val:.6f}"
         if key == "epochs":
             if training_progress and "epoch" in training_progress and val > training_progress["epoch"]:
-                val = (f"Because of early stopping: the training"
-                f"stopped at epoch {training_progress['epoch']}"
+                val = (
+                    f"Because of early stopping: the training"
+                    f"stopped at epoch {training_progress['epoch']}"
                 )
-                
 
         if val is None:
             continue
         rows.append(
             f"<tr>"
-            f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: left;'>{key.replace('_', ' ').title()}</td>"
+            f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: left;'>"
+            f"{key.replace('_', ' ').title()}</td>"
             f"<td style='padding: 6px 12px; border: 1px solid #ccc; text-align: center;'>{val}</td>"
             f"</tr>"
         )
-    
+
     if split_info:
         rows.append(
             f"<tr>"
@@ -220,8 +223,8 @@ def format_config_table_html(
 
 def format_stats_table_html(training_stats: dict, test_stats: dict) -> str:
     train_metrics = training_stats.get("training", {}).get("label", {})
-    val_metrics   = training_stats.get("validation", {}).get("label", {})
-    test_metrics  = test_stats.get("label", {})
+    val_metrics = training_stats.get("validation", {}).get("label", {})
+    test_metrics = test_stats.get("label", {})
 
     all_metrics = set(train_metrics) | set(val_metrics) | set(test_metrics)
 
@@ -272,7 +275,11 @@ def format_stats_table_html(training_stats: dict, test_stats: dict) -> str:
         "</tbody></table></div><br>"
     )
 
-def build_tabbed_html(metrics_html: str, train_viz_html: str, test_viz_html: str) -> str:
+
+def build_tabbed_html(
+        metrics_html: str,
+        train_viz_html: str,
+        test_viz_html: str) -> str:
     return f"""
 <style>
 .tabs {{
@@ -348,9 +355,7 @@ def split_data_0_2(
     # Ensure split col is integer dtype
     out[split_column] = pd.to_numeric(out[split_column], errors="coerce").astype(int)
 
-    # Indices of original train and test
     idx_train = out.index[out[split_column] == 0].tolist()
-    idx_test  = out.index[out[split_column] == 2].tolist()
 
     if not idx_train:
         logger.info("No rows with split=0; nothing to do.")
@@ -412,7 +417,6 @@ class Backend(Protocol):
     ) -> str:
         ...
 
-
     def run_experiment(
         self,
         dataset_path: Path,
@@ -422,13 +426,11 @@ class Backend(Protocol):
     ) -> None:
         ...
 
-
     def generate_plots(
         self,
         output_dir: Path
     ) -> None:
         ...
-
 
     def generate_html_report(
         self,
@@ -533,7 +535,7 @@ class LudwigDirectBackend:
             from ludwig.experiment import experiment_cli
         except ImportError as e:
             logger.error(
-                "LudwigDirectBackend: Could not import experiment_cli.", 
+                "LudwigDirectBackend: Could not import experiment_cli.",
                 exc_info=True
             )
             raise RuntimeError("Ludwig import failed.") from e
@@ -594,7 +596,6 @@ class LudwigDirectBackend:
             self.logger.warning(f"Failed to read training progress info: {e}")
             return {}
 
-
     def convert_parquet_to_csv(self, output_dir: Path):
         """Convert the predictions Parquet file to CSV."""
         output_dir = Path(output_dir)
@@ -614,7 +615,6 @@ class LudwigDirectBackend:
             logger.info(f"Converted Parquet to CSV: {csv_path}")
         except Exception as e:
             logger.error(f"Error converting Parquet to CSV: {e}")
-
 
     def generate_plots(self, output_dir: Path) -> None:
         """
@@ -671,19 +671,19 @@ class LudwigDirectBackend:
 
         # 4) gather standard Ludwig output files
         training_stats = _check(exp_dir / "training_statistics.json")
-        test_stats     = _check(exp_dir / TEST_STATISTICS_FILE_NAME)
-        probs_path     = _check(exp_dir / PREDICTIONS_PARQUET_FILE_NAME)
-        gt_metadata    = _check(exp_dir / "model" / TRAIN_SET_METADATA_FILE_NAME)
+        test_stats = _check(exp_dir / TEST_STATISTICS_FILE_NAME)
+        probs_path = _check(exp_dir / PREDICTIONS_PARQUET_FILE_NAME)
+        gt_metadata = _check(exp_dir / "model" / TRAIN_SET_METADATA_FILE_NAME)
 
         # 5) try to read original dataset & split file from description.json
         dataset_path = None
-        split_file   = None
+        split_file = None
         desc = exp_dir / DESCRIPTION_FILE_NAME
         if desc.exists():
             with open(desc, "r") as f:
                 cfg = json.load(f)
             dataset_path = _check(Path(cfg.get("dataset", "")))
-            split_file   = _check(Path(get_split_path(cfg.get("dataset", ""))))
+            split_file = _check(Path(get_split_path(cfg.get("dataset", ""))))
 
         # 6) infer output feature name
         output_feature = ""
@@ -709,8 +709,8 @@ class LudwigDirectBackend:
             try:
                 viz_func(
                     training_statistics=[training_stats] if training_stats else [],
-                    test_statistics=[test_stats]         if test_stats     else [],
-                    probabilities=[probs_path]           if probs_path     else [],
+                    test_statistics=[test_stats] if test_stats else [],
+                    probabilities=[probs_path] if probs_path else [],
                     output_feature_name=output_feature,
                     ground_truth_split=2,
                     top_n_classes=[0],
@@ -733,8 +733,7 @@ class LudwigDirectBackend:
             title: str,
             output_dir: str,
             config: dict,
-            split_info: str
-        ) -> Path:
+            split_info: str) -> Path:
         """
         Assemble an HTML report from visualizations under train_val/ and test/ folders.
         """
@@ -772,7 +771,7 @@ class LudwigDirectBackend:
                     metrics_html += format_stats_table_html(train_stats, test_stats)
         except Exception as e:
             logger.warning(f"Could not load stats for HTML report: {e}")
-        
+
         config_html = ""
         training_progress = self.get_training_process(output_dir)
         try:
@@ -814,7 +813,6 @@ class LudwigDirectBackend:
             raise
 
         return report_path
-
 
 
 class WorkflowOrchestrator:
@@ -908,7 +906,6 @@ class WorkflowOrchestrator:
                 f"No split column in CSV. Used random split: "
                 f"{[int(p*100) for p in self.args.split_probabilities]}% for train/val/test."
             )
- 
 
         # 5) Write out prepared CSV
         final_csv = TEMP_CSV_FILENAME
@@ -937,7 +934,7 @@ class WorkflowOrchestrator:
                 df = split_data_0_2(
                     df, SPLIT_COLUMN_NAME,
                     validation_size=self.args.validation_size,
-                    label_column=LABEL_COLUMN_NAME, 
+                    label_column=LABEL_COLUMN_NAME,
                     random_state=self.args.random_seed
                 )
                 split_info = (
@@ -1009,9 +1006,9 @@ class WorkflowOrchestrator:
             report_file = self.backend.generate_html_report(
                 "Image Classification Results",
                 self.args.output_dir,
-                backend_args, 
+                backend_args,
                 split_info
-            ) 
+            )
             logger.info(f"HTML report generated at: {report_file}")
             self.backend.convert_parquet_to_csv(self.args.output_dir)
             logger.info("Converted Parquet to CSV.")
@@ -1041,6 +1038,7 @@ class SplitProbAction(argparse.Action):
                 f"got {train:.3f} + {val:.3f} + {test:.3f} = {total:.3f}"
             )
         setattr(namespace, self.dest, values)
+
 
 def main():
 
@@ -1130,18 +1128,13 @@ def main():
         orchestrator.run()
         logger.info("Main script finished successfully.")
     except Exception as e:
-        logger.error("Main script failed.")
+        logger.error(f"Main script failed.{e}")
         exit_code = 1
     finally:
         sys.exit(exit_code)
 
 
 if __name__ == '__main__':
-    try: 
-        import yaml
-    except ImportError: 
-        logger.error("PyYAML not found. pip install pyyaml")
-        sys.exit(1)
     try:
         import ludwig
         logger.debug(f"Found Ludwig version: {ludwig.globals.LUDWIG_VERSION}")
