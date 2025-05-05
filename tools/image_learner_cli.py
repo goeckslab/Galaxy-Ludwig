@@ -133,7 +133,7 @@ def format_config_table_html(
         "fine_tune",
         "use_pretrained",
         "learning_rate",
-        "random_seed"
+        "random_seed",
         "early_stop",
     ]
 
@@ -461,6 +461,7 @@ class LudwigDirectBackend:
         epochs = config_params.get("epochs", 10)
         batch_size = config_params.get("batch_size")
         num_processes = config_params.get("preprocessing_num_processes", 1)
+        early_stop = config_params.get("early_stop", None)
         learning_rate = config_params.get("learning_rate")
         learning_rate = "auto" if learning_rate is None else float(learning_rate)
         trainable = fine_tune or (not use_pretrained)
@@ -499,7 +500,7 @@ class LudwigDirectBackend:
             "combiner": {"type": "concat"},
             "trainer": {
                 "epochs": epochs,
-                "early_stop": 5,
+                "early_stop": early_stop,
                 "batch_size": batch_size_cfg,
                 "learning_rate": learning_rate,
             },
@@ -987,7 +988,7 @@ class WorkflowOrchestrator:
                 "split_probabilities": self.args.split_probabilities,
                 "learning_rate": self.args.learning_rate,
                 "random_seed": self.args.random_seed,
-                "early_stop": 5,
+                "early_stop": self.args.early_stop,
             }
             yaml_str = self.backend.prepare_config(backend_args, split_cfg)
 
