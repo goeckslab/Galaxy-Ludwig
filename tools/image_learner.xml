@@ -1,0 +1,257 @@
+<tool id="image_learner" name="Image Learner for Classification" version="@VERSION@" profile="@PROFILE@">
+    <description>trains and evaluates a image classification model</description>
+    <macros>
+        <import>ludwig_macros.xml</import>
+    </macros>
+    <expand macro="python_requirements_gpu" />
+    <required_files>
+        <include path="utils.py" />
+        <include path="image_learner_cli.py" />
+    </required_files>
+    <expand macro="macro_stdio" />
+    <version_command>echo "@VERSION@"</version_command>
+    <command>
+        <![CDATA[
+            #import re
+
+            #if $input_csv
+
+            #set $sanitized_input_csv = re.sub('[^\w\-_\.]', '_', $input_csv.element_identifier.strip())
+            ln -sf '$input_csv' "./${sanitized_input_csv}";
+            #end if
+
+            python '$__tool_directory__/image_learner_cli.py'
+                --csv-file "./${sanitized_input_csv}"
+                --image-zip "$image_zip"
+                --model-name "$model_name"
+                #if $use_pretrained == "true"
+                    --use-pretrained
+                    #if $fine_tune == "true"
+                        --fine-tune
+                    #end if
+                #end if
+                #if $customize_defaults == "true"
+                    #if $epochs
+                        --epochs "$epochs"
+                    #end if
+                    #if $early_stop
+                        --early-stop "$early_stop"
+                    #end if
+                    #if $learning_rate_define == "true"
+                        --learning-rate "$learning_rate"
+                    #end if
+                    #if $batch_size_define == "true"
+                        --batch-size "$batch_size"
+                    #end if
+                    --split-probabilities "$train_split" "$val_split" "$test_split"   
+                #end if
+                --random-seed "$random_seed" 
+                --output-dir "." &&
+
+            mkdir -p '$output_model.extra_files_path' &&
+            cp -r experiment_run/model/*.json experiment_run/model/model_weights '$output_model.extra_files_path' &&
+
+            echo "Image Learner Classification Experiment is Done!"        
+        ]]>
+    </command>
+    
+    <inputs>
+        <param argument="input_csv" type="data" format="csv" optional="false" label="the metadata csv containing image_path column, label column and optional split column" />
+        <param name="image_zip" type="data" format="zip" optional="false" label="Image zip" help="Image zip file containing your image data"/>
+        <param name="model_name" type="select" optional="false" label="Select a model for your experiment" >
+           
+            <option value="resnet18">Resnet18</option>
+            <option value="resnet34">Resnet34</option>
+            <option value="resnet50">Resnet50</option>
+            <option value="resnet101">Resnet101</option>
+            <option value="resnet152">Resnet152</option>
+            <option value="resnext50_32x4d">Resnext50_32x4d</option>
+            <option value="resnext101_32x8d">Resnext101_32x8d</option>
+            <option value="resnext101_64x4d">Resnext101_64x4d</option>
+            <option value="resnext152_32x8d">Resnext152_32x8d</option>
+            <option value="wide_resnet50_2">Wide_resnet50_2</option>
+            <option value="wide_resnet101_2">Wide_resnet101_2</option>
+            <option value="wide_resnet103_2">Wide_resnet103_2</option>
+            <option value="efficientnet_b0">Efficientnet_b0</option>
+            <option value="efficientnet_b1">Efficientnet_b1</option>
+            <option value="efficientnet_b2">Efficientnet_b2</option>
+            <option value="efficientnet_b3">Efficientnet_b3</option>
+            <option value="efficientnet_b4">Efficientnet_b4</option>
+            <option value="efficientnet_b5">Efficientnet_b5</option>
+            <option value="efficientnet_b6">Efficientnet_b6</option>
+            <option value="efficientnet_b7">Efficientnet_b7</option>
+            <option value="efficientnet_v2_s">Efficientnet_v2_s</option>
+            <option value="efficientnet_v2_m">Efficientnet_v2_m</option>
+            <option value="efficientnet_v2_l">Efficientnet_v2_l</option>
+            <option value="regnet_y_400mf">Regnet_y_400mf</option>
+            <option value="regnet_y_800mf">Regnet_y_800mf</option>
+            <option value="regnet_y_1_6gf">Regnet_y_1_6gf</option>
+            <option value="regnet_y_3_2gf">Regnet_y_3_2gf</option>
+            <option value="regnet_y_8gf">Regnet_y_8gf</option>
+            <option value="regnet_y_16gf">Regnet_y_16gf</option>
+            <option value="regnet_y_32gf">Regnet_y_32gf</option>
+            <option value="regnet_y_128gf">Regnet_y_128gf</option>
+            <option value="regnet_x_400mf">Regnet_x_400mf</option>
+            <option value="regnet_x_800mf">Regnet_x_800mf</option>
+            <option value="regnet_x_1_6gf">Regnet_x_1_6gf</option>
+            <option value="regnet_x_3_2gf">Regnet_x_3_2gf</option>
+            <option value="regnet_x_8gf">Regnet_x_8gf</option>
+            <option value="regnet_x_16gf">Regnet_x_16gf</option>
+            <option value="regnet_x_32gf">Regnet_x_32gf</option>
+            <option value="vgg11">Vgg11</option>
+            <option value="vgg11_bn">Vgg11_bn</option>
+            <option value="vgg13">Vgg13</option>
+            <option value="vgg13_bn">Vgg13_bn</option>
+            <option value="vgg16">Vgg16</option>
+            <option value="vgg16_bn">Vgg16_bn</option>
+            <option value="vgg19">Vgg19</option>
+            <option value="vgg19_bn">Vgg19_bn</option>
+            <option value="shufflenet_v2_x0_5">Shufflenet_v2_x0_5</option>
+            <option value="shufflenet_v2_x1_0">Shufflenet_v2_x1_0</option>
+            <option value="shufflenet_v2_x1_5">Shufflenet_v2_x1_5</option>
+            <option value="shufflenet_v2_x2_0">Shufflenet_v2_x2_0</option>
+            <option value="squeezenet1_0">Squeezenet1_0</option>
+            <option value="squeezenet1_1">Squeezenet1_1</option>
+            <option value="swin_t">Swin_t</option>
+            <option value="swin_s">Swin_s</option>
+            <option value="swin_b">Swin_b</option>
+            <option value="swin_v2_t">Swin_v2_t</option>
+            <option value="swin_v2_s">Swin_v2_s</option>
+            <option value="swin_v2_b">Swin_v2_b</option>
+            <option value="vit_b_16">Vit_b_16</option>
+            <option value="vit_b_32">Vit_b_32</option>
+            <option value="vit_l_16">Vit_l_16</option>
+            <option value="vit_l_32">Vit_l_32</option>
+            <option value="vit_h_14">Vit_h_14</option>
+            <option value="convnext_tiny">Convnext_tiny</option>
+            <option value="convnext_small">Convnext_small</option>
+            <option value="convnext_base">Convnext_base</option>
+            <option value="convnext_large">Convnext_large</option>
+            <option value="maxvit_t">Maxvit_t</option>
+            <option value="alexnet">Alexnet</option>
+            <option value="googlenet">Googlenet</option>
+            <option value="inception_v3">Inception_v3</option>
+            <option value="mobilenet_v2">Mobilenet_v2</option>
+            <option value="mobilenet_v3_large">Mobilenet_v3_large</option>
+            <option value="mobilenet_v3_small">Mobilenet_v3_small</option>
+        </param>
+
+        <conditional name="scratch_fine_tune">
+            <param name="use_pretrained" type="select"
+                label="Use pretrained weights?"
+                help="If select no, the encoder, combiner, and decoder will all be initialized and trained from scratch.  
+               (e.g. when your images are very different from ImageNet or no suitable pretrained model exists.)">
+                <option value="false">No</option>
+                <option value="true" selected="true">Yes</option>
+            </param>
+            <when value="true">
+                <param name="fine_tune" type="select" label="Fine tune the encoder?"
+                    help="Whether to fine tune the encoder(combiner and decoder will be fine-tued anyway)" >
+                    <option value="false" >No</option>
+                    <option value="true" selected="true">Yes</option>
+                </param>
+            </when>
+            <when value="false">
+                <!-- No additional parameters to show if the user selects 'No' -->
+            </when>
+        </conditional>
+        <param argument="random_seed" type="integer" value="42" optional="true" label="Random seed (set for reproducibility)" min="0" max="999999"/>
+        <conditional name="advanced_settings">
+            <param name="customize_defaults" type="select" label="Customize Default Settings?" help="Select yes if you want to customize the default settings of the experiment.">
+                <option value="false" selected="true">No</option>
+                <option value="true">Yes</option>
+            </param>
+            <when value="true">
+                <param name="epochs" type="integer" value="10" min="1" max="99999" label="Epochs" help="Total number of full passes through the training dataset. Higher values may improve accuracy but increase training time. Default: 10." />
+                <param name="early_stop" type="integer" value="5" min="1" max="99999" label="Early Stop" help="Number of epochs with no improvement after which training will be stopped. Default: 5." />
+                <conditional name="learning_rate_condition">
+                    <param name="learning_rate_define" type="select" label="Define an initial learning rate?" help="Want to change the initial learning rate from default to a number? See ludwig.ai for more info. Default: No" >
+                        <option value="false" selected="true" >No</option>
+                        <option value="true">Yes</option>
+                    </param>
+                    <when value="true">
+                        <param name="learning_rate" type="float" value="0.001" min="0.0001" max="1.0" label="Learning Rate" help="Initial learning rate for the optimizer. Default: 0.001." />
+                    </when>
+                    <when value="false">
+                        <!-- No additional parameters to show if the user selects 'No' -->
+                    </when>
+                </conditional>
+                <conditional name="batch_size_condition">
+                    <param name="batch_size_define" type="select" label="Define your batch size?" help="Want to change the batch size from auto to a number? See ludwig.ai for more info. Default: No" >
+                        <option value="false" selected="true" >No</option>
+                        <option value="true">Yes</option>
+                    </param>
+                    <when value="true">
+                        <param name="batch_size" type="integer" value="32" min="1" max="99999" label="Batch Size" help="Number of samples per gradient update. Default: 32." />
+                    </when>
+                    <when value="false">
+                        <!-- No additional parameters to show if the user selects 'No' -->
+                    </when>
+                </conditional>
+                <param name="train_split" type="float"
+                        label="Training split proportion (only works if no split column in the metadata csv)"
+                        value="0.7"
+                        help="Fraction of data for training (e.g., 0.7). train split + val split + test split should = 1"/>
+                <param name="val_split"   type="float"
+                        label="Validation split proportion (only works if no split column in the metadata csv)"
+                        value="0.1"
+                        help="Fraction of data for validation (e.g., 0.1). train split + val split + test split should = 1"/>
+                <param name="test_split"  type="float"
+                        label="Test split proportion (only works if no split column in the metadata csv)"
+                        value="0.2"
+                        help="Fraction of data for testing (e.g., 0.2) train split + val split + test split should = 1."/>
+            </when>
+            <when value="false">
+                <!-- No additional parameters to show if the user selects 'No' -->
+            </when>
+        </conditional>    
+    </inputs>       
+    <outputs>
+        <data format="ludwig_model" name="output_model" label="${tool.name} trained model on ${on_string}" />
+        <data format="html" name="output_report" from_work_dir="image_classification_results_report.html" label="${tool.name} report on ${on_string}" />
+        <collection type="list" name="output_pred_csv" label="${tool.name} predictions CSVs/experiment stats/plots on ${on_string}" >
+            <discover_datasets pattern="(?P&lt;designation&gt;predictions\.csv)" format="csv" directory="experiment_run" />
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.json" format="json" directory="experiment_run" />
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.png" format="png" directory="experiment_run/visualizations/train" />
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.png" format="png" directory="experiment_run/visualizations/test" />
+        </collection>
+    </outputs>
+    <tests>
+        <test expect_num_outputs="3">
+            <param name="input_csv" value="mnist_subset.csv" ftype="csv" />
+            <param name="image_zip" value="mnist_subset.zip" ftype="zip" />
+            <param name="model_name" value="resnet18" />
+            <output name="output_report" file="image_classification_results_report_mnist.html" compare="sim_size" delta="20000" >
+                <assert_contents>
+                    <has_text text="Epochs" />
+                </assert_contents>
+            </output>
+
+            <output_collection name="output_pred_csv" type="list" >
+                <element name="predictions.csv" >
+                    <assert_contents>
+                        <has_n_columns n="1" />
+                    </assert_contents>
+                </element>
+            </output_collection>
+        </test>
+    </tests>
+    <help>
+        <![CDATA[
+**What it does**
+Image Learner for Classification: trains and evaluates a image classification model. 
+It uses the metadata csv to find the image paths and labels. 
+The metadata csv should contain a column with the name 'image_path' and a column with the name 'label'.
+Optionally, you can also add a column with the name 'split' to specify which split each row belongs to (train, val, test). 
+If you do not provide a split column, the tool will automatically split the data into train, val, and test sets based on the proportions you specify or [0.7, 0.1, 0.2] by default.
+
+
+**Outputs**
+The tool will output a trained model in the form of a ludwig_model file,
+a report in the form of an HTML file, and a collection of CSV/json/png files containing the predictions, experiment stats and visualizations.
+The html report will contain metrics&experiment setup parameters, train&val plots and test plots.
+
+        ]]>
+    </help>
+    <expand macro="macro_citations" />
+</tool>

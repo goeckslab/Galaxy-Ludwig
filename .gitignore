@@ -103,7 +103,7 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
+.venv*
 env/
 venv/
 ENV/
@@ -130,3 +130,6 @@ dmypy.json
 
 tool_test_output.html
 tool_test_output.json
+
+learner_output/*
+*.hdf5
